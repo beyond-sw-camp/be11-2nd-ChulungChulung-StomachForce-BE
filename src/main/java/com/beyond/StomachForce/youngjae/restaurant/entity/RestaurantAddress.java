@@ -22,4 +22,8 @@ public  class RestaurantAddress {
     @OneToOne(mappedBy = "address")
     private Restaurant restaurant;
 
+    public String getFullAddress() {
+        return city + " " + street + " " + zipCode;
+    }
+
 }

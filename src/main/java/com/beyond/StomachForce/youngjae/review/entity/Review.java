@@ -34,7 +34,7 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;      //restaurant id와 fk
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "review")     // 익명으로 두기 위해서 cacadetype.All 삭제함
     private List<ReviewPhoto> reviewPhotos;
 
 
