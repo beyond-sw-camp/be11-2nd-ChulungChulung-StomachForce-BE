@@ -67,7 +67,9 @@ public class Restaurant extends BaseTimeEntity {
 
     private LocalDate holiday;                   // 휴무일
 
-    private int capacity;                        // 최대 수용 인원
+    private Integer capacity;                    // 최대 수용 인원
+
+    private Integer rating;                      // 별점
 
     @OneToOne
     @JoinColumn(name = "restaurant_address_id")  // Restaurant 테이블이 외래 키를 가짐
@@ -77,7 +79,7 @@ public class Restaurant extends BaseTimeEntity {
     private List<RestaurantPhoto> photos = new ArrayList<>();
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private List<Review> reviews = new ArrayList<>();;
+    private List<Review> reviews = new ArrayList<>();
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Bookmark> bookmarks = new ArrayList<>();

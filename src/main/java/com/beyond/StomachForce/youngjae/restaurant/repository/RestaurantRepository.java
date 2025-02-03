@@ -24,8 +24,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     List<Restaurant> findAllOrderByBookmarkCountDesc();
 
     //      별점 높은 순으로 정렬(지선생)
-    @Query("SELECT r FROM Restaurant r LEFT JOIN r.reviews rev GROUP BY r ORDER BY AVG(rev.rating.value) DESC")
-    List<Restaurant> findAllOrderByRatingDesc();
+    @Query("SELECT r FROM Restaurant r LEFT JOIN r.reviews rev GROUP BY r.id ORDER BY AVG(rev.rating) DESC")
+    List<Restaurant> findAllByOrderByRatingDesc();
 
     Optional<Restaurant> findByEmail(String email);
 
