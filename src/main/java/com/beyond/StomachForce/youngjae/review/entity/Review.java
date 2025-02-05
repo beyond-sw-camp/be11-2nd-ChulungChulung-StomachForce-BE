@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -26,6 +27,7 @@ public class Review extends BaseTimeEntity {
     @Column(nullable = false, length = 3000)
     private String contents;            // 내용
 
+
 //    @ManyToOne
 //    @JoinColumn(name = "customer_id")
 //    private Customer customer;      //customer id랑 합쳐야함
@@ -34,8 +36,8 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;      //restaurant id와 fk
 
-    @OneToMany(mappedBy = "review")     // 익명으로 두기 위해서 cacadetype.All 삭제함
-    private List<ReviewPhoto> reviewPhotos;
+    @OneToMany(mappedBy = "review",cascade = CascadeType.ALL) // 사진 넣으면 자동으로 리뷰에 추가됨
+    private List<ReviewPhoto> reviewPhotos = new ArrayList<>();
 
 
 }

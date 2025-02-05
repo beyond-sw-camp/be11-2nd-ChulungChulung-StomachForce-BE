@@ -7,6 +7,7 @@ import com.beyond.StomachForce.youngjae.restaurant.dtos.RestaurantListRes;
 import com.beyond.StomachForce.youngjae.restaurant.dtos.RestaurantUpdateReq;
 import com.beyond.StomachForce.youngjae.restaurant.entity.select.AlcoholSelling;
 import com.beyond.StomachForce.youngjae.restaurant.entity.select.DepositAvailable;
+import com.beyond.StomachForce.youngjae.restaurant.entity.select.Role;
 import com.beyond.StomachForce.youngjae.review.entity.Review;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -45,6 +46,9 @@ public class Restaurant extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private AlcoholSelling alcoholSelling;       // 주류판매여부
+
+    @Enumerated(EnumType.STRING)
+    private Role role;       // 주류판매여부
 
     @Column(nullable = false, length = 3000)
     private String description;                  // 가게 설명

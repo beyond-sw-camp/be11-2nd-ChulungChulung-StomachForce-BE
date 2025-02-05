@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class ReviewRes {
     private Long id; //     리뷰아이디
     private String contents;
-    private List<String> reviewPhotoUrl;
+    private List<?> reviewPhotoUrl;
     private Double rating;
 
     public static ReviewRes fromEntity(Review review) {
