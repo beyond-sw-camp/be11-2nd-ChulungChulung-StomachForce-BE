@@ -28,3 +28,4 @@ jwt:
   expirationRT: 288000
   #  beyondrefreshsecrettokenkeybeyondrefreshsecrettokenkeybeyondrefreshsecrettokenkey
   secretKeyRT: YmV5b25kcmVmcmVzaHNlY3JldHRva2Vua2V5YmV5b25kcmVmcmVzaHNlY3JldHRva2Vua2V5YmV5b25kcmVmcmVzaHNlY3JldHRva2Vua2V5
+
