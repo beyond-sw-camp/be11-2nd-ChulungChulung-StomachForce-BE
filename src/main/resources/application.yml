@@ -15,11 +15,11 @@ spring :
       ddl-auto: create
     show_sql: true
 
-logging:
-  level:
-    root: info
-  file:
-    name: logs/app.log
+#logging:
+#  level:
+#    root: info
+#  file:
+#    name: logs/app.log
 
 jwt:
   expiration: 30
