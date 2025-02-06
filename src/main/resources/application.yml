@@ -12,7 +12,7 @@ spring :
     database-platform: org.hibernate.dialect.MariaDBDialect
     generate-ddl: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show_sql: true
 
 #logging:
@@ -23,10 +23,9 @@ spring :
 
 jwt:
   expiration: 30
-  # 인코딩 된 32자 이상 필요.(특수문자 사용 안됨)
-  # beyoundaccesstokensecretkeybeyoundaccesstokensecretkeybeyoundaccesstokensecretkey
-  secretKey: YmV5b3VuZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5YmV5b3VuZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5YmV5b3VuZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5
+  #  beyondaccesstoeknsecretkeybeyondaccesstoeknsecretkeybeyondaccesstoeknsecretkeybeyondaccesstoeknsecretkey
+  secretKey: YmV5b25kYWNjZXNzdG9la25zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2VrbnNlY3JldGtleWJleW9uZGFjY2Vzc3RvZWtuc2VjcmV0a2V5YmV5b25kYWNjZXNzdG9la25zZWNyZXRrZXk=
+  expirationRT: 288000
+  #  beyondrefreshsecrettokenkeybeyondrefreshsecrettokenkeybeyondrefreshsecrettokenkey
+  secretKeyRT: YmV5b25kcmVmcmVzaHNlY3JldHRva2Vua2V5YmV5b25kcmVmcmVzaHNlY3JldHRva2Vua2V5YmV5b25kcmVmcmVzaHNlY3JldHRva2Vua2V5
 
-  # beyoundrefreshtokensecretkeybeyoundrefreshtokensecretkeybeyoundrefreshtokensecretkey
-  expirationRt: 288000
-  secretKeyRt: YmV5b3VuZHJlZnJlc2h0b2tlbnNlY3JldGtleWJleW91bmRyZWZyZXNodG9rZW5zZWNyZXRrZXliZXlvdW5kcmVmcmVzaHRva2Vuc2VjcmV0a2V5
