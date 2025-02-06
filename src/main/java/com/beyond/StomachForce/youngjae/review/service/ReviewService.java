@@ -22,13 +22,13 @@ public class ReviewService {
         this.reviewPhotoRepository = reviewPhotoRepository;
     }
 
-    private String saveReview(ReviewSaveReq reviewSaveReq) {
-
-        if(reviewSaveReq.getContents().length()<10){
-            throw new IllegalArgumentException("리뷰 성의 없이 쓰지 마세요.");
-        }
-
+//    private String saveReview(ReviewSaveReq reviewSaveReq) {
+//
+//        if(reviewSaveReq.getContents().length()<10){
+//            throw new IllegalArgumentException("리뷰 성의 없이 쓰지 마세요.");
+//        }
+//
 //롱그인 하는 동안 잠깐 주석
 //        Review review = reviewRepository.save(reviewSaveReq));
-    }
+//    }
 }

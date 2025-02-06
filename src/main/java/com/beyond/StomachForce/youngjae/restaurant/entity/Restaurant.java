@@ -75,7 +75,7 @@ public class Restaurant extends BaseTimeEntity {
 
     private Integer rating;                      // 별점
 
-    @OneToOne
+    @OneToOne(mappedBy = "restaurant", cascade = CascadeType.ALL)
     @JoinColumn(name = "restaurant_address_id")  // Restaurant 테이블이 외래 키를 가짐
     private RestaurantAddress address;
 

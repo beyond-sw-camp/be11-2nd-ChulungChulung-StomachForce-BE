@@ -137,7 +137,7 @@ public class RestaurantService {
         return restaurant.detailFromEntity();
     }
 
-    //id로 사진 찾는 메서드(레스토랑 아이디 활용)
+    //id로 사진 찾는 메서드(레스토랑 아이디 활용)        //사진 강의 참고하여 수정 필요
     public List<String> findPhotosByRestaurantId(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));

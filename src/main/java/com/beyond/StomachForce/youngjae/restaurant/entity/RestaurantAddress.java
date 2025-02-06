@@ -19,7 +19,7 @@ public  class RestaurantAddress {
     private String street;     // 거리명
     private String zipCode;    // 우편번호
 
-    @OneToOne(mappedBy = "address")
+    @OneToOne(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private Restaurant restaurant;
 
     public String getFullAddress() {
