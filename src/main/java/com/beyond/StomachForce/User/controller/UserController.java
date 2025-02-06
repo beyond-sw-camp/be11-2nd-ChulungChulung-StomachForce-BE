@@ -1,7 +1,7 @@
 package com.beyond.StomachForce.User.controller;
 
 import com.beyond.StomachForce.Common.dtos.StatusCode;
-import com.beyond.StomachForce.Common.userAuth.JwtTokenProvider;
+import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.User.dtos.LoginDto;
 import com.beyond.StomachForce.User.dtos.UserRefreshDto;

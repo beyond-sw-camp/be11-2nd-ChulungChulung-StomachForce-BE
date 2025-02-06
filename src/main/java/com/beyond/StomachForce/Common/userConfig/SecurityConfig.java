@@ -1,6 +1,6 @@
 package com.beyond.StomachForce.Common.userConfig;
 
-import com.beyond.StomachForce.Common.userAuth.JwtAuthFilter;
+import com.beyond.StomachForce.Common.Auth.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -34,7 +34,9 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
 
-                .authorizeHttpRequests(a -> a.requestMatchers("/user/create", "/user/doLogin", "/user/refresh-token").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a -> a.requestMatchers("/user/create", "/user/doLogin",
+                        "/user/refresh-token","/restaurant/create","/restaurant/doLogin","/restaurant/refresh-token",
+                        "/restaurant/list").permitAll().anyRequest().authenticated())
                 .build();
     }
 

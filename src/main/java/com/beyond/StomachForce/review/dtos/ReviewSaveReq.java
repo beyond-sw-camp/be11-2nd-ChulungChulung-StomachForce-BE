@@ -1,0 +1,19 @@
+package com.beyond.StomachForce.review.dtos;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class ReviewSaveReq {
+
+    private Long RestaurantId;
+//    private Long UserId;
+    private String contents;
+    private MultipartFile reviewImage;
+
+
+}
