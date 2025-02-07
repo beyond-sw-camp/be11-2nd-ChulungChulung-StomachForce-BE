@@ -5,7 +5,6 @@ import com.beyond.StomachForce.Common.dtos.StatusCode;
 import com.beyond.StomachForce.Post.dtos.PostCreateReq;
 import com.beyond.StomachForce.Post.dtos.PostUpdateReq;
 import com.beyond.StomachForce.Post.service.PostService;
-import com.beyond.StomachForce.User.dtos.UserUpdateReq;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +38,7 @@ public class PostController extends BaseTimeEntity {
     public ResponseEntity<?> delete(@Valid Long id){
         postService.delete(id);
         return new ResponseEntity<>(new StatusCode(HttpStatus.OK.value(),
-                "회원탈퇴가 완료되었습니다.","ok"),HttpStatus.OK);
+                "게시글 삭제가 완료되었습니다.","ok"),HttpStatus.OK);
     }
 
 }
