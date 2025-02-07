@@ -2,11 +2,11 @@ package com.beyond.StomachForce.restaurant.service;
 
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
 import com.beyond.StomachForce.restaurant.dtos.*;
-import com.beyond.StomachForce.restaurant.entity.Bookmark;
-import com.beyond.StomachForce.restaurant.entity.Restaurant;
-import com.beyond.StomachForce.restaurant.entity.RestaurantPhoto;
-import com.beyond.StomachForce.restaurant.entity.RestaurantRefreshDto;
-import com.beyond.StomachForce.restaurant.entity.select.BookmarkType;
+import com.beyond.StomachForce.restaurant.domain.Bookmark;
+import com.beyond.StomachForce.restaurant.domain.Restaurant;
+import com.beyond.StomachForce.restaurant.domain.RestaurantPhoto;
+import com.beyond.StomachForce.restaurant.domain.RestaurantRefreshDto;
+import com.beyond.StomachForce.restaurant.domain.select.BookmarkType;
 import com.beyond.StomachForce.restaurant.repository.BookmarkRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
 import com.beyond.StomachForce.review.repository.ReviewRepository;
@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +56,10 @@ public class RestaurantService {
     public List<RestaurantListRes> findAll(){
         return restaurantRepository.findAll().stream().map
                 (r->r.listDtoFromEntity()).collect(Collectors.toList());
+    }
+    public RestaurantDetailRes findById(Long id){
+        Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("Restaurant with id " + id + " not found"));
+        return restaurant.detailFromEntity();
     }
 
     public Long save(RestaurantCreateReq restaurantCreateReq){
@@ -113,12 +118,14 @@ public class RestaurantService {
 
 
 
-    public void update(String email, RestaurantUpdateReq restaurantUpdateReq){
-        Restaurant restaurant = restaurantRepository.findByEmail(email)
-                .orElseThrow(()-> new EntityNotFoundException("없는 이메일입니다."));
+    public void update(Long id, RestaurantUpdateReq restaurantUpdateReq){
 
-        restaurant.updateProfile(restaurantUpdateReq);
-        restaurantRepository.save(restaurant);
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(()-> new EntityNotFoundException("없는 사용자입니다."));
+
+        String password = passwordEncoder.encode(restaurantUpdateReq.getPassword());
+        restaurant.updateProfile(restaurantUpdateReq, password);
+
     }
 
     //사업자번호로 디테일 화면 확인

@@ -1,7 +1,8 @@
 package com.beyond.StomachForce.restaurant.dtos;
 
-import com.beyond.StomachForce.restaurant.entity.RestaurantAddress;
+import com.beyond.StomachForce.restaurant.domain.RestaurantAddress;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
+@Builder
 public class RestaurantUpdateReq {
     private String name;
     private String email;

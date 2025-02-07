@@ -1,8 +1,8 @@
-package com.beyond.StomachForce.restaurant.entity;
+package com.beyond.StomachForce.restaurant.domain;
 
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
-import com.beyond.StomachForce.restaurant.entity.select.Convenience;
+import com.beyond.StomachForce.restaurant.domain.select.Convenience;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
