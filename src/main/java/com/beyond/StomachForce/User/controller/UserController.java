@@ -77,18 +77,18 @@ public class UserController {
 
     @PostMapping("/refresh-token")
     public ResponseEntity<?> generateNewAt(@RequestBody UserRefreshDto dto){
-//        rt디코딩 후 email 추출
+
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKeyRT)
                 .build()
                 .parseClaimsJws(dto.getRefreshToken())
                 .getBody();
-//        rt를 redis의 rt와 비교 검증
+
         Object rt = redisTemplate.opsForValue().get(claims.getSubject());
         if(rt == null || rt.toString().equals(dto.getRefreshToken())){
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
-//        at 생성하여 지급
+
         String token = jwtTokenProvider.createToken(claims.getSubject(),claims.get("role").toString());
         Map<String, Object> loginInfo = new HashMap<>();
         loginInfo.put("token",token);
