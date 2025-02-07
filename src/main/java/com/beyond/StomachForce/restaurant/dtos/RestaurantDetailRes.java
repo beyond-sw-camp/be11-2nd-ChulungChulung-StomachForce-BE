@@ -20,7 +20,6 @@ public class RestaurantDetailRes {
     private String address;         //주소
     private Double averageRating;   //별점
     private Long bookmarkCount;     //좋아요한 사람 수
-    private LocalDateTime createdTime;
     private LocalDateTime updatedTime;
 
 }

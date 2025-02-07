@@ -1,10 +1,10 @@
 package com.beyond.StomachForce.restaurant.dtos;
 
-import com.beyond.StomachForce.restaurant.entity.Bookmark;
-import com.beyond.StomachForce.restaurant.entity.RestaurantAddress;
-import com.beyond.StomachForce.restaurant.entity.RestaurantPhoto;
-import com.beyond.StomachForce.restaurant.entity.select.AlcoholSelling;
-import com.beyond.StomachForce.restaurant.entity.select.DepositAvailable;
+import com.beyond.StomachForce.restaurant.domain.Bookmark;
+import com.beyond.StomachForce.restaurant.domain.RestaurantAddress;
+import com.beyond.StomachForce.restaurant.domain.RestaurantPhoto;
+import com.beyond.StomachForce.restaurant.domain.select.AlcoholSelling;
+import com.beyond.StomachForce.restaurant.domain.select.DepositAvailable;
 import com.beyond.StomachForce.review.entity.Review;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,7 +1,7 @@
-package com.beyond.StomachForce.restaurant.entity;
+package com.beyond.StomachForce.restaurant.domain;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
-import com.beyond.StomachForce.restaurant.entity.select.BookmarkType;
+import com.beyond.StomachForce.restaurant.domain.select.BookmarkType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

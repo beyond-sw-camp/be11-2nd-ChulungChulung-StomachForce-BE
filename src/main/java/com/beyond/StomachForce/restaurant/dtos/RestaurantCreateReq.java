@@ -1,11 +1,11 @@
 package com.beyond.StomachForce.restaurant.dtos;
 
-import com.beyond.StomachForce.restaurant.entity.Restaurant;
-import com.beyond.StomachForce.restaurant.entity.RestaurantAddress;
-import com.beyond.StomachForce.restaurant.entity.RestaurantPhoto;
-import com.beyond.StomachForce.restaurant.entity.select.AlcoholSelling;
-import com.beyond.StomachForce.restaurant.entity.select.DepositAvailable;
-import com.beyond.StomachForce.restaurant.entity.select.RestaurantRole;
+import com.beyond.StomachForce.restaurant.domain.Restaurant;
+import com.beyond.StomachForce.restaurant.domain.RestaurantAddress;
+import com.beyond.StomachForce.restaurant.domain.RestaurantPhoto;
+import com.beyond.StomachForce.restaurant.domain.select.AlcoholSelling;
+import com.beyond.StomachForce.restaurant.domain.select.DepositAvailable;
+import com.beyond.StomachForce.restaurant.domain.select.RestaurantRole;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

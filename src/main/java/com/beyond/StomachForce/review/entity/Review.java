@@ -1,7 +1,7 @@
 package com.beyond.StomachForce.review.entity;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
-import com.beyond.StomachForce.restaurant.entity.Restaurant;
+import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.review.converter.RatingConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
