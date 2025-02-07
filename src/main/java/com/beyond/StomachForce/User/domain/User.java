@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.User.domain;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
+import com.beyond.StomachForce.Post.domain.Likes;
 import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.User.domain.Enum.*;
 import com.beyond.StomachForce.User.dtos.UserUpdateReq;
@@ -49,6 +50,9 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @Builder.Default
     private List<Post> posts = new ArrayList<>();
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<Likes> likes = new ArrayList<>();
 
     public void updateUser(UserUpdateReq userUpdateReq){
         this.identify = userUpdateReq.getIdentify();
