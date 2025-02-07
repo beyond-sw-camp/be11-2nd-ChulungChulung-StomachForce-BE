@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.Post.domain;
 
+import com.beyond.StomachForce.User.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,4 +17,7 @@ public class Likes {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id",nullable = false)
     private Post post;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",nullable = false)
+    private User user;
 }
