@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.restaurant.controller;
 
+import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.dtos.*;
 import com.beyond.StomachForce.restaurant.domain.RestaurantRefreshDto;
 import com.beyond.StomachForce.restaurant.service.RestaurantService;
@@ -7,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -66,6 +68,12 @@ public class RestaurantController {
     public ResponseEntity<?> authorUpdate(@PathVariable Long id, @RequestBody RestaurantUpdateReq dto){
         restaurantService.update(id,dto);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/delete")
+    public ResponseEntity<?> restaurantDelete(@PathVariable Long id) {
+        Restaurant restaurant = restaurantService.delete(id);
+        return new ResponseEntity<>(restaurant.getId(),HttpStatus.OK);
     }
 
     @PostMapping("/bookmark/{id}")

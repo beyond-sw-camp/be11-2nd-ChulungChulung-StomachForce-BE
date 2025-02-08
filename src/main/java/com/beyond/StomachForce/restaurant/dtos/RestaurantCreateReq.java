@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -66,14 +67,16 @@ public class RestaurantCreateReq {
 
     private int capacity;                       // 최대 수용 인원
 
-    @Builder.Default
-    private RestaurantRole restaurantRole= RestaurantRole.RESTAURANT;
+
+    private String restaurantRole;              // ROLE
+
+    private String restaurantStatus;            // 활성화 상태
 
     @NotNull
     private RestaurantAddress address;           // 주소
 
 //    @NotEmpty
-    private List<RestaurantPhoto> photos;        // 가게 사진 1장 이상
+//    private List<MultipartFile> restaurantPhotos;        // 가게 사진 1장 이상
 
     public Restaurant toEntity(String encodedPassword) {
         return Restaurant.builder()
@@ -93,8 +96,6 @@ public class RestaurantCreateReq {
                 .holiday(this.holiday)
                 .capacity(this.capacity)
                 .address(this.address)
-                .photos(this.photos)
-                .role(this.restaurantRole)
                 .build();
     }
 
