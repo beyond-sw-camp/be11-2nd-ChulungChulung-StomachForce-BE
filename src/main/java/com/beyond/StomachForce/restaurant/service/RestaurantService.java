@@ -1,13 +1,12 @@
 package com.beyond.StomachForce.restaurant.service;
 
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
+import com.beyond.StomachForce.restaurant.domain.*;
+import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
 import com.beyond.StomachForce.restaurant.dtos.*;
-import com.beyond.StomachForce.restaurant.domain.Bookmark;
-import com.beyond.StomachForce.restaurant.domain.Restaurant;
-import com.beyond.StomachForce.restaurant.domain.RestaurantPhoto;
-import com.beyond.StomachForce.restaurant.domain.RestaurantRefreshDto;
 import com.beyond.StomachForce.restaurant.domain.select.BookmarkType;
 import com.beyond.StomachForce.restaurant.repository.BookmarkRepository;
+import com.beyond.StomachForce.restaurant.repository.RestaurantInfoRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
 import com.beyond.StomachForce.review.repository.ReviewRepository;
 import io.jsonwebtoken.Claims;
@@ -49,6 +48,9 @@ public class RestaurantService {
     private final JwtTokenProvider jwtTokenProvider;
     @Qualifier("rtdb")
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RestaurantInfo restaurantInfo;
+    @Autowired
+    private RestaurantInfoRepository restaurantInfoRepository;
 
     //사진 넣을 때 필요한 의존성 추가
 //    private final S3Client s3Client;
@@ -59,7 +61,7 @@ public class RestaurantService {
 
     public RestaurantService(RestaurantRepository restaurantRepository, ReviewRepository reviewRepository,
                              BookmarkRepository bookmarkRepository, PasswordEncoder passwordEncoder,
-                             JwtTokenProvider jwtTokenProvider, RedisTemplate<String, Object> redisTemplate
+                             JwtTokenProvider jwtTokenProvider, RedisTemplate<String, Object> redisTemplate, RestaurantInfo restaurantInfo
 //                             S3Client s3Client) {
     ){      // 사진 활성화 되묜 이거 다시 지워야함
         this.restaurantRepository = restaurantRepository;
@@ -69,6 +71,7 @@ public class RestaurantService {
         this.jwtTokenProvider = jwtTokenProvider;
         this.redisTemplate = redisTemplate;
 //        this.s3Client = s3Client;
+        this.restaurantInfo = restaurantInfo;
     }
 
     public List<RestaurantListRes> findAll(){
@@ -213,20 +216,6 @@ public class RestaurantService {
         return restaurant;
     }
 
-    //사업자번호로 디테일 화면 확인  이거 필요 없을 것 같아요
-    public RestaurantDetailRes findByRegistrationNumber(String registrationNumber){
-        Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber)
-                .orElseThrow(()-> new EntityNotFoundException("Restaurant with registration number " + registrationNumber + " not found"));
-        return restaurant.detailFromEntity();
-    }
-
-    //이메일로 디테일 화면 확인
-    public RestaurantDetailRes findByEmail (String email){
-        Restaurant restaurant = restaurantRepository.findByEmail(email)
-                .orElseThrow(()-> new EntityNotFoundException("Restaurant with email " + email + " not found"));
-        return restaurant.detailFromEntity();
-    }
-
     //id로 사진 찾는 메서드(레스토랑 아이디 활용)        //사진 강의 참고하여 수정 필요
     public List<String> findPhotosByRestaurantId(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
@@ -234,6 +223,68 @@ public class RestaurantService {
 
         return restaurant.getPhotos().stream().map(RestaurantPhoto::getPhotoUrl).collect(Collectors.toList());
     }
+
+    // info 관련 메서드--------------------------------------------------------------------------------------------
+    public void infoCreate(Long restaurantId, RestaurantInfoCreateReq req){
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(()
+                -> new EntityNotFoundException("Restaurant not found"));
+        RestaurantInfo restaurantInfo = RestaurantInfo.builder()
+                .restaurant(restaurant)
+                .informationText(req.getInfoText())
+                .build();
+        restaurantInfoRepository.save(restaurantInfo);
+        List<RestaurantInfo> activeInfos = restaurantInfoRepository
+                .findByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(restaurantId, RestaurantInfoStatus.ACTIVE);
+
+        // 6번째부턴 비활성화 시켜놓기
+        if(activeInfos.size() > 5){
+            List<RestaurantInfo> toDeactivate = activeInfos.subList(5, activeInfos.size());
+            restaurantInfoRepository.saveAll(toDeactivate);
+        }
+    }
+
+    // ✅ 최신 5개 ACTIVE 상태 정보 조회
+    public List<RestaurantInfoListRes> findInfoAll(Long restaurantId) {
+        return restaurantInfoRepository.findByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(
+                        restaurantId, RestaurantInfoStatus.ACTIVE)
+                .stream()
+                .map(info -> new RestaurantInfoListRes(info.getId(), info.getInformationText(), info.getRestaurantInfoStatus(), info.getCreatedTime()))
+                .collect(Collectors.toList());
+    }
+
+    // ✅ 정보 수정
+    public void infoUpdate(Long id, RestaurantInfoUpdateReq dto) {
+        RestaurantInfo restaurantInfo = restaurantInfoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ID의 정보가 존재하지 않습니다."));
+
+        restaurantInfo.updateInfo(dto.getInformationText());
+        restaurantInfoRepository.save(restaurantInfo);
+    }
+
+    // ✅ 정보 삭제 후 최신 INACTIVE 중 하나를 활성화
+    public void infoDelete(Long id) {
+        RestaurantInfo restaurantInfo = restaurantInfoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ID의 정보가 존재하지 않습니다."));
+
+        restaurantInfo.deactivate();
+        restaurantInfoRepository.save(restaurantInfo);
+
+        // INACTIVE 중 최신 1개를 ACTIVE로 변경
+        restaurantInfoRepository.findFirstByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(
+                        restaurantInfo.getRestaurant().getId(), RestaurantInfoStatus.INACTIVE)
+                .ifPresent(info -> {
+                    info.activate();
+                    restaurantInfoRepository.save(info);
+                });
+    }
+
+
+
+
+
+
+
+    // info 관련 메서드--------------------------------------------------------------------------------------------
 
     //북마크 (토글)
     public void toggleBookmark(Long restaurantId) {

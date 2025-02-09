@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.review.entity;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
+import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.review.converter.RatingConverter;
 import jakarta.persistence.*;
@@ -28,9 +29,9 @@ public class Review extends BaseTimeEntity {
     private String contents;            // 내용
 
 
-//    @ManyToOne
-//    @JoinColumn(name = "customer_id")
-//    private Customer customer;      //customer id랑 합쳐야함
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private User customer;      //customer id랑 합쳐야함
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id")

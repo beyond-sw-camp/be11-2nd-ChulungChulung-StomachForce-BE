@@ -151,3 +151,4 @@ Caused by: org.springframework.util.PlaceholderResolutionException: Could not re
 2025-02-40 00:32 c.b.S.C.c.CommonExceptionHandler-니 계정이 아닌데 왜 지우려고하냐?사업자등록번호
 2025-02-40 00:45 c.b.S.C.c.CommonExceptionHandler-없는 사용자입니다.
 2025-02-40 00:46 c.b.S.C.c.CommonExceptionHandler-남의 것을 탐하지 마시오
+2025-02-40 00:48 c.b.S.C.c.CommonExceptionHandler-rawPassword cannot be null
