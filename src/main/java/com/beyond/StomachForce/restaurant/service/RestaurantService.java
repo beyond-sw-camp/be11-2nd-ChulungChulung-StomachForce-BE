@@ -13,7 +13,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -48,30 +48,28 @@ public class RestaurantService {
     private final JwtTokenProvider jwtTokenProvider;
     @Qualifier("rtdb")
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RestaurantInfo restaurantInfo;
     @Autowired
-    private RestaurantInfoRepository restaurantInfoRepository;
+    private final RestaurantInfoRepository restaurantInfoRepository;
 
     //사진 넣을 때 필요한 의존성 추가
-//    private final S3Client s3Client;
-//    @Value("${cloud.aws.s3.bucket}")
-//    private String bucket;
+    private final S3Client s3Client;
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
 
 
     public RestaurantService(RestaurantRepository restaurantRepository, ReviewRepository reviewRepository,
                              BookmarkRepository bookmarkRepository, PasswordEncoder passwordEncoder,
-                             JwtTokenProvider jwtTokenProvider, RedisTemplate<String, Object> redisTemplate, RestaurantInfo restaurantInfo
-//                             S3Client s3Client) {
-    ){      // 사진 활성화 되묜 이거 다시 지워야함
+                             JwtTokenProvider jwtTokenProvider, RedisTemplate<String, Object> redisTemplate,
+                             S3Client s3Client, RestaurantInfoRepository restaurantInfoRepository) {
         this.restaurantRepository = restaurantRepository;
         this.reviewRepository = reviewRepository;
         this.bookmarkRepository = bookmarkRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.redisTemplate = redisTemplate;
-//        this.s3Client = s3Client;
-        this.restaurantInfo = restaurantInfo;
+        this.restaurantInfoRepository = restaurantInfoRepository;
+        this.s3Client = s3Client;
     }
 
     public List<RestaurantListRes> findAll(){
@@ -95,45 +93,45 @@ public class RestaurantService {
         String password = passwordEncoder.encode(restaurantCreateReq.getPassword());
         //      save 메서드도 사용할 겸 사진을 넣을 때 필요한 restaurant 객체 생성
         Restaurant restaurant = restaurantRepository.save(restaurantCreateReq.toEntity(password));
-//        //      사진 넣을 list 생성
-//        List<RestaurantPhoto> restaurantPhotos = new ArrayList<>();
-//        //      aws에 image 저장 후에 url 추출
-//        //      aws에 s3 접근 가능한  iam(새끼계정)계정 생성 iam계정을 통해 aws에 접근 가능한 접근 객체 생성(config에 AwsS3Config)
-//
-//        //지금의 경우 List형태이므로 for문으로 통해 하나하나 넣어야함
-//        for(MultipartFile image: restaurantCreateReq.getRestaurantPhotos()){
-//            try {
-//                byte[] bytes = image.getBytes();
-//                String fileName = restaurant.getId() + "_" + image.getOriginalFilename();
-//                //      먼저 local에 저장
-//                Path path = Paths.get("C:/Users/Playdata/Desktop/testFolder" , fileName);
-//                Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-//                //      저장을 위한 request 객체(s3 업로드 요청)
-//                PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-//                        .bucket(bucket)
-//                        .key(fileName)
-//                        .build();
-//                //      저장 실행(s3업로드)
-//                s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
-//
-//                //      저장된 s3url 갖고오기
-//                String s3Url = s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
-//
-////                restaurantPhotos.add(s3Url); 이렇게 하면 안되고 객체 생성해서,,,주입해야함
-//                //  레스토랑포토 객체 생성 후에 리스트에 담기
-//                RestaurantPhoto restaurantPhoto = RestaurantPhoto.builder()
-//                        .photoUrl(s3Url)
-//                        .restaurant(restaurant)
-//                        .build();
-//                // 그리고 list에 넣는다
-//                restaurantPhotos.add(restaurantPhoto);
-//
-//
-//            } catch (IOException e) {
-//                throw new RuntimeException("이미지 저장 실패");
-//            }
-//        }
-//        restaurant.getPhotos().addAll(restaurantPhotos);
+        //      사진 넣을 list 생성
+        List<RestaurantPhoto> restaurantPhotos = new ArrayList<>();
+        //      aws에 image 저장 후에 url 추출
+        //      aws에 s3 접근 가능한  iam(새끼계정)계정 생성 iam계정을 통해 aws에 접근 가능한 접근 객체 생성(config에 AwsS3Config)
+
+        //지금의 경우 List형태이므로 for문으로 통해 하나하나 넣어야함
+        for(MultipartFile image: restaurantCreateReq.getRestaurantPhotos()){
+            try {
+                byte[] bytes = image.getBytes();
+                String fileName = restaurant.getId() + "_" + image.getOriginalFilename();
+                //      먼저 local에 저장
+                Path path = Paths.get("C:/Users/Playdata/Desktop/testFolder" , fileName);
+                Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                //      저장을 위한 request 객체(s3 업로드 요청)
+                PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(fileName)
+                        .build();
+                //      저장 실행(s3업로드)
+                s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
+
+                //      저장된 s3url 갖고오기
+                String s3Url = s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
+
+//                restaurantPhotos.add(s3Url); 이렇게 하면 안되고 객체 생성해서,,,주입해야함
+                //  레스토랑포토 객체 생성 후에 리스트에 담기
+                RestaurantPhoto restaurantPhoto = RestaurantPhoto.builder()
+                        .photoUrl(s3Url)
+                        .restaurant(restaurant)
+                        .build();
+                // 그리고 list에 넣는다
+                restaurantPhotos.add(restaurantPhoto);
+
+
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 저장 실패");
+            }
+        }
+        restaurant.getPhotos().addAll(restaurantPhotos);
 
         return restaurant.getId();
 

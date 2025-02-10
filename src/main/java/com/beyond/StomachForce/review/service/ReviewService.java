@@ -5,6 +5,7 @@ import com.beyond.StomachForce.User.repository.UserRepository;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
 import com.beyond.StomachForce.review.dtos.ReviewCreateReq;
+import com.beyond.StomachForce.review.dtos.ReviewListRes;
 import com.beyond.StomachForce.review.entity.Rating;
 import com.beyond.StomachForce.review.entity.Review;
 import com.beyond.StomachForce.review.entity.ReviewPhoto;
@@ -27,6 +28,7 @@ public class ReviewService {
     private final ReviewPhotoRepository reviewPhotoRepository;
     private final UserRepository userRepository;
 
+
     public ReviewService(RestaurantRepository restaurantRepository, ReviewRepository reviewRepository, ReviewPhotoRepository reviewPhotoRepository, UserRepository userRepository) {
         this.restaurantRepository = restaurantRepository;
         this.reviewRepository = reviewRepository;
@@ -34,14 +36,14 @@ public class ReviewService {
         this.userRepository = userRepository;
     }
 
-    public Long createReview(ReviewCreateReq reviewCreateReq) {
+    public Long createReview(Long id, ReviewCreateReq reviewCreateReq) {
         // user 검증
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByIdentify(identify).orElseThrow(()-> new IllegalArgumentException());
+        User user = userRepository.findByIdentify(identify).orElseThrow(()-> new IllegalArgumentException("없는 사용자"));
 
         // 레스토렁 정보 확인
-        Restaurant restaurant = restaurantRepository.findById(reviewCreateReq.getRestaurantId())
-                .orElseThrow(()-> new IllegalArgumentException());
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(()-> new IllegalArgumentException("없는 레스토랑"));
 
         if(reviewCreateReq.getContents().length()<10){
             throw new IllegalArgumentException("리뷰 성의 없이 쓰지 마세요.");
@@ -75,6 +77,13 @@ public class ReviewService {
     // 리뷰 이미지 저장
     public String saveImage(MultipartFile image){
         return "image_path/" + image.getOriginalFilename();
+    }
+
+    // 리스트 뽑을 메서드
+    public List<ReviewListRes> findReviewsByRestaurant(Long restaurantId) {
+        User user = SecurityContextHolder.getContext().getAuthentication().getName().toString();
+        List<Review> reviewList = reviewRepository.findByRestaurantId(restaurantId);
+        return reviewRepository.findAll().stream().map(rl->rl.fromEntity(reviewPhotoRepository.findAll().stream().map(rp->rp.fromEntity())))
     }
 
 }

@@ -75,8 +75,8 @@ public class RestaurantCreateReq {
     @NotNull
     private RestaurantAddress address;           // 주소
 
-//    @NotEmpty
-//    private List<MultipartFile> restaurantPhotos;        // 가게 사진 1장 이상
+    @NotEmpty
+    private List<MultipartFile> restaurantPhotos;        // 가게 사진 1장 이상
 
     public Restaurant toEntity(String encodedPassword) {
         return Restaurant.builder()

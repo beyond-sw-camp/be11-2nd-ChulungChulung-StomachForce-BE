@@ -1,11 +1,16 @@
 package com.beyond.StomachForce.review.entity;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
+import com.beyond.StomachForce.User.domain.User;
+import com.beyond.StomachForce.review.dtos.ReviewPhotoRes;
+import com.beyond.StomachForce.review.dtos.ReviewRes;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,5 +28,12 @@ public class ReviewPhoto extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
     private Review review;          // 레스토랑 리뷰 페이지랑 FK설정
+
+    public ReviewPhotoRes fromEntity(User user) {
+        return ReviewPhotoRes.builder()
+                .photoUrl(this.reviewImagePath)
+                .user(user)
+                .build();
+    }
 
 }

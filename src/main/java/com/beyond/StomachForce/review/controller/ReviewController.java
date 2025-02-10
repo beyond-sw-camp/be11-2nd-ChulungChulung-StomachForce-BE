@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/review")
+@RequestMapping("/restaurant")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -21,15 +21,15 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createReview(@Valid @RequestBody ReviewCreateReq req) {
-        Long reviewId = reviewService.createReview(req);
+    @PostMapping("/review/{restaurantId}/create")
+    public ResponseEntity<?> createReview(@PathVariable Long restaurantId, @Valid @RequestBody ReviewCreateReq req) {
+        Long reviewId = reviewService.createReview(restaurantId, req);
         return new ResponseEntity<>(reviewId, HttpStatus.CREATED);
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<?> ReviewList() {
-        List<ReviewListRes> reviewListRes = reviewService.findAll();
+    @GetMapping("/review/{restaurantId}/list")
+    public ResponseEntity<?> ReviewList(@PathVariable Long restaurantId) {
+        List<ReviewListRes> reviewListRes = reviewService.findReviewsByRestaurant();
         return new ResponseEntity<>(reviewListRes, HttpStatus.OK);
     }
 

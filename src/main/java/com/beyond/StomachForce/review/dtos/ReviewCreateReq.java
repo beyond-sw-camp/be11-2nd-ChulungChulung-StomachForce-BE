@@ -13,10 +13,9 @@ import java.util.List;
 @Data
 public class ReviewCreateReq {
 
-    private Long restaurantId;
     @NotBlank(message = "비울 수 없는 항목입니다.")
     private String contents;
-    private int rating;
+    private Integer rating;
     private List<MultipartFile> reviewImage;
 
 
