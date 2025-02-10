@@ -30,7 +30,7 @@ public class Review extends BaseTimeEntity {
     @Builder.Default
     private Rating rating = Rating.FIVE;              // 별점
     @Column(nullable = false, length = 3000)
-    private String contents;                         // 내용
+    private String contents;                          // 내용
 
 
     @ManyToOne

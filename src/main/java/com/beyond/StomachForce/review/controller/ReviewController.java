@@ -2,7 +2,6 @@ package com.beyond.StomachForce.review.controller;
 
 import com.beyond.StomachForce.review.dtos.ReviewCreateReq;
 import com.beyond.StomachForce.review.dtos.ReviewListRes;
-import com.beyond.StomachForce.review.dtos.ReviewSaveReq;
 import com.beyond.StomachForce.review.service.ReviewService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -29,7 +28,7 @@ public class ReviewController {
 
     @GetMapping("/review/{restaurantId}/list")
     public ResponseEntity<?> ReviewList(@PathVariable Long restaurantId) {
-        List<ReviewListRes> reviewListRes = reviewService.findReviewsByRestaurant();
+        List<ReviewListRes> reviewListRes = reviewService.findReviewsByRestaurant(restaurantId);
         return new ResponseEntity<>(reviewListRes, HttpStatus.OK);
     }
 

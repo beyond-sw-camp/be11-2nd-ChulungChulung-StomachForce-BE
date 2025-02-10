@@ -12,13 +12,11 @@ import com.beyond.StomachForce.review.repository.ReviewRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,7 +37,6 @@ import java.util.stream.Collectors;
 @Transactional
 public class RestaurantService {
 
-    @Autowired
     private final RestaurantRepository restaurantRepository;
     private final ReviewRepository reviewRepository;
     private final BookmarkRepository bookmarkRepository;
@@ -48,7 +45,6 @@ public class RestaurantService {
     private final JwtTokenProvider jwtTokenProvider;
     @Qualifier("rtdb")
     private final RedisTemplate<String, Object> redisTemplate;
-    @Autowired
     private final RestaurantInfoRepository restaurantInfoRepository;
 
     //사진 넣을 때 필요한 의존성 추가
@@ -224,33 +220,27 @@ public class RestaurantService {
 
     // info 관련 메서드--------------------------------------------------------------------------------------------
     public void infoCreate(Long restaurantId, RestaurantInfoCreateReq req){
-        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(()
-                -> new EntityNotFoundException("Restaurant not found"));
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+
         RestaurantInfo restaurantInfo = RestaurantInfo.builder()
                 .restaurant(restaurant)
                 .informationText(req.getInfoText())
                 .build();
         restaurantInfoRepository.save(restaurantInfo);
-        List<RestaurantInfo> activeInfos = restaurantInfoRepository
-                .findByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(restaurantId, RestaurantInfoStatus.ACTIVE);
-
-        // 6번째부턴 비활성화 시켜놓기
-        if(activeInfos.size() > 5){
-            List<RestaurantInfo> toDeactivate = activeInfos.subList(5, activeInfos.size());
-            restaurantInfoRepository.saveAll(toDeactivate);
-        }
     }
 
-    // ✅ 최신 5개 ACTIVE 상태 정보 조회
+    //  최신 5개 ACTIVE 상태 정보 조회(페이징처리해서 상단 5개만 보여줌)
     public List<RestaurantInfoListRes> findInfoAll(Long restaurantId) {
-        return restaurantInfoRepository.findByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(
+        return restaurantInfoRepository.findTop5ByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(
                         restaurantId, RestaurantInfoStatus.ACTIVE)
                 .stream()
-                .map(info -> new RestaurantInfoListRes(info.getId(), info.getInformationText(), info.getRestaurantInfoStatus(), info.getCreatedTime()))
+                .map(info -> new RestaurantInfoListRes(
+                        info.getId(), info.getInformationText(), info.getRestaurantInfoStatus(), info.getCreatedTime()))
                 .collect(Collectors.toList());
     }
 
-    // ✅ 정보 수정
+    // 정보 수정
     public void infoUpdate(Long id, RestaurantInfoUpdateReq dto) {
         RestaurantInfo restaurantInfo = restaurantInfoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("해당 ID의 정보가 존재하지 않습니다."));
@@ -259,21 +249,14 @@ public class RestaurantService {
         restaurantInfoRepository.save(restaurantInfo);
     }
 
-    // ✅ 정보 삭제 후 최신 INACTIVE 중 하나를 활성화
-    public void infoDelete(Long id) {
+    // 정보 삭제 후 최신 INACTIVE 중 하나를 활성화
+    public Long infoDelete(Long id) {
         RestaurantInfo restaurantInfo = restaurantInfoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("해당 ID의 정보가 존재하지 않습니다."));
 
         restaurantInfo.deactivate();
         restaurantInfoRepository.save(restaurantInfo);
-
-        // INACTIVE 중 최신 1개를 ACTIVE로 변경
-        restaurantInfoRepository.findFirstByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(
-                        restaurantInfo.getRestaurant().getId(), RestaurantInfoStatus.INACTIVE)
-                .ifPresent(info -> {
-                    info.activate();
-                    restaurantInfoRepository.save(info);
-                });
+        return restaurantInfo.getId();
     }
 
 

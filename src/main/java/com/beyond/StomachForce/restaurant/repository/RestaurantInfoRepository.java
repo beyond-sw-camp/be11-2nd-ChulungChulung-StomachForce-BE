@@ -9,7 +9,7 @@ import java.util.*;
 
 @Repository
 public interface RestaurantInfoRepository extends JpaRepository<RestaurantInfo,Long> {
-    List<RestaurantInfo> findByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(Long restaurantId, RestaurantInfoStatus status);
-    List<RestaurantInfo> findByRestaurantIdOrderByCreatedTimeDesc(Long restaurantId);
-    Optional<RestaurantInfo> findFirstByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(Long restaurantId, RestaurantInfoStatus status);
+    List<RestaurantInfo> findTop5ByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(
+            Long restaurantId, RestaurantInfoStatus status);
+
 }

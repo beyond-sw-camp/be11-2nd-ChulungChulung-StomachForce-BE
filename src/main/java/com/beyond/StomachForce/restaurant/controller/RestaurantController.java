@@ -77,7 +77,7 @@ public class RestaurantController {
         return new ResponseEntity<>(restaurant.getId(),HttpStatus.OK);
     }
     // info 관련 CRUD ------------------------------------------------------------------------------------
-    @PostMapping("/info/create")
+    @PostMapping("/info/create/{id}")
     private ResponseEntity<?> restaurantInfo(@PathVariable Long id, @RequestBody RestaurantInfoCreateReq req) {
         restaurantService.infoCreate(id, req);
         return new ResponseEntity<>(restaurantService.findById(id), HttpStatus.OK);
@@ -85,9 +85,9 @@ public class RestaurantController {
 
 
     // 상단 5개만 노출되는 list 나머지는 inactive
-    @GetMapping("/info/list")
-    public ResponseEntity<?> infoList() {
-        List<RestaurantInfoListRes> restaurantInfoListResList = restaurantService.findInfoAll();
+    @GetMapping("/info/list/{id}")
+    public ResponseEntity<?> infoList(@PathVariable Long id) {
+        List<RestaurantInfoListRes> restaurantInfoListResList = restaurantService.findInfoAll(id);
         return new ResponseEntity<>(restaurantInfoListResList, HttpStatus.OK);
     }
 
@@ -99,8 +99,8 @@ public class RestaurantController {
 
     @PatchMapping("/info/{id}/delete")
     public ResponseEntity<?> restaurantInfoDelete(@PathVariable Long id) {
-        Restaurant restaurant = restaurantService.infoDelete(id);
-        return new ResponseEntity<>(restaurant.getId(),HttpStatus.OK);
+        Long deleteInfoId = restaurantService.infoDelete(id);
+        return new ResponseEntity<>(deleteInfoId,HttpStatus.OK);
     }
 
     @PostMapping("/bookmark/{id}")

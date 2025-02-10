@@ -29,14 +29,14 @@ public class RestaurantPhoto extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Builder.Default                        // 기본적으로 활성화 시키기
-    private RestaurantPhotoStatus photoStatus = RestaurantPhotoStatus.Active;
+    private RestaurantPhotoStatus photoStatus = RestaurantPhotoStatus.ACTIVE;
 
     public void setRestaurant(Restaurant restaurant) {
         this.restaurant = restaurant;
     }
 
     public void photoDeactivate() {
-        this.photoStatus = RestaurantPhotoStatus.Inactive;
+        this.photoStatus = RestaurantPhotoStatus.INACTIVE;
     }
 
     @Override

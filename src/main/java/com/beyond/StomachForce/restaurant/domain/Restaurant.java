@@ -121,7 +121,7 @@ public class Restaurant extends BaseTimeEntity {
                 .phoneNumber(this.phoneNumber)
                 .address(this.address.getFullAddress())
                 .averageRating(averageRating)
-                .bookmarkCount(this.bookmarks.stream().count())
+                .bookmarkCount((long)this.bookmarks.size())
                 .updatedTime(this.updatedTime)
                 .build();
     }
