@@ -2,6 +2,7 @@ package com.beyond.StomachForce.coupon.domain;
 
 
 //import com.beyond.StomachForce.reservationDetail.domain.ReservationDetail;
+import com.beyond.StomachForce.Common.domain.BaseReservationTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,19 +16,20 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @ToString
-public class Coupon {
+public class Coupon extends BaseReservationTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, unique = true)
     private String couponCode;
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private CouponType couponType = CouponType.WON;
     private String couponIssue;
+    @Column(nullable = false)
     private Integer discountAmount;
-    private LocalDateTime createdTime;
     private LocalDateTime dueDate;
-    private String description;
+    private String couponName;
 //    @OneToMany(mappedBy = "coupon")
 //    private ReservationDetail reservationDetail;
 }

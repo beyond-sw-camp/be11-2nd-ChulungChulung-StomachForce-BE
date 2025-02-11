@@ -11,4 +11,5 @@ public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User> findByName(String name);
     Optional<User> findByBirth(String birth);
     Optional<User> findByIdentify(String identify);
+    Optional<User> findByEmail(String email); // 홍성혁 추가 - 이메일로 유저찾기.
 }
