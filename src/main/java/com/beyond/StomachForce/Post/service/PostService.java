@@ -5,8 +5,6 @@ import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.Post.dtos.PostCreateReq;
 import com.beyond.StomachForce.Post.repository.PostRepository;
-import com.beyond.StomachForce.User.domain.User;
-import com.beyond.StomachForce.User.dtos.UserUpdateReq;
 import com.beyond.StomachForce.User.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;

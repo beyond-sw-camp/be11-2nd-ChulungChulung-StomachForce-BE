@@ -1,13 +1,13 @@
-package com.beyond.StomachForce.restaurant.entity;
+package com.beyond.StomachForce.restaurant.domain;
 
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.restaurant.dtos.RestaurantDetailRes;
 import com.beyond.StomachForce.restaurant.dtos.RestaurantListRes;
 import com.beyond.StomachForce.restaurant.dtos.RestaurantUpdateReq;
-import com.beyond.StomachForce.restaurant.entity.select.AlcoholSelling;
-import com.beyond.StomachForce.restaurant.entity.select.DepositAvailable;
-import com.beyond.StomachForce.restaurant.entity.select.RestaurantRole;
+import com.beyond.StomachForce.restaurant.domain.select.AlcoholSelling;
+import com.beyond.StomachForce.restaurant.domain.select.DepositAvailable;
+import com.beyond.StomachForce.restaurant.domain.select.RestaurantRole;
 import com.beyond.StomachForce.review.entity.Review;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -75,6 +75,8 @@ public class Restaurant extends BaseTimeEntity {
 
     private Integer rating;                      // 별점
 
+    private LocalDateTime updatedTime;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "restaurant_address_id")  // Restaurant 테이블이 외래 키를 가짐
     private RestaurantAddress address;
@@ -92,9 +94,11 @@ public class Restaurant extends BaseTimeEntity {
         double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
                 (r -> r.getRating().getValue()).average().orElse(0.0);
         return RestaurantListRes.builder()
+                .id(this.id)                                            // 레스토랑 Id
                 .name(this.name)                                        // 레스토랑 이름
                 .averageRating(averageRating)                           // 레스토랑 평균 별점
                 .bookmarkCount((long) this.bookmarks.size())            // 레스토랑 즐겨찾기 한 사람 수
+                .address(this.address.getFullAddress())
                 .build();
     }
 
@@ -104,19 +108,36 @@ public class Restaurant extends BaseTimeEntity {
         return RestaurantDetailRes.builder()
                 .id(this.id)
                 .name(this.name)
+                .email(this.email)
                 .description(this.description)
                 .phoneNumber(this.phoneNumber)
                 .address(this.address.getFullAddress())
                 .averageRating(averageRating)
                 .bookmarkCount(this.bookmarks.stream().count())
+                .updatedTime(this.updatedTime)
                 .build();
     }
 
-    public void updateProfile(RestaurantUpdateReq dto){
-        this.name = dto.getName();
-        this.email = dto.getEmail();
-        this.password = dto.getPassword();
+    public void updateProfile(RestaurantUpdateReq dto,String password){
+        if(dto.getName() != null) this.name = dto.getName();
+        if(dto.getEmail() != null) this.email = dto.getEmail();
+        if(dto.getPassword() != null) this.password = password;
+        if(dto.getPhoneNumber() != null) this.phoneNumber = dto.getPhoneNumber();
+        if(dto.getDescription() != null) this.description = dto.getDescription();
+        if(dto.getOpeningTime() != null) this.openingTime = dto.getOpeningTime();
+        if(dto.getClosingTime() != null) this.closingTime = dto.getClosingTime();
+        if(dto.getLastOrder() != null) this.lastOrder=dto.getLastOrder();
+        if(dto.getHoliday() != null) this.holiday = dto.getHoliday();
+        if(dto.getCapacity() != 0) this.capacity = dto.getCapacity();
+        if(dto.getAddress() != null) {
+            if(this.address == null) {
+                this.address = new RestaurantAddress(); // 기존 주소가 없으면 새로 생성하는 것
+            }
+            if(dto.getAddress().getCity() != null) this.address.setCity(dto.getAddress().getCity());
+            if(dto.getAddress().getStreet() != null) this.address.setStreet(dto.getAddress().getStreet());
+        }
     }
+
 
 
 

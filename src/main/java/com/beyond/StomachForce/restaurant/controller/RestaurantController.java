@@ -1,13 +1,10 @@
 package com.beyond.StomachForce.restaurant.controller;
 
-import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
 import com.beyond.StomachForce.restaurant.dtos.*;
-import com.beyond.StomachForce.restaurant.entity.RestaurantRefreshDto;
-import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
+import com.beyond.StomachForce.restaurant.domain.RestaurantRefreshDto;
 import com.beyond.StomachForce.restaurant.service.RestaurantService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +16,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/restaurant")
 public class RestaurantController {
-    private final RestaurantRepository restaurantRepository;
     private final RestaurantService restaurantService;
     @Value("${jwt.secretKeyRT}")
     private String secretKeyRt;
 
 
-    public RestaurantController(RestaurantRepository restaurantRepository, RestaurantService restaurantService, JwtTokenProvider jwtTokenProvider, RedisTemplate<String, Object> redisTemplate) {
-        this.restaurantRepository = restaurantRepository;
+    public RestaurantController( RestaurantService restaurantService) {
+
         this.restaurantService = restaurantService;
     }
 
@@ -54,25 +50,22 @@ public class RestaurantController {
 
 
     @GetMapping("/list")// 레스토랑 사람들 리스트로 뽑기
+
     public ResponseEntity<?> list() {
         List<RestaurantListRes> restaurantListResList = restaurantService.findAll();
         return new ResponseEntity<>(restaurantListResList, HttpStatus.OK);
     }
 
-    @GetMapping("/detailRegistration")//
-    public RestaurantDetailRes restaurantDetailRegistration (@RequestBody String registrationNumber) {
-        return restaurantService.findByRegistrationNumber(registrationNumber);
+    @GetMapping("/detail/{id}")//
+    public RestaurantDetailRes restaurantDetail (@PathVariable Long id) {
+        return restaurantService.findById(id);
     }
 
-    @GetMapping("/detailEmail")
-    public RestaurantDetailRes restaurantDetailResEmail (@RequestBody String email) {
-        return restaurantService.findByEmail(email);
-    }
 
-    @PatchMapping("/update/{email}")
-    public String authorUpdate(@PathVariable String email, @RequestBody RestaurantUpdateReq dto){
-        restaurantService.update(email,dto);
-        return "Id is successfully updated";
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<?> authorUpdate(@PathVariable Long id, @RequestBody RestaurantUpdateReq dto){
+        restaurantService.update(id,dto);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/bookmark/{id}")

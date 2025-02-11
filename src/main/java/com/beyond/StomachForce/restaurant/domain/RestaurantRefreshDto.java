@@ -1,4 +1,4 @@
-package com.beyond.StomachForce.restaurant.entity;
+package com.beyond.StomachForce.restaurant.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
