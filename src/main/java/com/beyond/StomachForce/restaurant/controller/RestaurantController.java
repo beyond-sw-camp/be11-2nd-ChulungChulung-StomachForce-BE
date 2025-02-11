@@ -1,5 +1,7 @@
 package com.beyond.StomachForce.restaurant.controller;
 
+import com.beyond.StomachForce.restaurant.domain.Restaurant;
+import com.beyond.StomachForce.restaurant.domain.RestaurantInfo;
 import com.beyond.StomachForce.restaurant.dtos.*;
 import com.beyond.StomachForce.restaurant.domain.RestaurantRefreshDto;
 import com.beyond.StomachForce.restaurant.service.RestaurantService;
@@ -7,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -66,6 +69,38 @@ public class RestaurantController {
     public ResponseEntity<?> authorUpdate(@PathVariable Long id, @RequestBody RestaurantUpdateReq dto){
         restaurantService.update(id,dto);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/delete")
+    public ResponseEntity<?> restaurantDelete(@PathVariable Long id) {
+        Restaurant restaurant = restaurantService.delete(id);
+        return new ResponseEntity<>(restaurant.getId(),HttpStatus.OK);
+    }
+    // info 관련 CRUD ------------------------------------------------------------------------------------
+    @PostMapping("/info/create/{id}")
+    private ResponseEntity<?> restaurantInfo(@PathVariable Long id, @RequestBody RestaurantInfoCreateReq req) {
+        restaurantService.infoCreate(id, req);
+        return new ResponseEntity<>(restaurantService.findById(id), HttpStatus.OK);
+    }
+
+
+    // 상단 5개만 노출되는 list 나머지는 inactive
+    @GetMapping("/info/list/{id}")
+    public ResponseEntity<?> infoList(@PathVariable Long id) {
+        List<RestaurantInfoListRes> restaurantInfoListResList = restaurantService.findInfoAll(id);
+        return new ResponseEntity<>(restaurantInfoListResList, HttpStatus.OK);
+    }
+
+    @PatchMapping("/info/update/{id}")
+    public ResponseEntity<?> infoUpdate(@PathVariable Long id, @RequestBody RestaurantInfoUpdateReq dto){
+        restaurantService.infoUpdate(id,dto);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PatchMapping("/info/{id}/delete")
+    public ResponseEntity<?> restaurantInfoDelete(@PathVariable Long id) {
+        Long deleteInfoId = restaurantService.infoDelete(id);
+        return new ResponseEntity<>(deleteInfoId,HttpStatus.OK);
     }
 
     @PostMapping("/bookmark/{id}")

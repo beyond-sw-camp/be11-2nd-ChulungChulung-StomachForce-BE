@@ -10,6 +10,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -39,7 +40,6 @@ public class Reservation extends BaseReservationTimeEntity {
     @ManyToOne
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
-
 
 //    id ,userId, restaurantId, reservationType, reservationDate, peopleNumber, method, mileage
 }
