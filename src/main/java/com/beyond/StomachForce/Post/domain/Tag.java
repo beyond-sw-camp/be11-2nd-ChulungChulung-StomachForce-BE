@@ -1,6 +1,5 @@
 package com.beyond.StomachForce.Post.domain;
 
-import com.beyond.StomachForce.User.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,11 +9,10 @@ import lombok.*;
 @Entity
 @ToString
 @Builder
-public class Likes {
+public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "post_id",nullable = false)
-//    private Post post;
+    @Column(nullable = false,unique = true)
+    private String tagName;
 }

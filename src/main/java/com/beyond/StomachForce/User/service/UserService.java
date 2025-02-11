@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.User.service;
 
 import com.beyond.StomachForce.User.domain.User;
+import com.beyond.StomachForce.User.domain.UserAddress;
 import com.beyond.StomachForce.User.dtos.LoginDto;
 import com.beyond.StomachForce.User.dtos.UserUpdateReq;
 import com.beyond.StomachForce.User.dtos.UserSaveReq;
@@ -30,8 +31,15 @@ public class UserService {
             }
         }
         String password = passwordEncoder.encode(userSaveReq.getPassword());
-        User user = userRepository.save(userSaveReq.toEntity(password));
-        return user;
+        User user = userSaveReq.toEntity(password);
+//        User tempUser = User.builder().name(userSaveReq.getName()).build();
+        String state = userSaveReq.getUserAddress().getState();
+        String city = userSaveReq.getUserAddress().getCity();
+        String village = userSaveReq.getUserAddress().getVillage();
+        UserAddress userAddress  = UserAddress.builder().state(state).city(city).village(village).user(user).build();
+        user.getUserAddresses().add(userAddress);
+        User finalUser = userRepository.save(user);
+        return finalUser;
     }
     public void updateByIdentify(UserUpdateReq userUpdateReq){
         String identify = userUpdateReq.getIdentify();
