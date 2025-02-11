@@ -10,7 +10,7 @@ import com.beyond.StomachForce.reservation.dtos.ReservationCreateReq;
 import com.beyond.StomachForce.reservation.dtos.ReservationDetailRes;
 import com.beyond.StomachForce.reservation.dtos.ReservationListRes;
 import com.beyond.StomachForce.reservation.repository.ReservationRepository;
-import com.beyond.StomachForce.restaurant.entity.Restaurant;
+import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.Authentication;

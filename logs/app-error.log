@@ -1,0 +1,16 @@
+2025-02-42 17:28 o.s.b.d.LoggingFailureAnalysisReporter-
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+
+2025-02-42 17:30 c.b.S.C.c.CommonExceptionHandler-이미 가입된 회원입니다.
+2025-02-42 17:32 c.b.S.C.c.CommonExceptionHandler-이미 가입된 회원입니다.

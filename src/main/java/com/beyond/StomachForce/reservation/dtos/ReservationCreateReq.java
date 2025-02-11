@@ -5,7 +5,7 @@ import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.coupon.domain.Coupon;
 import com.beyond.StomachForce.reservation.domain.Payment;
 import com.beyond.StomachForce.reservation.domain.Reservation;
-import com.beyond.StomachForce.restaurant.entity.Restaurant;
+import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

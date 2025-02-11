@@ -4,7 +4,7 @@ package com.beyond.StomachForce.reservation.domain;
 import com.beyond.StomachForce.Common.domain.BaseReservationTimeEntity;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.coupon.domain.Coupon;
-import com.beyond.StomachForce.restaurant.entity.Restaurant;
+import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
