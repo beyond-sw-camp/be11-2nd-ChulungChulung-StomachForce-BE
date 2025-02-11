@@ -19,6 +19,9 @@ public class PostCreateReq {
     private String contents;
     @Builder.Default
     private PostStatus postStatus = PostStatus.Y;
+    @Builder.Default
+    private Long likes = 0L;
+
     public Post toEntity(User user){
         return Post.builder().user(user).contents(this.contents).postStatus(this.postStatus).build();
     }
