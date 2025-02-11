@@ -4,6 +4,7 @@ import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.User.domain.Enum.*;
 import com.beyond.StomachForce.User.dtos.UserUpdateReq;
+import com.beyond.StomachForce.reservation.domain.Reservation;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -49,6 +50,8 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @Builder.Default
     private List<Post> posts = new ArrayList<>();
+    @OneToMany(mappedBy = "user")
+    private List<Reservation> reservationList;//홍성혁 추가 - user의 예약내역확인.
 
     public void updateUser(UserUpdateReq userUpdateReq){
         this.identify = userUpdateReq.getIdentify();
