@@ -7,7 +7,6 @@ import com.beyond.StomachForce.coupon.domain.Coupon;
 import com.beyond.StomachForce.restaurant.entity.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 
@@ -40,6 +39,7 @@ public class Reservation extends BaseReservationTimeEntity {
     @ManyToOne
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
+
 
 //    id ,userId, restaurantId, reservationType, reservationDate, peopleNumber, method, mileage
 }

@@ -30,6 +30,7 @@ public class UserController {
 
     @Qualifier("rtdb")
     private final RedisTemplate<String,Object> redisTemplate;
+
     @Value("${jwt.secretKeyRT}")
     private String secretKeyRT;
 
@@ -94,4 +95,6 @@ public class UserController {
         loginInfo.put("token",token);
         return new ResponseEntity<>(loginInfo,HttpStatus.OK);
     }
+
+
 }

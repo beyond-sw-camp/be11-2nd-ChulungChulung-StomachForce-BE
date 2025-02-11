@@ -57,7 +57,8 @@ public class User extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @Builder.Default
-    private List<Likes> likes = new ArrayList<>();
+    private List<UserAddress> userAddresses = new ArrayList<>();
+
 
 
     public void updateUser(UserUpdateReq userUpdateReq){
