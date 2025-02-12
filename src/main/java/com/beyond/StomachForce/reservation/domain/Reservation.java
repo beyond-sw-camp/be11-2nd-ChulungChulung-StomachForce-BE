@@ -4,11 +4,12 @@ package com.beyond.StomachForce.reservation.domain;
 import com.beyond.StomachForce.Common.domain.BaseReservationTimeEntity;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.coupon.domain.Coupon;
+import com.beyond.StomachForce.menu.domain.Menu;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-
+import java.util.List;
 
 
 @AllArgsConstructor
@@ -40,6 +41,8 @@ public class Reservation extends BaseReservationTimeEntity {
     @ManyToOne
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
+    @OneToMany(mappedBy = "reservation")
+    private List<Menu> menuList;
 
 //    id ,userId, restaurantId, reservationType, reservationDate, peopleNumber, method, mileage
 }
