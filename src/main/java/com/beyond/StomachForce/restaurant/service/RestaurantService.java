@@ -2,9 +2,14 @@ package com.beyond.StomachForce.restaurant.service;
 
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
 import com.beyond.StomachForce.restaurant.domain.*;
+import com.beyond.StomachForce.restaurant.domain.RestaurantRefreshDto;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
 import com.beyond.StomachForce.restaurant.dtos.*;
 import com.beyond.StomachForce.restaurant.domain.select.BookmarkType;
+import com.beyond.StomachForce.restaurant.dtos.LoginDto;
+import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoCreateReq;
+import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoListRes;
+import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoUpdateReq;
 import com.beyond.StomachForce.restaurant.repository.BookmarkRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantInfoRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
@@ -85,12 +90,14 @@ public class RestaurantService {
         if(restaurantCreateReq.getPassword().length()<8){
             throw new IllegalArgumentException("비번 너무 짧아요");
         }
+
         //      비번 암호화
         String password = passwordEncoder.encode(restaurantCreateReq.getPassword());
         //      save 메서드도 사용할 겸 사진을 넣을 때 필요한 restaurant 객체 생성
         Restaurant restaurant = restaurantRepository.save(restaurantCreateReq.toEntity(password));
         //      사진 넣을 list 생성
         List<RestaurantPhoto> restaurantPhotos = new ArrayList<>();
+
         //      aws에 image 저장 후에 url 추출
         //      aws에 s3 접근 가능한  iam(새끼계정)계정 생성 iam계정을 통해 aws에 접근 가능한 접근 객체 생성(config에 AwsS3Config)
 
@@ -127,7 +134,9 @@ public class RestaurantService {
                 throw new RuntimeException("이미지 저장 실패");
             }
         }
-        restaurant.getPhotos().addAll(restaurantPhotos);
+
+        restaurant.getPhotos().addAll(restaurantPhotos);;
+        restaurantRepository.save(restaurant);
 
         return restaurant.getId();
 
@@ -268,17 +277,20 @@ public class RestaurantService {
     // info 관련 메서드--------------------------------------------------------------------------------------------
 
     //북마크 (토글)
-    public void toggleBookmark(Long restaurantId) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
-
-        Optional<Bookmark> bookmark = bookmarkRepository.findById(restaurantId);
-
-        if (bookmark.isPresent()) {
-            bookmarkRepository.delete(bookmark.get()); // 즐겨찾기 삭제
-        } else {
-            Bookmark newBookmark = Bookmark.builder().restaurant(restaurant).bookmarkType(BookmarkType.YES).build();
-            bookmarkRepository.save(newBookmark); // 즐겨찾기 추가
-        }
-    }
+//    public void toggleBookmark(Long restaurantId, Long userId) {
+//        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+//                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+//
+//        Optional<Bookmark> bookmark = bookmarkRepository.findByRestaurantIdAndUserId(restaurantId,userId);
+//
+//        if (bookmark.isPresent()) {
+//            bookmarkRepository.delete(bookmark.get()); // 즐겨찾기 삭제
+//        } else {
+//            Bookmark newBookmark = Bookmark.builder()
+//                    .restaurant(restaurant)
+//                    .bookmarkType(BookmarkType.YES)
+//                    .build();
+//            bookmarkRepository.save(newBookmark); // 즐겨찾기 추가
+//        }
+//    }
 }

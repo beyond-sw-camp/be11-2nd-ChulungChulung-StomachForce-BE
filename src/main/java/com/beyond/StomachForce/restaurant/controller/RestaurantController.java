@@ -4,6 +4,10 @@ import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.domain.RestaurantInfo;
 import com.beyond.StomachForce.restaurant.dtos.*;
 import com.beyond.StomachForce.restaurant.domain.RestaurantRefreshDto;
+import com.beyond.StomachForce.restaurant.dtos.LoginDto;
+import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoCreateReq;
+import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoListRes;
+import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoUpdateReq;
 import com.beyond.StomachForce.restaurant.service.RestaurantService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +34,7 @@ public class RestaurantController {
     }
 
     @PostMapping("/create")// 회원가입
-    public String authorCreate(@Valid @RequestBody RestaurantCreateReq restaurantCreateReq) {
+    public String authorCreate(@Valid RestaurantCreateReq restaurantCreateReq) {
         restaurantService.save(restaurantCreateReq);
         return "OK";
     }
@@ -103,11 +107,11 @@ public class RestaurantController {
         return new ResponseEntity<>(deleteInfoId,HttpStatus.OK);
     }
 
-    @PostMapping("/bookmark/{id}")
-    public ResponseEntity<?> authorBookmark(@PathVariable Long id){
-        restaurantService.toggleBookmark(id);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+//    @PostMapping("/bookmark/{id}")
+//    public ResponseEntity<?> authorBookmark(@PathVariable Long id){
+//        restaurantService.toggleBookmark(id);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
     @GetMapping("/detail/photos/{restaurantId}")
     public ResponseEntity<List<String>> getRestaurantPhotos(@PathVariable Long restaurantId) {

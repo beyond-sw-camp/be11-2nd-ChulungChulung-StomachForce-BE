@@ -14,6 +14,9 @@ public class RestaurantListRes {
     private String name;                //레스토랑명
     private Double averageRating;       // 레스토랑 평균 별정(소수로 나옵니다)
     private Long bookmarkCount;         // 즐찾한 사람들 수
-    private String address;
+    private String address;             // 주소
+    private int reviewCount;            // 리뷰 개수
+    private String imagePath;           // 이미지 사진(항상 0번째 사진 표출)
+    private String restaurantType;      // 한,중,일,양식,퓨젼
 
 }

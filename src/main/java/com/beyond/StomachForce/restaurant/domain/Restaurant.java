@@ -2,14 +2,10 @@ package com.beyond.StomachForce.restaurant.domain;
 
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
-import com.beyond.StomachForce.menu.domain.Menu;
-import com.beyond.StomachForce.restaurant.domain.select.RestaurantStatus;
+import com.beyond.StomachForce.restaurant.domain.select.*;
 import com.beyond.StomachForce.restaurant.dtos.RestaurantDetailRes;
 import com.beyond.StomachForce.restaurant.dtos.RestaurantListRes;
 import com.beyond.StomachForce.restaurant.dtos.RestaurantUpdateReq;
-import com.beyond.StomachForce.restaurant.domain.select.AlcoholSelling;
-import com.beyond.StomachForce.restaurant.domain.select.DepositAvailable;
-import com.beyond.StomachForce.restaurant.domain.select.RestaurantRole;
 import com.beyond.StomachForce.review.entity.Review;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -86,6 +82,9 @@ public class Restaurant extends BaseTimeEntity {
     @Builder.Default
     private DepositAvailable depositAvailable = DepositAvailable.NO;  // 예약금 여부
 
+    @Enumerated(EnumType.STRING)
+    private RestaurantType restaurantType;                           // Restaurant 종류(한,중,일,양,외)
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "restaurant_address_id")                      // Restaurant 테이블이 외래 키를 가짐
     private RestaurantAddress address;
@@ -97,10 +96,11 @@ public class Restaurant extends BaseTimeEntity {
     private List<Review> reviews = new ArrayList<>();               // 레스토랑 리뷰
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private List<Bookmark> bookmarks = new ArrayList<>();            // 레스토랑 북마크
+    private List<RestaurantInfo> infos = new ArrayList<>();               // 레스토랑 리뷰
+
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private List<Menu> menus = new ArrayList<>();
+    private List<Bookmark> bookmarks = new ArrayList<>();            // 레스토랑 북마크
 
     public RestaurantListRes listDtoFromEntity() {
         double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
@@ -110,7 +110,9 @@ public class Restaurant extends BaseTimeEntity {
                 .name(this.name)                                        // 레스토랑 이름
                 .averageRating(averageRating)                           // 레스토랑 평균 별점
                 .bookmarkCount((long) this.bookmarks.size())            // 레스토랑 즐겨찾기 한 사람 수
-                .address(this.address.getFullAddress())
+                .reviewCount(this.reviews.size())                       // 리뷰 수
+                .address(this.address.getFullAddress())                 // 주소
+                .imagePath(this.photos.get(0).toString())               // 사진 url
                 .build();
     }
 
@@ -152,7 +154,7 @@ public class Restaurant extends BaseTimeEntity {
 
     public void addPhotos(List<RestaurantPhoto> newPhotos) {
         for (RestaurantPhoto photo : newPhotos) {
-            if (!this.photos.contains(photo)) { // ✅ 기존 사진이 없을 때만 추가
+            if (!this.photos.contains(photo)) { // 기존 사진이 없을 때만 추가
                 photo.setRestaurant(this);
                 this.photos.add(photo);
             }
@@ -161,6 +163,10 @@ public class Restaurant extends BaseTimeEntity {
 
     public void deleteRestaurant() {
         this.restaurantStatus = RestaurantStatus.INACTIVE;
+    }
+
+    public void setPhotos(List<RestaurantPhoto> photos) {
+        this.photos = photos;
     }
 
 

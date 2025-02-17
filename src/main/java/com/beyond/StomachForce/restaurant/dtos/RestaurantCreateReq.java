@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -70,13 +71,13 @@ public class RestaurantCreateReq {
 
     private String restaurantRole;              // ROLE
 
-    private String restaurantStatus;            // 활성화 상태
+    private String restaurantType;              // 한중일식 넣기
 
     @NotNull
     private RestaurantAddress address;           // 주소
 
     @NotEmpty
-    private List<MultipartFile> restaurantPhotos;        // 가게 사진 1장 이상
+    private List<MultipartFile> restaurantPhotos = new ArrayList<>();        // 가게 사진 1장 이상
 
     public Restaurant toEntity(String encodedPassword) {
         return Restaurant.builder()
@@ -96,6 +97,7 @@ public class RestaurantCreateReq {
                 .holiday(this.holiday)
                 .capacity(this.capacity)
                 .address(this.address)
+                .photos(new ArrayList<>())
                 .build();
     }
 
