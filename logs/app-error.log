@@ -1,16 +1,47 @@
-2025-02-42 17:28 o.s.b.d.LoggingFailureAnalysisReporter-
-
-***************************
-APPLICATION FAILED TO START
-***************************
-
-Description:
-
-Web server failed to start. Port 8080 was already in use.
-
-Action:
-
-Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
-
-2025-02-42 17:30 c.b.S.C.c.CommonExceptionHandler-이미 가입된 회원입니다.
-2025-02-42 17:32 c.b.S.C.c.CommonExceptionHandler-이미 가입된 회원입니다.
+2025-02-47 14:49 o.s.a.r.l.SimpleMessageListenerContainer-Failed to check/redeclare auto-delete queue(s).
+org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+	at org.springframework.amqp.rabbit.support.RabbitExceptionTranslator.convertRabbitAccessException(RabbitExceptionTranslator.java:61)
+	at org.springframework.amqp.rabbit.connection.AbstractConnectionFactory.createBareConnection(AbstractConnectionFactory.java:633)
+	at org.springframework.amqp.rabbit.connection.CachingConnectionFactory.createConnection(CachingConnectionFactory.java:726)
+	at org.springframework.amqp.rabbit.connection.ConnectionFactoryUtils.createConnection(ConnectionFactoryUtils.java:257)
+	at org.springframework.amqp.rabbit.core.RabbitTemplate.doExecute(RabbitTemplate.java:2262)
+	at org.springframework.amqp.rabbit.core.RabbitTemplate.execute(RabbitTemplate.java:2235)
+	at org.springframework.amqp.rabbit.core.RabbitTemplate.execute(RabbitTemplate.java:2215)
+	at org.springframework.amqp.rabbit.core.RabbitAdmin.getQueueInfo(RabbitAdmin.java:468)
+	at org.springframework.amqp.rabbit.core.RabbitAdmin.getQueueProperties(RabbitAdmin.java:452)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.attemptDeclarations(AbstractMessageListenerContainer.java:1960)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.redeclareElementsIfNecessary(AbstractMessageListenerContainer.java:1924)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.initialize(SimpleMessageListenerContainer.java:1483)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1324)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.net.ConnectException: Connection refused: getsockopt
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:672)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:547)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:602)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+	at java.base/java.net.Socket.connect(Socket.java:633)
+	at com.rabbitmq.client.impl.SocketFrameHandlerFactory.create(SocketFrameHandlerFactory.java:61)
+	at com.rabbitmq.client.ConnectionFactory.newConnection(ConnectionFactory.java:1249)
+	at com.rabbitmq.client.ConnectionFactory.newConnection(ConnectionFactory.java:1198)
+	at com.rabbitmq.client.ConnectionFactory.newConnection(ConnectionFactory.java:1369)
+	at org.springframework.amqp.rabbit.connection.AbstractConnectionFactory.connectHostPort(AbstractConnectionFactory.java:696)
+	at org.springframework.amqp.rabbit.connection.AbstractConnectionFactory.connect(AbstractConnectionFactory.java:651)
+	at org.springframework.amqp.rabbit.connection.AbstractConnectionFactory.createBareConnection(AbstractConnectionFactory.java:594)
+	... 12 common frames omitted
+2025-02-47 14:49 o.s.a.r.l.SimpleMessageListenerContainer-Failed to check/redeclare auto-delete queue(s).
+2025-02-47 14:49 o.s.a.r.l.SimpleMessageListenerContainer-Failed to check/redeclare auto-delete queue(s).
+2025-02-47 14:50 o.s.a.r.l.SimpleMessageListenerContainer-Failed to check/redeclare auto-delete queue(s).
+2025-02-47 14:50 o.s.a.r.l.SimpleMessageListenerContainer-Failed to check/redeclare auto-delete queue(s).
+2025-02-47 14:50 o.s.a.r.l.SimpleMessageListenerContainer-Failed to check/redeclare auto-delete queue(s).
+2025-02-47 14:50 o.s.a.r.l.SimpleMessageListenerContainer-Failed to check/redeclare auto-delete queue(s).
+2025-02-47 14:50 o.s.a.r.l.SimpleMessageListenerContainer-Failed to check/redeclare auto-delete queue(s).
+2025-02-47 14:50 o.s.a.r.l.SimpleMessageListenerContainer-Failed to check/redeclare auto-delete queue(s).
+2025-02-47 14:53 c.b.S.C.c.CommonExceptionHandler-Validation failed for argument [0] in public org.springframework.http.ResponseEntity<?> com.beyond.StomachForce.User.controller.UserController.postCreatePost(com.beyond.StomachForce.User.dtos.UserSaveReq) with 7 errors: [Field error in object 'userSaveReq' on field 'password': rejected value []; codes [Size.userSaveReq.password,Size.password,Size.java.lang.String,Size]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.password,password]; arguments []; default message [password],2147483647,8]; default message [크기가 8에서 2147483647 사이여야 합니다]] [Field error in object 'userSaveReq' on field 'phoneNumber': rejected value [null]; codes [NotEmpty.userSaveReq.phoneNumber,NotEmpty.phoneNumber,NotEmpty.java.lang.String,NotEmpty]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.phoneNumber,phoneNumber]; arguments []; default message [phoneNumber]]; default message [비어 있을 수 없습니다]] [Field error in object 'userSaveReq' on field 'password': rejected value []; codes [NotEmpty.userSaveReq.password,NotEmpty.password,NotEmpty.java.lang.String,NotEmpty]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.password,password]; arguments []; default message [password]]; default message [비어 있을 수 없습니다]] [Field error in object 'userSaveReq' on field 'nickName': rejected value [null]; codes [NotEmpty.userSaveReq.nickName,NotEmpty.nickName,NotEmpty.java.lang.String,NotEmpty]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.nickName,nickName]; arguments []; default message [nickName]]; default message [비어 있을 수 없습니다]] [Field error in object 'userSaveReq' on field 'name': rejected value []; codes [NotEmpty.userSaveReq.name,NotEmpty.name,NotEmpty.java.lang.String,NotEmpty]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.name,name]; arguments []; default message [name]]; default message [비어 있을 수 없습니다]] [Field error in object 'userSaveReq' on field 'identify': rejected value [null]; codes [NotEmpty.userSaveReq.identify,NotEmpty.identify,NotEmpty.java.lang.String,NotEmpty]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.identify,identify]; arguments []; default message [identify]]; default message [비어 있을 수 없습니다]] [Field error in object 'userSaveReq' on field 'email': rejected value []; codes [NotEmpty.userSaveReq.email,NotEmpty.email,NotEmpty.java.lang.String,NotEmpty]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.email,email]; arguments []; default message [email]]; default message [비어 있을 수 없습니다]] 
+2025-02-47 14:53 c.b.S.C.c.CommonExceptionHandler-Validation failed for argument [0] in public org.springframework.http.ResponseEntity<?> com.beyond.StomachForce.User.controller.UserController.postCreatePost(com.beyond.StomachForce.User.dtos.UserSaveReq) with 4 errors: [Field error in object 'userSaveReq' on field 'password': rejected value [1234]; codes [Size.userSaveReq.password,Size.password,Size.java.lang.String,Size]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.password,password]; arguments []; default message [password],2147483647,8]; default message [크기가 8에서 2147483647 사이여야 합니다]] [Field error in object 'userSaveReq' on field 'identify': rejected value [null]; codes [NotEmpty.userSaveReq.identify,NotEmpty.identify,NotEmpty.java.lang.String,NotEmpty]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.identify,identify]; arguments []; default message [identify]]; default message [비어 있을 수 없습니다]] [Field error in object 'userSaveReq' on field 'nickName': rejected value [null]; codes [NotEmpty.userSaveReq.nickName,NotEmpty.nickName,NotEmpty.java.lang.String,NotEmpty]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.nickName,nickName]; arguments []; default message [nickName]]; default message [비어 있을 수 없습니다]] [Field error in object 'userSaveReq' on field 'phoneNumber': rejected value [null]; codes [NotEmpty.userSaveReq.phoneNumber,NotEmpty.phoneNumber,NotEmpty.java.lang.String,NotEmpty]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.phoneNumber,phoneNumber]; arguments []; default message [phoneNumber]]; default message [비어 있을 수 없습니다]] 
+2025-02-47 14:57 c.b.S.C.c.CommonExceptionHandler-Validation failed for argument [0] in public org.springframework.http.ResponseEntity<?> com.beyond.StomachForce.User.controller.UserController.postCreatePost(com.beyond.StomachForce.User.dtos.UserSaveReq): [Field error in object 'userSaveReq' on field 'password': rejected value [1234]; codes [Size.userSaveReq.password,Size.password,Size.java.lang.String,Size]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.password,password]; arguments []; default message [password],2147483647,8]; default message [크기가 8에서 2147483647 사이여야 합니다]] 
+2025-02-47 15:00 c.b.S.C.c.CommonExceptionHandler-Validation failed for argument [0] in public org.springframework.http.ResponseEntity<?> com.beyond.StomachForce.User.controller.UserController.postCreatePost(com.beyond.StomachForce.User.dtos.UserSaveReq): [Field error in object 'userSaveReq' on field 'password': rejected value [1234]; codes [Size.userSaveReq.password,Size.password,Size.java.lang.String,Size]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.password,password]; arguments []; default message [password],2147483647,8]; default message [크기가 8에서 2147483647 사이여야 합니다]] 
+2025-02-47 15:00 c.b.S.C.c.CommonExceptionHandler-Validation failed for argument [0] in public org.springframework.http.ResponseEntity<?> com.beyond.StomachForce.User.controller.UserController.postCreatePost(com.beyond.StomachForce.User.dtos.UserSaveReq): [Field error in object 'userSaveReq' on field 'password': rejected value [1234]; codes [Size.userSaveReq.password,Size.password,Size.java.lang.String,Size]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userSaveReq.password,password]; arguments []; default message [password],2147483647,8]; default message [크기가 8에서 2147483647 사이여야 합니다]] 
+2025-02-47 15:09 c.b.S.C.c.CommonExceptionHandler-ID 또는 비밀번호가 일치하지 않습니다.
+2025-02-47 17:10 c.b.S.C.c.CommonExceptionHandler-ID 또는 비밀번호가 일치하지 않습니다.
+2025-02-47 17:10 c.b.S.C.c.CommonExceptionHandler-ID 또는 비밀번호가 일치하지 않습니다.

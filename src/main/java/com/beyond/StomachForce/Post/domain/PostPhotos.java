@@ -1,9 +1,9 @@
 package com.beyond.StomachForce.Post.domain;
 
+import com.beyond.StomachForce.User.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -11,12 +11,12 @@ import java.util.List;
 @Entity
 @ToString
 @Builder
-public class Tag {
+public class PostPhotos {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id",nullable = false)
     private Post post;
-    private String tagName;
+    private String postPhoto;
 }

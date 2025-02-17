@@ -1,9 +1,9 @@
 package com.beyond.StomachForce.User.domain;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
-import com.beyond.StomachForce.Post.domain.Likes;
 import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.User.domain.Enum.*;
+import com.beyond.StomachForce.User.dtos.FollowerListRes;
 import com.beyond.StomachForce.User.dtos.UserUpdateReq;
 import com.beyond.StomachForce.reservation.domain.Reservation;
 import jakarta.persistence.*;
@@ -38,8 +38,8 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Gender gender;
     private String profilePhoto;
-    @Column(nullable = false)
-    private String mileageBalance;
+//    @Column(nullable = false)
+    private Long mileageBalance;
     @Enumerated(EnumType.STRING)
     private VipGrade vipGrade;
     @Enumerated(EnumType.STRING)
@@ -58,7 +58,9 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @Builder.Default
     private List<UserAddress> userAddresses = new ArrayList<>();
-
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
+    @Builder.Default
+    private List<Follower> followers = new ArrayList<>();
 
 
     public void updateUser(UserUpdateReq userUpdateReq){
@@ -74,5 +76,30 @@ public class User extends BaseTimeEntity {
 
     public void userStop(){
         this.userStatus = UserStatus.S;
+    }
+
+    public void mileageUpdate(Long mileageBalance){
+        this.mileageBalance = mileageBalance;
+    }
+
+    public void followerAdd(Follower follower){
+        this.followers.add(follower);
+    }
+
+    public List<FollowerListRes> list(){
+        List<FollowerListRes> follwerList = new ArrayList<>();
+        for(Follower f: followers){
+            FollowerListRes followerListRes = FollowerListRes.builder()
+                    .id(f.getId())
+                    .userId(this.getId())
+                    .followerId(f.getFollowerId())
+                    .build();
+            follwerList.add(followerListRes);
+        }
+        return follwerList;
+    }
+
+    public void updateImagePath(String imagePath){
+        this.profilePhoto = imagePath;
     }
 }
