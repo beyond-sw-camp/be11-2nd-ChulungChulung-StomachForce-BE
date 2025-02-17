@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.review.dtos;
 
+import com.beyond.StomachForce.User.domain.User;
 import jakarta.persistence.GeneratedValue;
 
 import lombok.AllArgsConstructor;
@@ -14,6 +15,6 @@ import lombok.NoArgsConstructor;
 public class ReviewPhotoRes {
 
     private String photoUrl;
-//    private UserId uesr;
+    private User user;
 
 }

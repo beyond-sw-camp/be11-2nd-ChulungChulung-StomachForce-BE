@@ -3,6 +3,7 @@ package com.beyond.StomachForce.menu.domain;
 
 import com.beyond.StomachForce.menu.dto.MenuResDto;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
+import com.beyond.StomachForce.reservation.domain.Reservation;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,6 +38,10 @@ public class Menu {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "allergyInfo_id")
     private AllergyInfo allergyInfo;
+
+    @ManyToOne
+    @JoinColumn(name = "reservation_id")
+    private Reservation reservation;
 
     public MenuResDto listFromEntity(){
         return MenuResDto.builder()

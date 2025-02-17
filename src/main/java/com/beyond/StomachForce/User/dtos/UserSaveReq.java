@@ -2,12 +2,16 @@ package com.beyond.StomachForce.User.dtos;
 
 import com.beyond.StomachForce.User.domain.Enum.*;
 import com.beyond.StomachForce.User.domain.User;
+import com.beyond.StomachForce.User.domain.UserAddress;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,9 +34,8 @@ public class UserSaveReq {
     private String birth;
     @Builder.Default
     private Gender gender = Gender.FEMALE;
-    private String profilePhoto;
     @Builder.Default
-    private String mileageBalance = "0";
+    private Long mileageBalance = 0L;
     @Builder.Default
     private Influencer influencer = Influencer.N;
     @Builder.Default
@@ -41,6 +44,7 @@ public class UserSaveReq {
     private VipGrade vipGrade = VipGrade.D;
     @Builder.Default
     private Role role = Role.USER;
+    private UserAddress userAddress;
 
     public User toEntity(String encodedPassword) {
         return User.builder().name(this.name).nickName(this.nickName).identify(this.identify).password(encodedPassword).

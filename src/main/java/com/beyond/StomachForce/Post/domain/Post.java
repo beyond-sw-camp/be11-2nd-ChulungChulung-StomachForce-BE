@@ -4,11 +4,15 @@ import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.Post.domain.Enum.PostStatus;
 import com.beyond.StomachForce.Post.dtos.PostUpdateReq;
 import com.beyond.StomachForce.User.domain.User;
+import com.beyond.StomachForce.User.domain.UserAddress;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,9 +31,14 @@ public class Post extends BaseTimeEntity{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
     private User user;
+    @Builder.Default
+    private Long likes = 0L;
     @OneToMany(mappedBy = "post",cascade = CascadeType.ALL)
     @Builder.Default
-    private List<Likes> likes = new ArrayList<>();
+    private List<Tag> tags = new ArrayList<>();
+    @OneToMany(mappedBy = "post",cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<PostPhotos> postPhotos = new ArrayList<>();
 
     public void updatePost(PostUpdateReq postUpdateReq){
         this.contents = postUpdateReq.getContents();
@@ -37,5 +46,13 @@ public class Post extends BaseTimeEntity{
 
     public void deletePost(){
         this.postStatus = PostStatus.N;
+    }
+
+    public void updateLike(Long likes){
+        this.likes = likes;
+    }
+
+    public void updatePostImagePath(PostPhotos postPhotos){
+        this.postPhotos.add(postPhotos);
     }
 }

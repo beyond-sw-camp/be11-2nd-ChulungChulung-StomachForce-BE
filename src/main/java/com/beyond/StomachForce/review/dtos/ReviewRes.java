@@ -17,13 +17,5 @@ public class ReviewRes {
     private List<?> reviewPhotoUrl;
     private Double rating;
 
-//    public static ReviewRes fromEntity(Review review) {
-//        return ReviewRes.builder()
-//                .id(review.getId())
-//                .contents(review.getContents())
-//                .rating(Double.valueOf(review.getRating().getValue()))
-//                .reviewPhotoUrl(review.getReviewPhotos().stream()
-//                        .map(reviewPhoto -> reviewPhoto.getPhotoUrl()).collect(Collectors.toList()))
-//                .build();
-//    }
+
 }

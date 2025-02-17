@@ -2,11 +2,10 @@ package com.beyond.StomachForce.User.controller;
 
 import com.beyond.StomachForce.Common.dtos.StatusCode;
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
+import com.beyond.StomachForce.User.domain.Follower;
+import com.beyond.StomachForce.User.domain.Mileage;
 import com.beyond.StomachForce.User.domain.User;
-import com.beyond.StomachForce.User.dtos.LoginDto;
-import com.beyond.StomachForce.User.dtos.UserRefreshDto;
-import com.beyond.StomachForce.User.dtos.UserUpdateReq;
-import com.beyond.StomachForce.User.dtos.UserSaveReq;
+import com.beyond.StomachForce.User.dtos.*;
 import com.beyond.StomachForce.User.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,7 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +31,7 @@ public class UserController {
 
     @Qualifier("rtdb")
     private final RedisTemplate<String,Object> redisTemplate;
+
     @Value("${jwt.secretKeyRT}")
     private String secretKeyRT;
 
@@ -41,10 +43,16 @@ public class UserController {
 
 
     @PostMapping("/create")
-    public ResponseEntity<?> postCreatePost(@Valid @RequestBody UserSaveReq userSaveReq){
+    public ResponseEntity<?> postCreatePost(@Valid @RequestBody UserSaveReq userSaveReq)  {
         User user = userService.save(userSaveReq);
         return new ResponseEntity<>(new StatusCode(HttpStatus.CREATED.value(),
                 "회원가입이 완료되었습니다.",user.getId()),HttpStatus.CREATED);
+    }
+
+    @PostMapping("/profile")
+    public ResponseEntity<?> profile(@Valid ProfileReq profileReq) throws IOException {
+        String response = userService.profile(profileReq);
+        return new ResponseEntity<>(response,HttpStatus.CREATED);
     }
 
     @PatchMapping("/update")
@@ -93,5 +101,30 @@ public class UserController {
         Map<String, Object> loginInfo = new HashMap<>();
         loginInfo.put("token",token);
         return new ResponseEntity<>(loginInfo,HttpStatus.OK);
+    }
+    @PostMapping("/manageMileage")
+    public ResponseEntity<?> Mileage(@Valid @RequestBody ManageMileageDto manageMileage){
+        Mileage mileage = userService.mangeMileage(manageMileage);
+        return new ResponseEntity<>(new StatusCode(HttpStatus.CREATED.value(),
+                "마일리지 처리가 완료되었습니다.",mileage.getId()),HttpStatus.CREATED);
+    }
+
+    @PostMapping("/follower/{userId}")
+    public ResponseEntity<?> Follower(@PathVariable Long userId){
+        String response = userService.follower(userId);
+        return new ResponseEntity<>(new StatusCode(HttpStatus.CREATED.value(),
+                "",response),HttpStatus.CREATED);
+    }
+
+    @GetMapping("/followerList/{userId}")
+    public ResponseEntity<?> FollowerList(@PathVariable Long userId){
+        List<FollowerListRes> response = userService.follwers(userId);
+        return new ResponseEntity<>(response,HttpStatus.CREATED);
+    }
+
+    @GetMapping("/userInfo")
+    public ResponseEntity<?> userInfo(){
+        UserInfoRes response = userService.userInfo();
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }
