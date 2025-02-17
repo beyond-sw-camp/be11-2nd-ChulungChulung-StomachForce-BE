@@ -73,8 +73,6 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "reported",cascade = CascadeType.ALL)
     @Builder.Default
     private List<Report> reportsReceived = new ArrayList<>();
-    
-  
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
     @Builder.Default
     private List<Follower> followers = new ArrayList<>();

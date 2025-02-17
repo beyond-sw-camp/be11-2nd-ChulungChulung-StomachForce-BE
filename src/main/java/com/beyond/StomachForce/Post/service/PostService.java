@@ -91,7 +91,6 @@ public class PostService {
         LikeRabbitDto likeRabbitDto = LikeRabbitDto.builder().postId(postId).likes(updateLike).build();
         likeRabbitmqService.publish(likeRabbitDto);
         return likeService.getLikeCount(postId);
-
     }
 
     public Comment comments(Long postId,CommentCreateDto commentCreateDto){
