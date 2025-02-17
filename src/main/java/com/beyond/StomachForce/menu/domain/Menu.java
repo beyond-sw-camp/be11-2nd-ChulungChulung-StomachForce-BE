@@ -1,14 +1,10 @@
 package com.beyond.StomachForce.menu.domain;
 
 
-import com.beyond.StomachForce.allergyInfo.domain.AllergyInfo;
 import com.beyond.StomachForce.menu.dto.MenuResDto;
+import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -16,15 +12,15 @@ import java.util.List;
 @Entity
 @AllArgsConstructor
 @Builder
-
+@Setter
 public class Menu {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "restaurant_id")
-//    private Restaurant restaurant;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "restaurant_id")
+    private Restaurant restaurant;
 
     @Column(length = 20, nullable = false)
     private String name;
@@ -50,4 +46,5 @@ public class Menu {
                 .menuPhoto(this.menuPhoto)
                 .build();
     }
+
 }

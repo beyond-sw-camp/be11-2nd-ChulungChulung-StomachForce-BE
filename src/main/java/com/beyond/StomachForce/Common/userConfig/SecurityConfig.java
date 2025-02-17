@@ -36,7 +36,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(a -> a.requestMatchers("/user/create", "/user/doLogin",
                         "/user/refresh-token","/restaurant/create","/restaurant/doLogin","/restaurant/refresh-token",
-                        "/restaurant/list").permitAll().anyRequest().authenticated())
+                        "/restaurant/list","/menu/list","/menu/create").permitAll().anyRequest().authenticated())
                 .build();
     }
 

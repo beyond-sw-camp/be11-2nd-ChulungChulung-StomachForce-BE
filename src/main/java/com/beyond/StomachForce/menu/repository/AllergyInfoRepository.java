@@ -1,6 +1,6 @@
-package com.beyond.StomachForce.allergyInfo.repository;
+package com.beyond.StomachForce.menu.repository;
 
-import com.beyond.StomachForce.allergyInfo.domain.AllergyInfo;
+import com.beyond.StomachForce.menu.domain.AllergyInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

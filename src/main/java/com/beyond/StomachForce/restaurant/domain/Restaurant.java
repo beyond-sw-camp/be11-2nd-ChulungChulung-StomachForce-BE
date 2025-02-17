@@ -2,6 +2,7 @@ package com.beyond.StomachForce.restaurant.domain;
 
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
+import com.beyond.StomachForce.menu.domain.Menu;
 import com.beyond.StomachForce.restaurant.dtos.RestaurantDetailRes;
 import com.beyond.StomachForce.restaurant.dtos.RestaurantListRes;
 import com.beyond.StomachForce.restaurant.dtos.RestaurantUpdateReq;
@@ -89,6 +90,9 @@ public class Restaurant extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Bookmark> bookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+    private List<Menu> menus = new ArrayList<>();
 
     public RestaurantListRes listDtoFromEntity() {
         double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
