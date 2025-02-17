@@ -1,7 +1,7 @@
-package com.beyond.StomachForce.allergyInfo.domain;
+package com.beyond.StomachForce.menu.domain;
 
 
-import com.beyond.StomachForce.menu.domain.Menu;
+import com.beyond.StomachForce.menu.domain.select.*;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,9 +15,6 @@ public class AllergyInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @OneToOne(mappedBy = "allergyInfo")
-    private Menu menu;
 
     @Enumerated(EnumType.STRING)
     private Milk milk;
@@ -36,4 +33,16 @@ public class AllergyInfo {
     @Enumerated(EnumType.STRING)
     private Shellfish shellfish;
 
+    public AllergyInfo toEntity(){
+        return AllergyInfo.builder()
+                .milk(this.milk)
+                .egg(this.egg)
+                .wheat(this.wheat)
+                .soy(this.soy)
+                .peanut(this.peanut)
+                .nuts(this.nuts)
+                .fish(this.fish)
+                .shellfish(this.shellfish)
+                .build();
+    }
 }

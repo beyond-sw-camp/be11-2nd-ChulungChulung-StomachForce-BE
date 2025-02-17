@@ -10,21 +10,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class MenuResDto {
+public class MenuListResDto {
     private Long id;
     private String name;
     private Long price;
     private String description;
     private String menuPhoto;
-    private Long restaurantId;
 
-    public MenuResDto(Menu menu){
+    public MenuListResDto(Menu menu) {
         this.id = menu.getId();
         this.name = menu.getName();
         this.price = menu.getPrice();
         this.description = menu.getDescription();
         this.menuPhoto = menu.getMenuPhoto();
-        this.restaurantId = menu.getRestaurant().getId();
-
     }
 }

@@ -5,6 +5,9 @@ import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.User.domain.Enum.*;
 import com.beyond.StomachForce.User.dtos.FollowerListRes;
 import com.beyond.StomachForce.User.dtos.UserUpdateReq;
+import com.beyond.StomachForce.report.domain.Report;
+import com.beyond.StomachForce.serviceCenter.domain.ServiceAnswer;
+import com.beyond.StomachForce.serviceCenter.domain.ServicePost;
 import com.beyond.StomachForce.reservation.domain.Reservation;
 import jakarta.persistence.*;
 import lombok.*;
@@ -58,6 +61,20 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @Builder.Default
     private List<UserAddress> userAddresses = new ArrayList<>();
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<ServicePost> servicePosts = new ArrayList<>();
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<ServiceAnswer> serviceAnswers = new ArrayList<>();
+    @OneToMany(mappedBy = "reporter",cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<Report> reportsMade = new ArrayList<>();
+    @OneToMany(mappedBy = "reported",cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<Report> reportsReceived = new ArrayList<>();
+    
+  
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
     @Builder.Default
     private List<Follower> followers = new ArrayList<>();
