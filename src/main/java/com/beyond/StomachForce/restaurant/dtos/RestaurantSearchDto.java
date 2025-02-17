@@ -9,7 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class RestaurantInfoCreateReq {
-    private String infoText;
+public class RestaurantSearchDto {
 }
-
