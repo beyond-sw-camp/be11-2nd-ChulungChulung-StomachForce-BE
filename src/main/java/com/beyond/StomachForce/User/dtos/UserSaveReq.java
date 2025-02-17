@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,9 +34,8 @@ public class UserSaveReq {
     private String birth;
     @Builder.Default
     private Gender gender = Gender.FEMALE;
-    private String profilePhoto;
     @Builder.Default
-    private String mileageBalance = "0";
+    private Long mileageBalance = 0L;
     @Builder.Default
     private Influencer influencer = Influencer.N;
     @Builder.Default
