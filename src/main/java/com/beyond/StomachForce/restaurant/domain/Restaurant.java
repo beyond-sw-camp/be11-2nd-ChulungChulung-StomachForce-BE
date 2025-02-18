@@ -54,7 +54,9 @@ public class Restaurant extends BaseTimeEntity {
 
     private String phoneNumber;                  // 가게 연락처
 
-    private LocalDateTime breakTime;             // 브레이크 타임
+    private LocalDateTime breakTimeStart;        // 브레이크 타임 시작
+
+    private LocalDateTime breakTimeEnd;          // 브레이크 타임 끗
 
     private Long deposit;                        //예약금
 
