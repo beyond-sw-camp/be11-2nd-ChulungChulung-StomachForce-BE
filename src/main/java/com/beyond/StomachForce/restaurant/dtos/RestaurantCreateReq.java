@@ -59,7 +59,9 @@ public class RestaurantCreateReq {
     @NotNull
     private LocalDateTime closingTime;           // 닫는 시간
 
-    private LocalDateTime breakTime;             // 브레이크 타임
+    private LocalDateTime breakTimeStart;        // 브레이크 타임 시작
+
+    private LocalDateTime breakTimeEnd;        // 브레이크 타임 끗!
 
     @NotNull
     private LocalDateTime lastOrder;             // 라스트 오더
@@ -67,9 +69,6 @@ public class RestaurantCreateReq {
     private LocalDate holiday;                   // 휴무일
 
     private int capacity;                       // 최대 수용 인원
-
-
-    private String restaurantRole;              // ROLE
 
     private String restaurantType;              // 한중일식 넣기
 
@@ -92,7 +91,8 @@ public class RestaurantCreateReq {
                 .deposit(this.deposit)
                 .openingTime(this.openingTime)
                 .closingTime(this.closingTime)
-                .breakTime(this.breakTime)
+                .breakTimeStart(this.breakTimeStart)
+                .breakTimeEnd(this.breakTimeEnd)
                 .lastOrder(this.lastOrder)
                 .holiday(this.holiday)
                 .capacity(this.capacity)
