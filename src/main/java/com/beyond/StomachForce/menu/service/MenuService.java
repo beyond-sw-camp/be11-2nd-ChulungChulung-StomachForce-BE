@@ -64,6 +64,20 @@ public class MenuService {
         if (dto.getDescription() != null) menu.setDescription(dto.getDescription());
         if (dto.getMenuPhoto() != null) menu.setMenuPhoto(dto.getMenuPhoto());
 
+        AllergyInfo allergyInfo = menu.getAllergyInfo();
+        AllergyInfo dtoAllergyInfo = dto.getAllergyInfo();
+
+        if (allergyInfo != null && dtoAllergyInfo != null) {
+            if (dtoAllergyInfo.getMilk() != null) allergyInfo.setMilk(dtoAllergyInfo.getMilk());
+            if (dtoAllergyInfo.getEgg() != null) allergyInfo.setEgg(dtoAllergyInfo.getEgg());
+            if (dtoAllergyInfo.getWheat() != null) allergyInfo.setWheat(dtoAllergyInfo.getWheat());
+            if (dtoAllergyInfo.getSoy() != null) allergyInfo.setSoy(dtoAllergyInfo.getSoy());
+            if (dtoAllergyInfo.getPeanut() != null) allergyInfo.setPeanut(dtoAllergyInfo.getPeanut());
+            if (dtoAllergyInfo.getNuts() != null) allergyInfo.setNuts(dtoAllergyInfo.getNuts());
+            if (dtoAllergyInfo.getFish() != null) allergyInfo.setFish(dtoAllergyInfo.getFish());
+            if (dtoAllergyInfo.getShellfish() != null) allergyInfo.setShellfish(dtoAllergyInfo.getShellfish());
+        }
+
         return new MenuResDto(menu);
     }
 

@@ -1,5 +1,7 @@
 package com.beyond.StomachForce.serviceCenter.domain;
 
+import com.beyond.StomachForce.Common.domain.BaseReservationTimeEntity;
+import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.User.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +12,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-public class ServiceAnswer {
+public class ServiceAnswer extends BaseReservationTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

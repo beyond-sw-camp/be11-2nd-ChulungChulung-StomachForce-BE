@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.menu.dto;
 
+import com.beyond.StomachForce.menu.domain.AllergyInfo;
 import com.beyond.StomachForce.menu.domain.Menu;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ public class MenuListResDto {
     private Long price;
     private String description;
     private String menuPhoto;
+    private AllergyInfo allergyInfo;
 
     public MenuListResDto(Menu menu) {
         this.id = menu.getId();
@@ -23,5 +25,6 @@ public class MenuListResDto {
         this.price = menu.getPrice();
         this.description = menu.getDescription();
         this.menuPhoto = menu.getMenuPhoto();
+        this.allergyInfo = menu.getAllergyInfo();
     }
 }

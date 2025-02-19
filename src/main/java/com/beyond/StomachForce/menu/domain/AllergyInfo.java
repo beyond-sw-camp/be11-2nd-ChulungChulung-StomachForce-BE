@@ -11,6 +11,7 @@ import lombok.*;
 @Entity
 @AllArgsConstructor
 @Builder
+@Setter
 public class AllergyInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

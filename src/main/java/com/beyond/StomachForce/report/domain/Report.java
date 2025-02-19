@@ -34,7 +34,6 @@ public class Report {
     @Column(nullable = false)
     private String photo;
 
-    @Column(nullable = false)
     private String adminComment;
 
 }
