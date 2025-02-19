@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class FollowerListRes {
-    private Long id;
     private Long userId;
-    private Long followerId;
+    private String userName;
+    private String userProfile;
 }

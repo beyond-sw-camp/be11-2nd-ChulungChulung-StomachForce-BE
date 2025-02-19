@@ -10,12 +10,16 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Entity
-@ToString
 @Builder
 public class Comment extends BaseTimeEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String contents;
-    private Long userId;
+    private String userNickname;
+    private String userProfile;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id",nullable = false)
+    private Post post;
+
 }

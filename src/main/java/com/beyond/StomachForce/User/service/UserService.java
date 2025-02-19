@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.User.service;
 
+import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.User.domain.Enum.EarnedMileage;
 import com.beyond.StomachForce.User.domain.Follower;
 import com.beyond.StomachForce.User.domain.Mileage;
@@ -117,33 +118,67 @@ public class UserService {
         return saveMileage;
     }
 
-    public String follower(Long userId){
+    public String follow(Long userId){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         User followUser = userRepository.findById(userId).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
-        if(!followUser.getFollowers().isEmpty()){
-            for(Follower f : followUser.getFollowers()){
-                if(f.getFollowerId().equals(user.getId())){
-                    followUser.getFollowers().remove(f);
-                    return "팔로우가 취소되었습니다.";
-                }
+        for (Follower f : followUser.getFollowers()) {
+            if (f.getFollowerUser().getId().equals(user.getId())) {
+                // 이미 팔로우 중이면 취소: 양쪽 컬렉션에서 제거
+                followUser.getFollowers().remove(f);
+                user.getFollowing().remove(f);
+                // 필요한 경우 변경 사항 저장 (예: userRepository.save(user); 등)
+                return "팔로우가 취소되었습니다.";
             }
         }
-        Follower follower = Follower.builder().user(followUser).followerId(user.getId()).build();
-        user.followerAdd(follower);
+
+        // 팔로우 추가: 새로운 Follower 엔티티 생성
+        Follower follower = Follower.builder()
+                .user(followUser)         // 대상 회원: 팔로우 당하는 사람
+                .followerUser(user)       // 팔로우 하는 회원: 로그인한 회원
+                .build();
+
+        // 양쪽 컬렉션에 추가
+        followUser.followerAdd(follower);
+        user.followingAdd(follower);
+
+        // 필요한 경우 변경 사항 저장
+        // userRepository.save(user);
+        // userRepository.save(followUser);
+
         return "ok";
     }
 
-    public List<FollowerListRes> follwers(Long userId){
-        User user = userRepository.findById(userId).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+    public List<FollowerListRes> follwers(){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         List<FollowerListRes> follwerList = new ArrayList<>();
-        return user.list();
+        return user.followerList();
+    }
+
+    public List<FollowingListRes> follwings(){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        return user.followingList();
     }
 
     public UserInfoRes userInfo(){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
-        UserInfoRes userInfoRes = UserInfoRes.builder().userName(user.getName()).profilePhoto(user.getProfilePhoto()).build();
+        UserInfoRes userInfoRes = UserInfoRes.builder().userId(user.getId()).userName(user.getName()).profilePhoto(user.getProfilePhoto()).build();
         return userInfoRes;
+    }
+
+    public MypageRes myPage(){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        List<Post> myPost = user.getPosts();
+        List<String> myPostPhotos = new ArrayList<>();
+        for(Post p:myPost){
+            List<String> photos = p.getPostPhotos();
+            myPostPhotos.add(photos.get(0));
+        }
+        MypageRes mypageRes = MypageRes.builder().nickName(user.getNickName()).email(user.getEmail()).influencer(user.getInfluencer()).postPhotos(myPostPhotos).build();
+        return mypageRes;
     }
 }

@@ -1,7 +1,6 @@
 package com.beyond.StomachForce.Post.dtos;
 
 import com.beyond.StomachForce.Post.domain.Enum.PostStatus;
-import com.beyond.StomachForce.Post.domain.Tag;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.Post.domain.Post;
 import jakarta.validation.constraints.NotEmpty;
@@ -18,7 +17,6 @@ import java.util.List;
 @Data
 @Builder
 public class PostCreateReq {
-    private Long userId;
     @NotEmpty
     private String contents;
     @Builder.Default
@@ -29,6 +27,6 @@ public class PostCreateReq {
     private List<MultipartFile> postPhotos;
 
     public Post toEntity(User user){
-        return Post.builder().user(user).contents(this.contents).postStatus(this.postStatus).build();
+        return Post.builder().user(user).contents(this.contents).postStatus(this.postStatus).tags(this.tags).build();
     }
 }

@@ -111,20 +111,32 @@ public class UserController {
 
     @PostMapping("/follower/{userId}")
     public ResponseEntity<?> Follower(@PathVariable Long userId){
-        String response = userService.follower(userId);
+        String response = userService.follow(userId);
         return new ResponseEntity<>(new StatusCode(HttpStatus.CREATED.value(),
                 "",response),HttpStatus.CREATED);
     }
 
-    @GetMapping("/followerList/{userId}")
-    public ResponseEntity<?> FollowerList(@PathVariable Long userId){
-        List<FollowerListRes> response = userService.follwers(userId);
+    @GetMapping("/followingList")
+    public ResponseEntity<?> FollowingList(){
+        List<FollowingListRes> response = userService.follwings();
+        return new ResponseEntity<>(response,HttpStatus.CREATED);
+    }
+
+    @GetMapping("/followerList")
+    public ResponseEntity<?> FollowerList(){
+        List<FollowerListRes> response = userService.follwers();
         return new ResponseEntity<>(response,HttpStatus.CREATED);
     }
 
     @GetMapping("/userInfo")
     public ResponseEntity<?> userInfo(){
         UserInfoRes response = userService.userInfo();
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @GetMapping("/myPage")
+    public ResponseEntity<?> myPage(){
+        MypageRes response = userService.myPage();
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }

@@ -2,10 +2,8 @@ package com.beyond.StomachForce.Post.controller;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.Common.dtos.StatusCode;
-import com.beyond.StomachForce.Post.dtos.CommentCreateDto;
-import com.beyond.StomachForce.Post.dtos.LikeToggleDto;
-import com.beyond.StomachForce.Post.dtos.PostCreateReq;
-import com.beyond.StomachForce.Post.dtos.PostUpdateReq;
+import com.beyond.StomachForce.Post.domain.Comment;
+import com.beyond.StomachForce.Post.dtos.*;
 import com.beyond.StomachForce.Post.service.LikeService;
 import com.beyond.StomachForce.Post.service.PostService;
 import jakarta.validation.Valid;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import com.beyond.StomachForce.Post.domain.Post;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/post")
@@ -48,9 +47,9 @@ public class PostController extends BaseTimeEntity {
                 "게시글 삭제가 완료되었습니다.","ok"),HttpStatus.OK);
     }
 
-    @PostMapping("/like")
-    public ResponseEntity<?> like(@Valid @RequestBody LikeToggleDto likeToggleDto){
-        postService.likes(likeToggleDto);
+    @PostMapping("/like/{postId}")
+    public ResponseEntity<?> like(@PathVariable Long postId){
+        postService.likes(postId);
         return new ResponseEntity<>(new StatusCode(HttpStatus.OK.value(),
                 "좋아요","ok"),HttpStatus.OK);
     }
@@ -59,5 +58,17 @@ public class PostController extends BaseTimeEntity {
         postService.comments(postId,commentCreateDto);
         return new ResponseEntity<>(new StatusCode(HttpStatus.OK.value(),
                 "댓글작성이 완료되었습니다.","ok"),HttpStatus.OK);
+    }
+
+    @GetMapping("getComments/{postId}")
+    public ResponseEntity<?> getComments(@PathVariable Long postId){
+        List<CommentListRes> commentList = postService.getComments(postId);
+        return new ResponseEntity<>(commentList,HttpStatus.OK);
+    }
+
+    @GetMapping("/postDetail/{postId}")
+    public ResponseEntity<?> postDetail(@PathVariable Long postId){
+        PostDetailRes response = postService.postDetail(postId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }

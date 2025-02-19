@@ -2,7 +2,10 @@ package com.beyond.StomachForce.Post.domain;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.Post.domain.Enum.PostStatus;
+import com.beyond.StomachForce.Post.dtos.CommentCreateDto;
+import com.beyond.StomachForce.Post.dtos.PostDetailRes;
 import com.beyond.StomachForce.Post.dtos.PostUpdateReq;
+import com.beyond.StomachForce.User.domain.Follower;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.User.domain.UserAddress;
 import jakarta.persistence.*;
@@ -18,7 +21,6 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Entity
-@ToString
 @Builder
 public class Post extends BaseTimeEntity{
     @Id
@@ -33,12 +35,15 @@ public class Post extends BaseTimeEntity{
     private User user;
     @Builder.Default
     private Long likes = 0L;
-    @OneToMany(mappedBy = "post",cascade = CascadeType.ALL)
     @Builder.Default
-    private List<Tag> tags = new ArrayList<>();
-    @OneToMany(mappedBy = "post",cascade = CascadeType.ALL)
+    private List<Long>likedUser = new ArrayList<>();
     @Builder.Default
-    private List<PostPhotos> postPhotos = new ArrayList<>();
+    private List<String> tags = new ArrayList<>();
+    @Builder.Default
+    private List<String> postPhotos = new ArrayList<>();
+    @OneToMany(mappedBy = "post",cascade = CascadeType.ALL,orphanRemoval = true)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
 
     public void updatePost(PostUpdateReq postUpdateReq){
         this.contents = postUpdateReq.getContents();
@@ -52,7 +57,18 @@ public class Post extends BaseTimeEntity{
         this.likes = likes;
     }
 
-    public void updatePostImagePath(PostPhotos postPhotos){
+    public void updatePostImagePath(String postPhotos){
+//        this.postPhotos.add(postPhotos);
         this.postPhotos.add(postPhotos);
+    }
+
+    public PostDetailRes postDetails(){
+        PostDetailRes postDetailRes = PostDetailRes.builder().
+                contents(this.contents).
+                likes(this.likes).
+                postPhotos(this.postPhotos).
+                tags(this.tags).
+                likedUser(this.likedUser).build();
+        return postDetailRes;
     }
 }

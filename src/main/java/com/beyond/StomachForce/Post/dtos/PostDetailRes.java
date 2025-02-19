@@ -1,0 +1,21 @@
+package com.beyond.StomachForce.Post.dtos;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Builder
+public class PostDetailRes {
+    private String contents;
+    private Long likes = 0L;
+    private List<String> tags;
+    private List<String> postPhotos;
+    private List<Long> likedUser;
+}
