@@ -33,10 +33,10 @@ public class ServiceController {
         return ResponseEntity.ok("게시글이 삭제되었습니다.");
     }
 
-    @GetMapping("/post/{postId}")
-    public ResponseEntity<ServicePostResDto> getPostById(@PathVariable Long postId) {
-        return ResponseEntity.ok(serviceService.getPostById(postId));
-    }
+//    @GetMapping("/post/{postId}")
+//    public ResponseEntity<ServicePostResDto> getPostById(@PathVariable Long postId) {
+//        return ResponseEntity.ok(serviceService.getPostById(postId));
+//    }
 
     @GetMapping("/list")
     public ResponseEntity<List<ServicePostResDto>> getAllPosts() {
@@ -45,7 +45,7 @@ public class ServiceController {
 
     //answer
 
-    @PostMapping("/answer")
+    @PostMapping("/answer/create")
     public ResponseEntity<ServiceAnswerResDto> createAnswer(@RequestBody ServiceAnswerCreateReq req) {
         return ResponseEntity.ok(serviceService.createAnswer(req));
     }

@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.menu.dto;
 
+import com.beyond.StomachForce.menu.domain.AllergyInfo;
 import lombok.*;
 
 @AllArgsConstructor
@@ -11,4 +12,5 @@ public class MenuUpdateDto {
     private Long price;
     private String description;
     private String menuPhoto;
+    private AllergyInfo allergyInfo;
 }

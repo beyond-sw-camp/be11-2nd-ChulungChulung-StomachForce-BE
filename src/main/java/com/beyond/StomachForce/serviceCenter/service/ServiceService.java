@@ -63,11 +63,11 @@ public class ServiceService {
         servicePostRepository.delete(post);
     }
 
-    public ServicePostResDto getPostById(Long postId) {
-        ServicePost post = servicePostRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
-        return new ServicePostResDto(post);
-    }
+//    public ServicePostResDto getPostById(Long postId) {
+//        ServicePost post = servicePostRepository.findById(postId)
+//                .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
+//        return new ServicePostResDto(post);
+//    }
 
     public List<ServicePostResDto> getAllPosts() {
         return servicePostRepository.findAll().stream()

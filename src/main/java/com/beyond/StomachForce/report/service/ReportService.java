@@ -49,6 +49,8 @@ public class ReportService {
         if (req.getContents() != null) report.setContents(req.getContents());
         if (req.getPhoto() != null) report.setPhoto(req.getPhoto());
 
+        reportRepository.save(report);
+
         return new ReportResDto(report);
     }
 
@@ -63,6 +65,9 @@ public class ReportService {
                 .orElseThrow(() -> new EntityNotFoundException("신고가 존재하지 않습니다."));
 
         report.setAdminComment(req.getAdminComment());
+
+        reportRepository.save(report);
+
         return new ReportResDto(report);
     }
 }
