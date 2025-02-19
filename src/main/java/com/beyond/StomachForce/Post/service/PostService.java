@@ -1,8 +1,6 @@
 package com.beyond.StomachForce.Post.service;
 
 import com.beyond.StomachForce.Post.domain.Comment;
-import com.beyond.StomachForce.Post.domain.PostPhotos;
-import com.beyond.StomachForce.Post.domain.Tag;
 import com.beyond.StomachForce.Post.dtos.*;
 import com.beyond.StomachForce.Post.repository.CommentRepository;
 import com.beyond.StomachForce.User.domain.User;
@@ -11,7 +9,6 @@ import com.beyond.StomachForce.Post.repository.PostRepository;
 import com.beyond.StomachForce.User.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -49,14 +47,10 @@ public class PostService {
         this.s3Client = s3Client;
     }
     public Post save(PostCreateReq postCreateReq) throws IOException {
-        User user = userRepository.findById(postCreateReq.getUserId()).orElseThrow(()->new EntityNotFoundException());
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         String contents = postCreateReq.getContents();
         Post tempPost = postCreateReq.toEntity(user);
-        List<String> tags = postCreateReq.getTags();
-        for(String t : tags){
-            Tag tag = Tag.builder().post(tempPost).tagName(t).build();
-            tempPost.getTags().add(tag);
-        }
         Post post = postRepository.save(tempPost);
         List<MultipartFile> images = postCreateReq.getPostPhotos();
         for(int i=0; i<images.size();i++){
@@ -67,8 +61,8 @@ public class PostService {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucket).key(fileName).build();
             s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
             String s3Url = s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
-            PostPhotos postPhotos = PostPhotos.builder().postPhoto(s3Url).post(post).build();
-            post.updatePostImagePath(postPhotos);
+//            PostPhotos postPhotos = PostPhotos.builder().postPhoto(s3Url).post(post).build();
+            post.updatePostImagePath(s3Url);
         }
         return post;
     }
@@ -83,9 +77,17 @@ public class PostService {
         post.deletePost();
     }
 
-    public Long likes(LikeToggleDto likeToggleDto){
-        Long postId = likeToggleDto.getPostId();
-        Long userId = likeToggleDto.getUserId();
+    public Long likes(Long postId){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        Long userId = user.getId();
+        Post post = postRepository.findById(postId).orElseThrow(()->new EntityNotFoundException("없는 게시글입니다."));
+        if(post.getLikedUser().contains(userId)){
+            post.getLikedUser().remove(userId);
+        }else{
+            post.getLikedUser().add(userId);
+        }
+        postRepository.save(post);
         likeService.toggleLike(postId, String.valueOf(userId));
         Long updateLike = likeService.getLikeCount(postId);
         LikeRabbitDto likeRabbitDto = LikeRabbitDto.builder().postId(postId).likes(updateLike).build();
@@ -96,9 +98,29 @@ public class PostService {
     public Comment comments(Long postId,CommentCreateDto commentCreateDto){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        Post post = postRepository.findById(postId).orElseThrow(()->new EntityNotFoundException("없는 게시글입니다."));
         String contents = commentCreateDto.getContents();
-        Comment comment = Comment.builder().contents(contents).userId(user.getId()).build();
+        Comment comment = Comment.builder().contents(contents).post(post).userNickname(user.getNickName()).userProfile(user.getProfilePhoto()).build();
         return commentRepository.save(comment);
+    }
+
+    public List<CommentListRes> getComments(Long postId){
+        List<Comment> comments = commentRepository.findByPostId(postId);
+
+        return comments.stream()
+                .map(c -> CommentListRes.builder()
+                        .id(c.getId())
+                        .contents(c.getContents())
+                        .userNickname(c.getUserNickname())
+                        .userProfile(c.getUserProfile())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public PostDetailRes postDetail(Long postId){
+        Post post = postRepository.findById(postId).orElseThrow(()->new EntityNotFoundException("없는 게시글입니다."));
+        PostDetailRes postDetailRes = post.postDetails();
+        return postDetailRes;
     }
 
 }

@@ -4,6 +4,7 @@ import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.User.domain.Enum.*;
 import com.beyond.StomachForce.User.dtos.FollowerListRes;
+import com.beyond.StomachForce.User.dtos.FollowingListRes;
 import com.beyond.StomachForce.User.dtos.UserUpdateReq;
 import com.beyond.StomachForce.report.domain.Report;
 import com.beyond.StomachForce.serviceCenter.domain.ServiceAnswer;
@@ -19,7 +20,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Entity
-@ToString
 @Builder
 public class User extends BaseTimeEntity {
     @Id
@@ -54,7 +54,6 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @Builder.Default
     private List<Post> posts = new ArrayList<>();
-
     @OneToMany(mappedBy = "user")
     private List<Reservation> reservationList;//홍성혁 추가 - user의 예약내역확인.
 
@@ -76,6 +75,10 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
     @Builder.Default
     private List<Follower> followers = new ArrayList<>();
+    @OneToMany(mappedBy = "followerUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Follower> following = new ArrayList<>();
+
 
 
     public void updateUser(UserUpdateReq userUpdateReq){
@@ -100,21 +103,50 @@ public class User extends BaseTimeEntity {
     public void followerAdd(Follower follower){
         this.followers.add(follower);
     }
+    public void followingAdd(Follower follower) {
+        this.following.add(follower);
+    }
 
-    public List<FollowerListRes> list(){
+    public List<FollowerListRes> followerList(){
         List<FollowerListRes> follwerList = new ArrayList<>();
         for(Follower f: followers){
             FollowerListRes followerListRes = FollowerListRes.builder()
-                    .id(f.getId())
-                    .userId(this.getId())
-                    .followerId(f.getFollowerId())
+                    .userId(f.getFollowerUser().getId())
+                    .userName(f.getFollowerUser().getName())
+                    .userProfile(f.getUser().getProfilePhoto())
                     .build();
             follwerList.add(followerListRes);
         }
         return follwerList;
     }
 
+    public List<FollowingListRes> followingList(){
+        List<FollowingListRes> follwingList = new ArrayList<>();
+        for(Follower f:following){
+            FollowingListRes followingListRes = FollowingListRes.builder()
+                    .userId(f.getUser().getId())
+                    .userName(f.getUser().getName())
+                    .userProfile(f.getUser().getProfilePhoto()).build();
+            follwingList.add(followingListRes);
+        }
+        return follwingList;
+    }
+
+
     public void updateImagePath(String imagePath){
         this.profilePhoto = imagePath;
+    }
+
+    public List<Post> postList(){
+        List<Post> userPostList = new ArrayList<>();
+        for(Post p: posts){
+            Post post = Post.builder()
+                    .contents(p.getContents())
+                    .tags(p.getTags())
+                    .postPhotos(p.getPostPhotos())
+                    .build();
+            userPostList.add(post);
+        }
+        return userPostList;
     }
 }

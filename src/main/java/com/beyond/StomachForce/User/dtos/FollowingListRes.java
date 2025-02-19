@@ -5,12 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 @Builder
-public class UserInfoRes {
+public class FollowingListRes {
     private Long userId;
     private String userName;
-    private String profilePhoto;
+    private String userProfile;
 }
