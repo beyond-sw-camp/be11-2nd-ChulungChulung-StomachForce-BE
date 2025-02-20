@@ -58,6 +58,7 @@ public class User extends BaseTimeEntity {
     private List<Reservation> reservationList;//홍성혁 추가 - user의 예약내역확인.
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+
     @Builder.Default
     private List<UserAddress> userAddresses = new ArrayList<>();
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
