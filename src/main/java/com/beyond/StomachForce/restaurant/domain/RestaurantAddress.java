@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.restaurant.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public  class RestaurantAddress {
     private String street;     // 거리명
 
 
+    @JsonIgnore //양방향 무한루프 방지
     @OneToOne(mappedBy = "address")
     private Restaurant restaurant;
 

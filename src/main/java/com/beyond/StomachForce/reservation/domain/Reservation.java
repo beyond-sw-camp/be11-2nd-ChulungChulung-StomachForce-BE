@@ -6,6 +6,7 @@ import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.coupon.domain.Coupon;
 import com.beyond.StomachForce.menu.domain.Menu;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ public class Reservation extends BaseReservationTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "user_id")
     private User user;
     @ManyToOne

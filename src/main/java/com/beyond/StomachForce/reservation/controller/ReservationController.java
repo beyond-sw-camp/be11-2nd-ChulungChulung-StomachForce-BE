@@ -23,18 +23,18 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
-    @PostMapping("/{id}/create")// 회원가입
+    @PostMapping("/{id}/create")// 예약생성//id는 resturant의 id
     public String authorCreate(@RequestBody ReservationCreateReq reservationCreateReq, @PathVariable Long id) {
         reservationService.save(reservationCreateReq, id);
         return "OK";
     }
 
-    @GetMapping("/{userId}/list")
+    @GetMapping("/{userId}/list") //예약한 유저의 예약 확인
     public ResponseEntity<?> myReservation(@PathVariable Long userId){
         List<ReservationListRes> reservationListRes = reservationService.myReservation(userId);
         return new ResponseEntity<>(reservationListRes, HttpStatus.OK);
     }
-    @GetMapping("/{reservationId}/detail")
+    @GetMapping("/{reservationId}/detail") //예약상세
     public ResponseEntity<?> reservationDetail(@PathVariable Long reservationId){
         ReservationDetailRes reservationDetailRes = reservationService.reservationDetail(reservationId);
         return new ResponseEntity<>(reservationDetailRes, HttpStatus.OK);

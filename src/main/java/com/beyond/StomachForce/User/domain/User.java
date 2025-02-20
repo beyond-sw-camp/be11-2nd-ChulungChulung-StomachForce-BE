@@ -6,6 +6,7 @@ import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.User.domain.Enum.*;
 import com.beyond.StomachForce.User.dtos.UserUpdateReq;
 import com.beyond.StomachForce.reservation.domain.Reservation;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -52,6 +53,8 @@ public class User extends BaseTimeEntity {
     @Builder.Default
     private List<Post> posts = new ArrayList<>();
 
+
+    @JsonManagedReference
     @OneToMany(mappedBy = "user")
     private List<Reservation> reservationList;//홍성혁 추가 - user의 예약내역확인.
 
