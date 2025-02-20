@@ -6,6 +6,7 @@ import com.beyond.StomachForce.restaurant.domain.RestaurantPhoto;
 import com.beyond.StomachForce.restaurant.domain.select.AlcoholSelling;
 import com.beyond.StomachForce.restaurant.domain.select.DepositAvailable;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantRole;
+import com.beyond.StomachForce.restaurant.domain.select.RestaurantType;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -70,7 +71,8 @@ public class RestaurantCreateReq {
 
     private int capacity;                       // 최대 수용 인원
 
-    private String restaurantType;              // 한중일식 넣기
+    @NotNull
+    private RestaurantType restaurantType;              // 한중일식 넣기
 
     @NotNull
     private RestaurantAddress address;           // 주소
@@ -98,6 +100,7 @@ public class RestaurantCreateReq {
                 .capacity(this.capacity)
                 .address(this.address)
                 .photos(new ArrayList<>())
+                .restaurantType(this.restaurantType)
                 .build();
     }
 

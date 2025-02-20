@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @AllArgsConstructor
@@ -118,8 +119,38 @@ public class Restaurant extends BaseTimeEntity {
                 .bookmarkCount((long) this.bookmarks.size())            // 레스토랑 즐겨찾기 한 사람 수
                 .reviewCount(this.reviews.size())                       // 리뷰 수
                 .address(this.address.getFullAddress())                 // 주소
-                .imagePath(this.photos.get(0).toString())               // 사진 url
+                .imagePath(this.photos.get(0).getPhotoUrl())            // 사진 url
+                .restaurantType(this.restaurantType.toString())         // 레스토랑 타입
                 .build();
+    }
+
+    public void updateProfile(RestaurantUpdateReq dto,String password){
+        if(dto.getName() != null) this.name = dto.getName();        // 안고치면 안바뀜
+        if(dto.getEmail() != null) this.email = dto.getEmail();
+        if(dto.getPassword() != null) this.password = password;
+        if(dto.getPhoneNumber() != null) this.phoneNumber = dto.getPhoneNumber();
+        if(dto.getDescription() != null) this.description = dto.getDescription();
+        if(dto.getOpeningTime() != null) this.openingTime = dto.getOpeningTime();
+        if(dto.getClosingTime() != null) this.closingTime = dto.getClosingTime();
+        if(dto.getBreakTimeStart() != null) this.breakTimeStart = dto.getBreakTimeStart();
+        if(dto.getBreakTimeEnd() != null) this.breakTimeEnd = dto.getBreakTimeEnd();
+        if(dto.getLastOrder() != null) this.lastOrder=dto.getLastOrder();
+        if(dto.getHoliday() != null) this.holiday = dto.getHoliday();
+        if(dto.getCapacity() != 0) this.capacity = dto.getCapacity();
+        if(dto.getRestaurantType() != null) this.restaurantType = dto.getRestaurantType();
+        if(dto.getAddress() != null) {
+                this.address.setCity(dto.getAddress().getCity());
+                this.address.setStreet(dto.getAddress().getStreet());
+        }
+        // 예약금 관련 처리
+        if (dto.getDepositAvailable() != null) {
+            this.depositAvailable = DepositAvailable.valueOf(dto.getDepositAvailable().toUpperCase());
+            if (this.depositAvailable == DepositAvailable.NO) {
+                this.deposit = null;
+            } else {
+                this.deposit = dto.getDeposit();
+            }
+        }
     }
 
     public RestaurantDetailRes detailFromEntity() {
@@ -138,31 +169,27 @@ public class Restaurant extends BaseTimeEntity {
                 .build();
     }
 
-    public void updateProfile(RestaurantUpdateReq dto,String password){
-        if(dto.getName() != null) this.name = dto.getName();        // 안고치면 안바뀜
-        if(dto.getEmail() != null) this.email = dto.getEmail();
-        if(dto.getPassword() != null) this.password = password;
-        if(dto.getPhoneNumber() != null) this.phoneNumber = dto.getPhoneNumber();
-        if(dto.getDescription() != null) this.description = dto.getDescription();
-        if(dto.getOpeningTime() != null) this.openingTime = dto.getOpeningTime();
-        if(dto.getClosingTime() != null) this.closingTime = dto.getClosingTime();
-        if(dto.getLastOrder() != null) this.lastOrder=dto.getLastOrder();
-        if(dto.getHoliday() != null) this.holiday = dto.getHoliday();
-        if(dto.getCapacity() != 0) this.capacity = dto.getCapacity();
-        if(dto.getAddress() != null) {
-            if(this.address == null) {
-                this.address = new RestaurantAddress();     // 기존 주소가 없으면 새로 생성하는 것
-            }
-            if(dto.getAddress().getCity() != null) this.address.setCity(dto.getAddress().getCity());
-            if(dto.getAddress().getStreet() != null) this.address.setStreet(dto.getAddress().getStreet());
-        }
-    }
+
 
     public void addPhotos(List<RestaurantPhoto> newPhotos) {
         for (RestaurantPhoto photo : newPhotos) {
-            if (!this.photos.contains(photo)) { // 기존 사진이 없을 때만 추가
-                photo.setRestaurant(this);
+            if (!this.photos.contains(photo)) {
                 this.photos.add(photo);
+            }
+        }
+    }
+
+    public void removePhotos(List<String> photoUrlsToRemove) {
+
+        // Iterator 인터페이스는 list나 set, map같은 컬렉션요소에서 순차적으로 접근하고 조작할 수 있는 인터페이스.
+        // 특정 요소에 접근해서 삭제나 요소 여부 확인 등을 할 때 용이함. list를 사용할 때 발생되는 예외처리를 미리 막아주는 역할을 함.
+
+        Iterator<RestaurantPhoto> iterator = this.photos.iterator();
+        while (iterator.hasNext()) {
+            RestaurantPhoto photo = iterator.next();
+            if (photoUrlsToRemove.contains(photo.getPhotoUrl())) {
+                photo.photoDeactivate();  // Soft Delete
+                iterator.remove();
             }
         }
     }

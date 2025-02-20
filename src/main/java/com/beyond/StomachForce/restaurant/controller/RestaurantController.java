@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.restaurant.controller;
 
+import com.beyond.StomachForce.Common.dtos.CommonDto;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.domain.RestaurantInfo;
 import com.beyond.StomachForce.restaurant.dtos.*;
@@ -11,6 +12,8 @@ import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoUpdateReq;
 import com.beyond.StomachForce.restaurant.service.RestaurantService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -58,8 +61,11 @@ public class RestaurantController {
 
     @GetMapping("/list")// 레스토랑 사람들 리스트로 뽑기
 
-    public ResponseEntity<?> list() {
-        List<RestaurantListRes> restaurantListResList = restaurantService.findAll();
+    public ResponseEntity<?> list(Pageable pageable, @ModelAttribute RestaurantSearchDto dto) {
+        System.out.println("Received Name: " + dto.getName());
+        System.out.println("Received location: " + dto.getAddress());
+
+        Page<RestaurantListRes> restaurantListResList = restaurantService.findAll(pageable, dto);
         return new ResponseEntity<>(restaurantListResList, HttpStatus.OK);
     }
 
@@ -70,15 +76,15 @@ public class RestaurantController {
 
 
     @PatchMapping("/update/{id}")
-    public ResponseEntity<?> authorUpdate(@PathVariable Long id, @RequestBody RestaurantUpdateReq dto){
+    public ResponseEntity<?> authorUpdate(@PathVariable Long id, RestaurantUpdateReq dto){
         restaurantService.update(id,dto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PatchMapping("/{id}/delete")
-    public ResponseEntity<?> restaurantDelete(@PathVariable Long id) {
-        Restaurant restaurant = restaurantService.delete(id);
-        return new ResponseEntity<>(restaurant.getId(),HttpStatus.OK);
+    @PatchMapping("/delete")
+    public ResponseEntity<?> restaurantDelete() {
+        restaurantService.delete();
+        return new ResponseEntity<>(new CommonDto(HttpStatus.OK.value(),"deletion success","success"),HttpStatus.OK);
     }
     // info 관련 CRUD ------------------------------------------------------------------------------------
     @PostMapping("/info/create/{id}")
