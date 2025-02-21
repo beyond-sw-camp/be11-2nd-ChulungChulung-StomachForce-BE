@@ -8,6 +8,8 @@ import com.beyond.StomachForce.menu.domain.Menu;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,12 +31,13 @@ public class Reservation extends BaseReservationTimeEntity {
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
-    private LocalDateTime reservationDate;
+    private LocalDate reservationDate;
+    private LocalDateTime reservationTime;
     private Integer peopleNumber;
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private Payment paymentMethod = Payment.CARD;
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private Status status = Status.N; //예약금 납부 여부
     private Integer mileage;

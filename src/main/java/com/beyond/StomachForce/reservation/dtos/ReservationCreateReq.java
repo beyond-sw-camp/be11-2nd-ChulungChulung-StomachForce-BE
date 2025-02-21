@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,7 +21,8 @@ import java.util.List;
 @Data
 @Builder
 public class ReservationCreateReq {
-    private LocalDateTime reservationDate;
+    private LocalDate reservationDate;
+    private LocalDateTime reservationTime;
     private Integer peopleNumber;
     private Payment payment;
     private Integer mileage;
@@ -36,6 +38,7 @@ public class ReservationCreateReq {
                 .paymentMethod(this.payment)
                 .mileage(this.mileage)
                 .menuList(this.menuList)
+                .reservationTime(this.reservationTime)
                 .restaurant(restaurant)
                 .user(user)
                 .coupon(coupon)
@@ -45,6 +48,7 @@ public class ReservationCreateReq {
         return Reservation.builder()
                 .peopleNumber(this.peopleNumber)
                 .reservationDate(this.reservationDate)
+                .reservationTime(this.reservationTime)
                 .paymentMethod(this.payment)
                 .mileage(this.mileage)
                 .menuList(this.menuList)

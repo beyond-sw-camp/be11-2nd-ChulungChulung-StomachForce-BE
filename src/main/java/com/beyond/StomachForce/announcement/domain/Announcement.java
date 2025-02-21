@@ -23,10 +23,10 @@ public class Announcement extends BaseReservationTimeEntity {
     private Long id;
     private String title;
     private String contents;
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private Type type = Type.ANNOUNCE;
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private AnnounceStatus status = AnnounceStatus.ON;
     @ManyToOne
