@@ -47,12 +47,19 @@ public class PostController extends BaseTimeEntity {
                 "게시글 삭제가 완료되었습니다.","ok"),HttpStatus.OK);
     }
 
-    @PostMapping("/like/{postId}")
-    public ResponseEntity<?> like(@PathVariable Long postId){
-        postService.likes(postId);
+    @PostMapping("/postLike/{postId}")
+    public ResponseEntity<?> postLike(@PathVariable Long postId){
+        postService.postLikes(postId);
         return new ResponseEntity<>(new StatusCode(HttpStatus.OK.value(),
                 "좋아요","ok"),HttpStatus.OK);
     }
+
+    @PostMapping("/getLike/{postId}")
+    public ResponseEntity<?> getLike(@PathVariable Long postId){
+        LikeResDto response = postService.getLikes(postId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
     @PostMapping("/comment/{postId}")
     public ResponseEntity<?> comment(@PathVariable Long postId, @Valid CommentCreateDto commentCreateDto){
         postService.comments(postId,commentCreateDto);

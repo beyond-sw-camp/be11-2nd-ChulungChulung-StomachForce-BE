@@ -5,17 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-public class PostDetailRes {
-    private String contents;
+public class LikeResDto {
+    private Long postId;
     private Long likes;
-    private List<String> tags;
-    private List<String> postPhotos;
-    private List<Long> likedUser;
+    private boolean isLiked;
 }

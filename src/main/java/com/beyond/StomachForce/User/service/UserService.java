@@ -1,6 +1,8 @@
 package com.beyond.StomachForce.User.service;
 
 import com.beyond.StomachForce.Post.domain.Post;
+import com.beyond.StomachForce.Post.dtos.MyPostDto;
+import com.beyond.StomachForce.Post.repository.PostRepository;
 import com.beyond.StomachForce.User.domain.Enum.EarnedMileage;
 import com.beyond.StomachForce.User.domain.Follower;
 import com.beyond.StomachForce.User.domain.Mileage;
@@ -10,7 +12,14 @@ import com.beyond.StomachForce.User.dtos.*;
 import com.beyond.StomachForce.User.repository.MileageRepository;
 import com.beyond.StomachForce.User.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,10 +38,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class UserService {
+    private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MileageRepository mileageRepository;
@@ -41,7 +52,8 @@ public class UserService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, MileageRepository mileageRepository, S3Client s3Client) {
+    public UserService(PostRepository postRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, MileageRepository mileageRepository, S3Client s3Client) {
+        this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.mileageRepository = mileageRepository;
@@ -118,34 +130,24 @@ public class UserService {
         return saveMileage;
     }
 
-    public String follow(Long userId){
+    public String follow(FollowReq followReq){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
-        User followUser = userRepository.findById(userId).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        User followUser = userRepository.findByNickName(followReq.getNickName()).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         for (Follower f : followUser.getFollowers()) {
             if (f.getFollowerUser().getId().equals(user.getId())) {
-                // 이미 팔로우 중이면 취소: 양쪽 컬렉션에서 제거
                 followUser.getFollowers().remove(f);
                 user.getFollowing().remove(f);
-                // 필요한 경우 변경 사항 저장 (예: userRepository.save(user); 등)
                 return "팔로우가 취소되었습니다.";
             }
         }
-
-        // 팔로우 추가: 새로운 Follower 엔티티 생성
         Follower follower = Follower.builder()
-                .user(followUser)         // 대상 회원: 팔로우 당하는 사람
-                .followerUser(user)       // 팔로우 하는 회원: 로그인한 회원
+                .user(followUser)
+                .followerUser(user)
                 .build();
 
-        // 양쪽 컬렉션에 추가
         followUser.followerAdd(follower);
         user.followingAdd(follower);
-
-        // 필요한 경우 변경 사항 저장
-        // userRepository.save(user);
-        // userRepository.save(followUser);
-
         return "ok";
     }
 
@@ -169,16 +171,86 @@ public class UserService {
         return userInfoRes;
     }
 
-    public MypageRes myPage(){
+    public MypageRes myPage(Pageable pageable) {
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        User user = userRepository.findByIdentify(identify)
+                .orElseThrow(() -> new EntityNotFoundException("없는 회원입니다."));
+
+        Page<Post> postPage = postRepository.findByUser(user, pageable);
+
+        // 게시글 사진 리스트 생성
+        List<String> postPhotos = postPage.getContent().stream()
+                .map(post -> post.getPostPhotos().isEmpty() ? null : post.getPostPhotos().get(0))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        List<MyPostDto> postIds = postPage.getContent().stream()
+                .map(post -> new MyPostDto(post.getId()))
+                .collect(Collectors.toList());
+
+        return MypageRes.builder()
+                .nickName(user.getNickName())
+                .email(user.getEmail())
+                .influencer(user.getInfluencer())
+                .postPhotos(postPhotos)
+                .postIds(postIds)
+                .totalPost((int) postPage.getTotalElements())
+                .build();
+    }
+
+
+    public Page<UserInfoRes> findUser(Pageable pageable, UserSearchDto searchDto){
+        Specification<User> specification = new Specification<User>() {
+            @Override
+            public Predicate toPredicate(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicates = new ArrayList<>();
+                if(searchDto.getNickName()!=null){
+                    predicates.add(criteriaBuilder.like(root.get("nickName"), "%"+searchDto.getNickName()+"%"));
+                }
+                Predicate[] predicateArr = new Predicate[predicates.size()];
+                for(int i=0; i<predicates.size();i++){
+                    predicateArr[i] = predicates.get(i);
+                }
+                Predicate predicate = criteriaBuilder.and(predicateArr);
+                return predicate;
+            }
+        };
+        Page<User> userList = userRepository.findAll(specification,pageable);
+        return userList.map(u->u.userInfoRes());
+    }
+
+    public YourPageRes yourPage(Pageable pageable,UserSearchDto userSearchDto){
+        String nickName = userSearchDto.getNickName();
+        User user = userRepository.findByNickName(nickName).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        String currentIdentify = SecurityContextHolder.getContext().getAuthentication().getName();
+        boolean isFollowing = user.getFollowers().stream()
+                .anyMatch(f -> f.getFollowerUser().getIdentify().equals(currentIdentify));
         List<Post> myPost = user.getPosts();
-        List<String> myPostPhotos = new ArrayList<>();
-        for(Post p:myPost){
-            List<String> photos = p.getPostPhotos();
-            myPostPhotos.add(photos.get(0));
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), myPost.size());
+        List<Post> pagedPosts = new ArrayList<>();
+        if(start < end) {
+            pagedPosts = myPost.subList(start, end);
         }
-        MypageRes mypageRes = MypageRes.builder().nickName(user.getNickName()).email(user.getEmail()).influencer(user.getInfluencer()).postPhotos(myPostPhotos).build();
-        return mypageRes;
+
+        List<String> myPostPhotos = new ArrayList<>();
+        for (Post p : pagedPosts) {
+            List<String> photos = p.getPostPhotos();
+            if (photos != null && !photos.isEmpty()) {
+                myPostPhotos.add(photos.get(0));
+            }
+        }
+        YourPageRes yourpageRes = YourPageRes.builder()
+                .profile(user.getProfilePhoto())
+                .followings(user.followingList().size())
+                .follwers(user.followerList().size())
+                .nickName(user.getNickName())
+                .email(user.getEmail())
+                .influencer(user.getInfluencer())
+                .postPhotos(myPostPhotos)
+                .totalPost(myPost.size())
+                .isFollowing(isFollowing)
+                .build();
+        return yourpageRes;
     }
 }

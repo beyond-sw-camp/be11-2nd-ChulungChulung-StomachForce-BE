@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class UserInfoRes {
-    private Long userId;
-    private String userName;
-    private String userNickName;
-    private String profilePhoto;
+public class UserSearchDto {
+    private String nickName;
 }

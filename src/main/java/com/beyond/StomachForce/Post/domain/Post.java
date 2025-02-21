@@ -35,8 +35,8 @@ public class Post extends BaseTimeEntity{
     private User user;
     @Builder.Default
     private Long likes = 0L;
-    @Builder.Default
-    private List<Long>likedUser = new ArrayList<>();
+//    @Builder.Default
+//    private List<Long>likedUser = new ArrayList<>();
     @Builder.Default
     private List<String> tags = new ArrayList<>();
     @Builder.Default
@@ -62,13 +62,13 @@ public class Post extends BaseTimeEntity{
         this.postPhotos.add(postPhotos);
     }
 
-    public PostDetailRes postDetails(){
+    public PostDetailRes postDetails(Long likes){
         PostDetailRes postDetailRes = PostDetailRes.builder().
                 contents(this.contents).
-                likes(this.likes).
+                likes(likes).
                 postPhotos(this.postPhotos).
                 tags(this.tags).
-                likedUser(this.likedUser).build();
+                build();
         return postDetailRes;
     }
 }

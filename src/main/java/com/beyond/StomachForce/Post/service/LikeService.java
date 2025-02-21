@@ -31,4 +31,10 @@ public class LikeService {
         String key = String.valueOf(postId);
         return redisTemplate.opsForSet().size(key); // 좋아요 수 반환
     }
+
+    public boolean isUserLikedPost(Long postId, Long userId) {
+        String key = String.valueOf(postId);
+        Boolean isMember = redisTemplate.opsForSet().isMember(key, String.valueOf(userId));
+        return Boolean.TRUE.equals(isMember); // 좋아요 했으면 true, 안 했으면 false 반환
+    }
 }

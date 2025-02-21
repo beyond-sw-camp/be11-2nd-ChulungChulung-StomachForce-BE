@@ -1,4 +1,4 @@
-package com.beyond.StomachForce.User.dtos;
+package com.beyond.StomachForce.Post.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class FollowerReq {
-    private Long userId;
+@Builder
+public class MyPostDto {
+    private Long postId;
 }
