@@ -12,6 +12,8 @@ import io.jsonwebtoken.Jwts;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -109,9 +111,9 @@ public class UserController {
                 "마일리지 처리가 완료되었습니다.",mileage.getId()),HttpStatus.CREATED);
     }
 
-    @PostMapping("/follower/{userId}")
-    public ResponseEntity<?> Follower(@PathVariable Long userId){
-        String response = userService.follow(userId);
+    @PostMapping("/follow")
+    public ResponseEntity<?> Follow(@RequestBody FollowReq followReq){
+        String response = userService.follow(followReq);
         return new ResponseEntity<>(new StatusCode(HttpStatus.CREATED.value(),
                 "",response),HttpStatus.CREATED);
     }
@@ -135,8 +137,20 @@ public class UserController {
     }
 
     @GetMapping("/myPage")
-    public ResponseEntity<?> myPage(){
-        MypageRes response = userService.myPage();
+    public ResponseEntity<?> myPage(Pageable pageable){
+        MypageRes response = userService.myPage(pageable);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @GetMapping("/findUser")
+    public ResponseEntity<?> findUser(Pageable pageable,UserSearchDto userSearchDto){
+        Page<UserInfoRes> response= userService.findUser(pageable,userSearchDto);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @GetMapping("/yourPage")
+    public ResponseEntity<?> yourPage(Pageable pageable, UserSearchDto userSearchDto){
+        YourPageRes response = userService.yourPage(pageable,userSearchDto);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }

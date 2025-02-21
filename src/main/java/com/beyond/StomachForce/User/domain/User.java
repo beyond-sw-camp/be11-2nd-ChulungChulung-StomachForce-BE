@@ -3,9 +3,7 @@ package com.beyond.StomachForce.User.domain;
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.User.domain.Enum.*;
-import com.beyond.StomachForce.User.dtos.FollowerListRes;
-import com.beyond.StomachForce.User.dtos.FollowingListRes;
-import com.beyond.StomachForce.User.dtos.UserUpdateReq;
+import com.beyond.StomachForce.User.dtos.*;
 import com.beyond.StomachForce.report.domain.Report;
 import com.beyond.StomachForce.serviceCenter.domain.ServiceAnswer;
 import com.beyond.StomachForce.serviceCenter.domain.ServicePost;
@@ -72,9 +70,11 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "reported",cascade = CascadeType.ALL)
     @Builder.Default
     private List<Report> reportsReceived = new ArrayList<>();
+
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
     @Builder.Default
     private List<Follower> followers = new ArrayList<>();
+
     @OneToMany(mappedBy = "followerUser", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Follower> following = new ArrayList<>();
@@ -107,13 +107,14 @@ public class User extends BaseTimeEntity {
         this.following.add(follower);
     }
 
+
     public List<FollowerListRes> followerList(){
         List<FollowerListRes> follwerList = new ArrayList<>();
         for(Follower f: followers){
             FollowerListRes followerListRes = FollowerListRes.builder()
                     .userId(f.getFollowerUser().getId())
                     .userName(f.getFollowerUser().getName())
-                    .userProfile(f.getUser().getProfilePhoto())
+                    .userProfile(f.getFollowerUser().getProfilePhoto())
                     .build();
             follwerList.add(followerListRes);
         }
@@ -149,4 +150,14 @@ public class User extends BaseTimeEntity {
         }
         return userPostList;
     }
+
+    public UserInfoRes userInfoRes(){
+        return UserInfoRes.builder()
+                .userNickName(this.nickName)
+                .userName(this.getName())
+                .profilePhoto(this.getProfilePhoto())
+                .userId(this.getId())
+                .build();
+    }
+
 }

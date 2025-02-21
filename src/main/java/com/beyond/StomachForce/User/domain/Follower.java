@@ -20,9 +20,9 @@ public class Follower extends BaseTimeEntity{
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
-    private User user;
+    private User user; //팔로우 당한사람
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follower_user_id", nullable = false)
-    private User followerUser;
+    private User followerUser;  //팔로우한 사람
 
 }
