@@ -2,12 +2,13 @@ package com.beyond.StomachForce.accouncementImage.domain;
 
 import com.beyond.StomachForce.announcement.domain.Announcement;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 @NoArgsConstructor
 @Getter
-@ToString
+@ToString(exclude = "announcement")
 @Entity
 @AllArgsConstructor
 @Builder
@@ -19,10 +20,9 @@ public class AnnouncementImage {
     private String imagePath;
 
     @ManyToOne
-    @JsonBackReference
+    @JsonIgnore
     @JoinColumn(name = "announcement_id")
     private Announcement announcement;
-
     public void setAnnouncement(Announcement announcement) {
         this.announcement = announcement;
     }
