@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
@@ -16,7 +17,8 @@ public class ReservationDetailRes {
     //예약번호,예약일자,예약자,예약입금현황,가게이름,가게연락처,가게주소,결제방법,사용한마일리지, 사용한쿠폰
 
     private Long id;
-    private LocalDateTime reservationDate;
+    private LocalDate reservationDate;
+    private LocalDateTime reservationTime;
     private String userName;
     private String reservationStatus;
     private String restaurantName;
@@ -25,4 +27,5 @@ public class ReservationDetailRes {
     private String paymentMethod;
     private Integer useMilege;
     private String couponName;
+    private Integer reservationPeopleNumber;
 }
