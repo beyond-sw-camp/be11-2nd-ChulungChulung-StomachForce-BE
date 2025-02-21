@@ -51,7 +51,10 @@ public class ReservationService {
         if (restaurant.getHoliday() != null && restaurant.getHoliday().equals(reservationDate)) {
             throw new IllegalStateException("예약할 수 없는 날입니다. (휴무일)");
         }
-
+//        영업시간 전에 예약 제한하기
+        if (restaurant.getOpeningTime().isAfter(reservationTime)) {
+            throw new IllegalStateException("레스토랑 오픈 전에는 예약이 불가능합니다.");
+        }
         // 2. 라스트 오더 이후 예약 제한하기.
         if (restaurant.getLastOrder().isBefore(reservationTime)) {
             throw new IllegalStateException("라스트 오더 이후에는 예약이 불가능합니다.");
