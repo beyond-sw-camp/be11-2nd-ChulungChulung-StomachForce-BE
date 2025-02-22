@@ -18,7 +18,7 @@ public class ReviewListRes {
     private Long id;
     private String contents;
     private String RestaurantName;
-    private String memberEmail;
+    private String userIdentify;
     private Integer rating;
     private List<ReviewPhoto> reviewPhotos;
     private LocalDateTime createdTime;

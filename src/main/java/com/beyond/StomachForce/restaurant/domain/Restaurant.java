@@ -14,11 +14,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.time.*;
+import java.util.*;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -46,19 +44,19 @@ public class Restaurant extends BaseTimeEntity {
     private String description;                  // 가게 설명
 
     @Column(nullable = false)
-    private LocalDateTime openingTime;           // 여는 시간
+    private LocalTime openingTime;           // 여는 시간
 
     @Column(nullable = false)
-    private LocalDateTime closingTime;           // 닫는 시간
+    private LocalTime closingTime;           // 닫는 시간
 
     @Column(nullable = false)
-    private LocalDateTime lastOrder;             // 라스트 오더
+    private LocalTime lastOrder;             // 라스트 오더
 
     private String phoneNumber;                  // 가게 연락처
 
-    private LocalDateTime breakTimeStart;        // 브레이크 타임 시작
+    private LocalTime breakTimeStart;        // 브레이크 타임 시작
 
-    private LocalDateTime breakTimeEnd;          // 브레이크 타임 끗
+    private LocalTime breakTimeEnd;          // 브레이크 타임 끗
 
     private Long deposit;                        //예약금
 
@@ -156,16 +154,30 @@ public class Restaurant extends BaseTimeEntity {
     public RestaurantDetailRes detailFromEntity() {
         double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
                 (r -> r.getRating().getValue()).average().orElse(0.0);
+
+        List<String> imagePaths = this.photos.isEmpty()
+                ? List.of("/assets/default-image.jpg")
+                : this.photos.stream().map(rp -> rp.getPhotoUrl()).toList();
+
         return RestaurantDetailRes.builder()
                 .id(this.id)
                 .name(this.name)
                 .email(this.email)
                 .description(this.description)
+                .openingTime(this.openingTime)
+                .closingTime(this.closingTime)
+                .lastOrder(this.lastOrder)
                 .phoneNumber(this.phoneNumber)
+                .breakTimeStart(this.breakTimeStart)
+                .breakTimeEnd(this.breakTimeEnd)
+                .deposit(this.deposit)
+                .alcoholSelling(this.alcoholSelling.toString())
+                .restaurantType(this.restaurantType.toString())
                 .address(this.address.getFullAddress())
                 .averageRating(averageRating)
                 .bookmarkCount((long)this.bookmarks.size())
                 .updatedTime(this.updatedTime)
+                .imagePath(imagePaths)
                 .build();
     }
 

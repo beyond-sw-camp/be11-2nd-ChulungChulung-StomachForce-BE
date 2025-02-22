@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,17 +56,17 @@ public class RestaurantCreateReq {
     private Long deposit;                        // 예약금
 
     @NotNull
-    private LocalDateTime openingTime;           // 여는 시간
+    private LocalTime openingTime;           // 여는 시간
 
     @NotNull
-    private LocalDateTime closingTime;           // 닫는 시간
+    private LocalTime closingTime;           // 닫는 시간
 
-    private LocalDateTime breakTimeStart;        // 브레이크 타임 시작
+    private LocalTime breakTimeStart;        // 브레이크 타임 시작
 
-    private LocalDateTime breakTimeEnd;        // 브레이크 타임 끗!
+    private LocalTime breakTimeEnd;        // 브레이크 타임 끗!
 
     @NotNull
-    private LocalDateTime lastOrder;             // 라스트 오더
+    private LocalTime lastOrder;             // 라스트 오더
 
     private LocalDate holiday;                   // 휴무일
 

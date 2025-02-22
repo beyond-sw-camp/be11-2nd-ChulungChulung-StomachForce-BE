@@ -19,16 +19,16 @@ public class ReviewCreateReq {
 
     @NotBlank(message = "비울 수 없는 항목입니다.")
     private String contents;
-    private User user;
-    private Restaurant restaurant;
     private Integer rating;
     private List<MultipartFile> reviewImage;
 
-    public Review toEntity(User user, Restaurant restaurant) {
+    public Review toEntity(Restaurant restaurant) {
+        User user = User.builder()
+                .build();
         return Review.builder()
-                .customer(user)
+                .user(user)
                 .restaurant(restaurant)
-                .rating(Rating.fromValue(rating))
+                .rating(Rating.fromValue(this.rating))
                 .contents(this.contents)
                 .build();
     }

@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
+import java.time.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,11 +25,11 @@ public class RestaurantUpdateReq {
     private String currentPassword;     //현재 비밀번호랑 확인 후에 바꿀 수 있도록 하기 위해서 넣었읍니다.
     private String phoneNumber;
     private String description;
-    private LocalDateTime openingTime;
-    private LocalDateTime closingTime;
-    private LocalDateTime breakTimeStart;        // 브레이크 타임 시작
-    private LocalDateTime breakTimeEnd;          // 브레이크 타임 끗
-    private LocalDateTime lastOrder;
+    private LocalTime openingTime;
+    private LocalTime closingTime;
+    private LocalTime breakTimeStart;        // 브레이크 타임 시작
+    private LocalTime breakTimeEnd;          // 브레이크 타임 끗
+    private LocalTime lastOrder;
     private LocalDate holiday;
     private int capacity;
     private RestaurantAddress address;
@@ -40,7 +40,7 @@ public class RestaurantUpdateReq {
     private RestaurantType restaurantType; // 매장 타입
 
     private List<MultipartFile> restaurantPhotos; // 새로 추가할 사진
-    private List<String> photoUrlsToRemove;  // 삭제할 사진 URL 리스트 추가
+    private List<String> photoUrlsToRemove;  // 삭제할 사진 url 리스트 추가
 
 
 
