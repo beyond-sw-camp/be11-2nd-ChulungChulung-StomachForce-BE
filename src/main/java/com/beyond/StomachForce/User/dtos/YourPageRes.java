@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.User.dtos;
 
+import com.beyond.StomachForce.Post.dtos.MyPostDto;
 import com.beyond.StomachForce.User.domain.Enum.Influencer;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AllArgsConstructor;
@@ -23,5 +24,6 @@ public class YourPageRes {
     private Influencer influencer;
     private List<String> postPhotos = new ArrayList<>();
     private Integer totalPost;
+    private List<MyPostDto> postIds;
     private Boolean isFollowing;
 }
