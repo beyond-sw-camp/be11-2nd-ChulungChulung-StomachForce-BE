@@ -18,7 +18,7 @@ public class ServiceAnswer extends BaseReservationTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @JoinColumn(name = "post_id")
     private ServicePost servicePost;
 

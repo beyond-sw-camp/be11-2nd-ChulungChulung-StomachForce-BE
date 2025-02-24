@@ -10,9 +10,23 @@ import com.beyond.StomachForce.menu.repository.MenuRepository;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,29 +35,79 @@ import java.util.stream.Collectors;
 public class MenuService {
     private final MenuRepository menuRepository;
     private final RestaurantRepository restaurantRepository;
+    private final S3Client s3Client;
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
-    public MenuService(MenuRepository menuRepository, RestaurantRepository restaurantRepository) {
+    public MenuService(MenuRepository menuRepository, RestaurantRepository restaurantRepository, S3Client s3Client) {
         this.menuRepository = menuRepository;
         this.restaurantRepository = restaurantRepository;
+        this.s3Client = s3Client;
     }
 
-    public MenuResDto menuCreate(MenuCreateDto dto){
-        Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
-                .orElseThrow(()-> new EntityNotFoundException("없는 레스토랑회원입니다."));
+    public MenuResDto menuCreate(MenuCreateDto dto) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String registrationNumber = authentication.getName(); // JWT에서 registrationNumber 추출
+
+        // 사업자 등록번호로 레스토랑 조회
+        Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber)
+                .orElseThrow(() -> new EntityNotFoundException("레스토랑 정보를 찾을 수 없습니다."));
+
+        // 요청한 restaurantId와 로그인한 사용자의 restaurantId가 일치하는지 검증
+        if (!restaurant.getId().equals(dto.getRestaurantId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 레스토랑의 메뉴를 추가할 권한이 없습니다.");
+        }
 
         AllergyInfo allergyInfo = dto.getAllergyInfo().toEntity();
+
+        // S3에 이미지 업로드 후 URL 가져오기
+        String menuPhotoUrl = uploadImageToS3(dto.getMenuPhoto(), "menu_photos");
 
         Menu menu = Menu.builder()
                 .restaurant(restaurant)
                 .name(dto.getName())
                 .price(dto.getPrice())
                 .description(dto.getDescription())
-                .menuPhoto(dto.getMenuPhoto())
+                .menuPhoto(menuPhotoUrl) // 업로드된 S3 URL 저장
                 .allergyInfo(allergyInfo)
                 .build();
 
         menuRepository.save(menu);
         return new MenuResDto(menu);
+    }
+
+    private String uploadImageToS3(MultipartFile image, String folder) {
+        try {
+            byte[] bytes = image.getBytes();
+            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename(); // 🔹 파일명만 생성
+
+            // 로컬 저장 경로 설정 (폴더 중복 방지)
+            Path dirPath = Paths.get("C:/Users/Playdata/Desktop/testFolder", folder);
+            Path filePath = dirPath.resolve(fileName); // 폴더 + 파일명 조합
+
+            // 폴더가 없으면 생성
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
+            }
+
+            // 파일을 로컬에 저장
+            Files.write(filePath, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+
+            // S3 업로드 요청 객체 생성
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(folder + "/" + fileName) // S3에서는 폴더명과 함께 저장
+                    .build();
+
+            // S3에 업로드 실행
+            s3Client.putObject(putObjectRequest, RequestBody.fromFile(filePath.toFile()));
+
+            // 업로드된 S3 URL 반환
+            return s3Client.utilities().getUrl(a -> a.bucket(bucket).key(folder + "/" + fileName)).toExternalForm();
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 업로드 실패", e);
+        }
     }
 
     public List<MenuListResDto> getMenuList(Long restaurantId){
@@ -56,14 +120,35 @@ public class MenuService {
     }
 
     public MenuResDto updateMenu(Long menuId, MenuUpdateDto dto) {
+        // 현재 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String registrationNumber = authentication.getName(); // JWT에서 registrationNumber 추출
+
+        // 사업자 등록번호로 레스토랑 조회
+        Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber)
+                .orElseThrow(() -> new EntityNotFoundException("레스토랑 정보를 찾을 수 없습니다."));
+
+        // 수정할 메뉴 가져오기
         Menu menu = menuRepository.findById(menuId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 메뉴가 존재하지 않습니다."));
 
+        // 메뉴의 restaurantId와 로그인한 사용자의 restaurantId가 일치하는지 검증
+        if (!menu.getRestaurant().getId().equals(restaurant.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 레스토랑의 메뉴를 수정할 권한이 없습니다.");
+        }
+
+        // 메뉴 정보 업데이트
         if (dto.getName() != null) menu.setName(dto.getName());
         if (dto.getPrice() != null) menu.setPrice(dto.getPrice());
         if (dto.getDescription() != null) menu.setDescription(dto.getDescription());
-        if (dto.getMenuPhoto() != null) menu.setMenuPhoto(dto.getMenuPhoto());
 
+        // S3에 이미지 업로드 후 URL 변경
+        if (dto.getMenuPhoto() != null) {
+            String menuPhotoUrl = uploadImageToS3(dto.getMenuPhoto(), "menu_photos");
+            menu.setMenuPhoto(menuPhotoUrl);
+        }
+
+        // 알레르기 정보 업데이트
         AllergyInfo allergyInfo = menu.getAllergyInfo();
         AllergyInfo dtoAllergyInfo = dto.getAllergyInfo();
 
@@ -80,6 +165,5 @@ public class MenuService {
 
         return new MenuResDto(menu);
     }
-
 
 }

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,8 +23,7 @@ public class MenuCreateDto {
     @NotEmpty
     private String description;
 
-    @NotEmpty
-    private String menuPhoto;
+    private MultipartFile menuPhoto;
 
     private AllergyInfo allergyInfo;
 }
