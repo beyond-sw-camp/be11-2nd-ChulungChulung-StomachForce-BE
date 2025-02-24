@@ -189,6 +189,7 @@ public class UserController {
         }
 
         return userService.getUserInfo(user);
+    }
 
 
     @GetMapping("/myVip")
