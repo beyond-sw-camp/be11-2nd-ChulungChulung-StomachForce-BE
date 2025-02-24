@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class LikeToggleDto {
-//    private Long userId;
     private Long postId;
 }

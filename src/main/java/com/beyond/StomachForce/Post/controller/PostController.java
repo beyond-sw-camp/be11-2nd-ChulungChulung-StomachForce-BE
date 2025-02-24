@@ -40,9 +40,9 @@ public class PostController extends BaseTimeEntity {
                 "게시글이 수정되었습니다.","ok"),HttpStatus.OK);
     }
 
-    @PatchMapping("/delete")
-    public ResponseEntity<?> delete(@Valid Long id){
-        postService.delete(id);
+    @PatchMapping("/delete/{postId}")
+    public ResponseEntity<?> delete(@PathVariable Long postId){
+        postService.delete(postId);
         return new ResponseEntity<>(new StatusCode(HttpStatus.OK.value(),
                 "게시글 삭제가 완료되었습니다.","ok"),HttpStatus.OK);
     }
@@ -78,4 +78,5 @@ public class PostController extends BaseTimeEntity {
         PostDetailRes response = postService.postDetail(postId);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
 }

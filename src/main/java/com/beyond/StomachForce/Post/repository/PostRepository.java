@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.Post.repository;
 
+import com.beyond.StomachForce.Post.domain.Enum.PostStatus;
 import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.User.domain.User;
 import org.springframework.data.domain.Page;
@@ -10,5 +11,5 @@ import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post,Long> {
-    Page<Post> findByUser(User user, Pageable pageable);
+    Page<Post> findByUserAndPostStatus(User user, PostStatus postStatus, Pageable pageable);
 }

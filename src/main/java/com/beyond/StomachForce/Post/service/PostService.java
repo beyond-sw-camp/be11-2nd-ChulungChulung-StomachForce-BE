@@ -72,8 +72,8 @@ public class PostService {
         post.updatePost(postUpdateReq);
     }
 
-    public void delete(Long id){
-        Post post = postRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 게시글입니다."));
+    public void delete(Long postId){
+        Post post = postRepository.findById(postId).orElseThrow(()->new EntityNotFoundException("없는 게시글입니다."));
         post.deletePost();
     }
 
