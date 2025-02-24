@@ -1,4 +1,7 @@
 spring :
+  jackson:
+    date-format: yyyy-MM-dd HH:mm
+    time-zone: Asia/Seoul
   redis:
     host: localhost
     port: 6379
@@ -11,7 +14,7 @@ spring :
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/stomachforce
+    url: jdbc:mariadb://localhost:3306/stomachforce?serverTimezone=Asia/Seoul
     username: root
     password: 1234
   jpa:
@@ -19,7 +22,7 @@ spring :
     database-platform: org.hibernate.dialect.MariaDBDialect
     generate-ddl: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show_sql: true
 
 #logging:

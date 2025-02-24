@@ -25,6 +25,7 @@ public class ReservationController {
 
     @PostMapping("/{id}/create")// 회원가입
     public String authorCreate(@RequestBody ReservationCreateReq reservationCreateReq, @PathVariable Long id) {
+        System.out.println("📌 [DEBUG] 백엔드에서 받은 JSON 데이터: " + reservationCreateReq);
         reservationService.save(reservationCreateReq, id);
         return "OK";
     }
@@ -38,5 +39,10 @@ public class ReservationController {
     public ResponseEntity<?> reservationDetail(@PathVariable Long reservationId){
         ReservationDetailRes reservationDetailRes = reservationService.reservationDetail(reservationId);
         return new ResponseEntity<>(reservationDetailRes, HttpStatus.OK);
+    }
+    @DeleteMapping("/{reservationId}/delete") // 예약 삭제
+    public ResponseEntity<?> deleteReservation(@PathVariable Long reservationId) {
+        reservationService.deleteReservation(reservationId);
+        return new ResponseEntity<>("예약이 성공적으로 삭제되었습니다.", HttpStatus.OK);
     }
 }
