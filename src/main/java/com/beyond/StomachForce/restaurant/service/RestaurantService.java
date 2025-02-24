@@ -382,7 +382,6 @@ public class RestaurantService {
                 .restaurantId(restaurant.getId())
                 .restaurantImage(restaurant.getPhotos().isEmpty() ? null : restaurant.getPhotos().get(0).getPhotoUrl())
                 .restaurantName(restaurant.getName())
-                .rating(Double.valueOf(restaurant.getRating())) // ⭐ 여기서 별점 직접 가져오기
                 .build()
         ).collect(Collectors.toList());
     }

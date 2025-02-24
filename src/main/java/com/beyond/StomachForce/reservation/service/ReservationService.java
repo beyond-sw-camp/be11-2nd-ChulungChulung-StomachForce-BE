@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class ReservationService {
         //1. 로그인 했는지 확인하기.
         User user = userRepository.findByIdentify(authentication.getName()).orElseThrow(()-> new EntityNotFoundException("로그인 되지않은 사용자입니다. 로그인을 해주세요."));
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(()-> new EntityNotFoundException("예약할 레스토랑을 찾아서주세요."));
-        LocalDateTime reservationTime = dto.getReservationTime();
+        LocalTime reservationTime = dto.getReservationTime();
         LocalDate reservationDate = dto.getReservationDate();
         int reservationHour = reservationTime.getHour();
 

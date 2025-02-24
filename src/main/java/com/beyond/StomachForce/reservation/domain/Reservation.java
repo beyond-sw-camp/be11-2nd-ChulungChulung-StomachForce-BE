@@ -11,6 +11,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -32,7 +33,7 @@ public class Reservation extends BaseReservationTimeEntity {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
     private LocalDate reservationDate;
-    private LocalDateTime reservationTime;
+    private LocalTime reservationTime;
     private Integer peopleNumber;
     @Enumerated(EnumType.STRING)
     @Builder.Default
