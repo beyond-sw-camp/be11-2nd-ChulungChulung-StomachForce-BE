@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.announcement.dtos;
 
 import com.beyond.StomachForce.accouncementImage.domain.AnnouncementImage;
+import com.beyond.StomachForce.announcement.domain.AnnounceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,8 +16,11 @@ import java.util.List;
 @Data
 @Builder
 public class AnnouncementDetailRes {
+    private Long id;
     private String title;
-    private LocalDate creaetedDate;
+    private LocalDate createdDate;
+    private LocalDate endDate;
+    private AnnounceStatus status;
     private String announcementType;
     private String contents;
     private List<AnnouncementImage> images;

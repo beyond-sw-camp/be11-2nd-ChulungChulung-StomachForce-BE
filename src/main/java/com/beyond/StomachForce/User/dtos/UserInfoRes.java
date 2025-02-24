@@ -14,4 +14,5 @@ public class UserInfoRes {
     private String userName;
     private String userNickName;
     private String profilePhoto;
+    private String role; //홍성혁 추가
 }

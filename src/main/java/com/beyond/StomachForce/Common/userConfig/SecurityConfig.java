@@ -39,7 +39,7 @@ public class SecurityConfig {
                         "/restaurant/list","/menu/list/{restaurantId}","/menu/create","menu/update/{menuId}",
                         "/service/post/create", "/service/post/update/{postId}", "/service/post/delete/{postId}",
                         "/service/list", "/service/answer/create", "/service/answer/update/{answerId}",
-                        "/service/answer/delete/{answerId}", "/report/create", "/report/update/{reportId}",
+                        "/service/answer/delete/{answerId}","user/me", "/report/create", "/report/update/{reportId}",
                         "/report/delete/{reportId}", "/report/admin-comment/{reportId}"
                         ).permitAll().anyRequest().authenticated())
                 .build();

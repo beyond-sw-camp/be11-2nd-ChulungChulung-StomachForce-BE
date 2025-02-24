@@ -5,7 +5,9 @@ import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.User.repository.UserRepository;
 import com.beyond.StomachForce.announcement.domain.Announcement;
 import com.beyond.StomachForce.announcement.dtos.AnnouncementCreateReq;
+import com.beyond.StomachForce.announcement.dtos.AnnouncementDetailRes;
 import com.beyond.StomachForce.announcement.dtos.AnnouncementUpdateReq;
+import com.beyond.StomachForce.announcement.dtos.EventBannerRes;
 import com.beyond.StomachForce.announcement.service.AnnouncementService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/announcement")
@@ -64,4 +67,15 @@ public class AnnouncementController {
     public ResponseEntity<?> listAnnouncement(){
         return ResponseEntity.ok(announcementService.getAnnouncements());
     }
+    @GetMapping("/event/ongoing")
+    public ResponseEntity<List<EventBannerRes>> getOngoingEvents() {
+        List<EventBannerRes> events = announcementService.getOngoingEvents();
+        return ResponseEntity.ok(events);
+    }
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<AnnouncementDetailRes> getAnnouncementDetail(@PathVariable Long id) {
+        AnnouncementDetailRes announcementDetail = announcementService.getAnnouncementDetail(id);
+        return ResponseEntity.ok(announcementDetail);
+    }
+
 }

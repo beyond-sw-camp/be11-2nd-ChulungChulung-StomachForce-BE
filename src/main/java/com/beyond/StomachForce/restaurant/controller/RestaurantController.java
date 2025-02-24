@@ -124,6 +124,16 @@ public class RestaurantController {
         List<String> photos = restaurantService.findPhotosByRestaurantId(restaurantId);
         return ResponseEntity.ok(photos);
     }
-
-
+    @GetMapping("/top-favorites")
+    public ResponseEntity<List<TopFavoriteRestaurantRes>> getTopFavoriteRestaurants(@RequestParam(defaultValue = "10") int limit) {
+        List<TopFavoriteRestaurantRes> response = restaurantService.getTopFavoriteRestaurants(limit);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/categories")
+    public ResponseEntity<List<CategoryRes>> getCategories() {
+        return ResponseEntity.ok(restaurantService.getCategories());
+    }
 }
+
+
+

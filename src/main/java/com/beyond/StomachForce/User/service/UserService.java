@@ -18,6 +18,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -252,5 +253,31 @@ public class UserService {
                 .isFollowing(isFollowing)
                 .build();
         return yourpageRes;
+    }
+
+    public List<TopInfluencerRes> getTopInfluencers(int limit) {
+        List<User> topUsers = userRepository.findTopInfluencers(PageRequest.of(0, limit));
+
+        return topUsers.stream()
+                .map(user -> TopInfluencerRes.builder()
+                        .userId(user.getId())
+                        .profileImage(user.getProfilePhoto())
+                        .nickname(user.getNickName())
+                        .followersCount(user.getFollowers().size())//유저 팔로워로 팔로워수 체크
+                        .build())
+                .collect(Collectors.toList());
+    }
+    public UserInfoRes getUserInfo(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인한 유저가 존재하지 않습니다.");
+        }
+
+        return UserInfoRes.builder()
+                .userId(user.getId())
+                .userName(user.getName())
+                .userNickName(user.getNickName())
+                .role(user.getRole().toString()) // 🔹 유저 역할 반환
+                .profilePhoto(user.getProfilePhoto())
+                .build();
     }
 }

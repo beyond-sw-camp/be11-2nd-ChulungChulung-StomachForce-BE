@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class Announcement extends BaseReservationTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
+    private LocalDateTime endTime;
     private String contents;
     @Enumerated(EnumType.STRING)
     @Builder.Default
@@ -43,7 +45,7 @@ public class Announcement extends BaseReservationTimeEntity {
     }
 
 
-    public void updateAnnouncement(String newTitle, String newContents, AnnounceStatus newStatus, List<AnnouncementImage> newImages) {
+    public void updateAnnouncement(String newTitle, String newContents, AnnounceStatus newStatus, List<AnnouncementImage> newImages, LocalDateTime newEndDate) {
         if (newTitle != null && !newTitle.isBlank()) {
             this.title = newTitle;
         }
@@ -55,6 +57,9 @@ public class Announcement extends BaseReservationTimeEntity {
         }
         if (newImages != null) {
             updateImages(newImages);
+        }
+        if (newEndDate != null) {
+            this.endTime = newEndDate;
         }
     }
 
