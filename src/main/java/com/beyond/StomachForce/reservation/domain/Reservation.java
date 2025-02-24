@@ -51,9 +51,9 @@ public class Reservation extends BaseReservationTimeEntity {
 //    id ,userId, restaurantId, reservationType, reservationDate, peopleNumber, method, mileage
 
 
-    public void updateReservation(LocalDateTime reservationDateTime, Integer peopleNumber, Payment paymentMethod, Integer mileage) {
-        this.reservationDate = reservationDateTime.toLocalDate();
-        this.reservationTime = reservationDateTime;
+    public void updateReservation(LocalDate reservationDate,LocalTime reservationTime, Integer peopleNumber, Payment paymentMethod, Integer mileage) {
+        this.reservationDate = reservationDate;
+        this.reservationTime = reservationTime;
         this.peopleNumber = peopleNumber;
         this.paymentMethod = paymentMethod != null ? paymentMethod : this.paymentMethod;
         this.mileage = mileage != null ? mileage : this.mileage;

@@ -37,8 +37,8 @@ public class ReservationCreateReq {
         return Reservation.builder()
                 .peopleNumber(this.peopleNumber)
                 .paymentMethod(this.payment != null ? this.payment : Payment.CARD)
-                .reservationDate(reservationDateTime.toLocalDate())  // 날짜만 저장
-                .reservationTime(reservationDateTime)
+                .reservationDate(this.reservationDate)  // 날짜만 저장
+                .reservationTime(this.reservationTime)
                 .mileage(this.mileage)
                 .menuList(this.menuList)
                 .restaurant(restaurant)
@@ -50,8 +50,8 @@ public class ReservationCreateReq {
         return Reservation.builder()
                 .peopleNumber(this.peopleNumber)
                 .paymentMethod(this.payment != null ? this.payment : Payment.CARD)
-                .reservationDate(reservationDateTime.toLocalDate())  // 날짜만 저장
-                .reservationTime(reservationDateTime)
+                .reservationDate(this.reservationDate)  // 날짜만 저장
+                .reservationTime(this.reservationTime)
                 .mileage(this.mileage)
                 .menuList(this.menuList)
                 .restaurant(restaurant)
