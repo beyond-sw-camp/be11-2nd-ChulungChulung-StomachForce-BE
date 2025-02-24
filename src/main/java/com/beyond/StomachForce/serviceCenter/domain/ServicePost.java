@@ -3,7 +3,6 @@ package com.beyond.StomachForce.serviceCenter.domain;
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.serviceCenter.domain.select.Category;
-import com.beyond.StomachForce.serviceCenter.domain.select.IsAnswered;
 import com.beyond.StomachForce.serviceCenter.domain.select.Visibility;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,8 +32,6 @@ public class ServicePost extends BaseTimeEntity {
     private String contents;
     @Enumerated(EnumType.STRING)
     private Visibility visibility;
-    @Enumerated(EnumType.STRING)
-    private IsAnswered isAnswered;
 
 
     @OneToMany(mappedBy = "servicePost",cascade = CascadeType.ALL)

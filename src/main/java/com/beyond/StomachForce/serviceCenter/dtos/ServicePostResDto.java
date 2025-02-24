@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -17,6 +20,7 @@ public class ServicePostResDto {
     private String contents;
     private String category;
     private String visibility;
+    private List<String> photos;
 
     public ServicePostResDto(ServicePost post) {
         this.id = post.getId();
@@ -25,5 +29,8 @@ public class ServicePostResDto {
         this.contents = post.getContents();
         this.category = post.getCategory().name();
         this.visibility = post.getVisibility().name();
+        this.photos = post.getServicePostPhotos().stream()
+                .map(photo -> photo.getPhoto())
+                .collect(Collectors.toList());
     }
 }

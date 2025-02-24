@@ -36,11 +36,11 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(a -> a.requestMatchers("/user/create", "/user/doLogin",
                         "/user/refresh-token","/restaurant/create","/restaurant/doLogin","/restaurant/refresh-token",
-                        "/restaurant/list","/menu/list/{restaurantId}","/menu/create","menu/update/{menuId}",
-                        "/service/post/create", "/service/post/update/{postId}", "/service/post/delete/{postId}",
+                        "/restaurant/list","/menu/list/{restaurantId}",
                         "/service/list", "/service/answer/create", "/service/answer/update/{answerId}",
                         "/service/answer/delete/{answerId}", "/report/create", "/report/update/{reportId}",
-                        "/report/delete/{reportId}", "/report/admin-comment/{reportId}"
+                        "/report/delete/{reportId}", "/report/admin-comment/{reportId}",
+                        "/service/post/{postId}", "/service/answer/{answerId}"
                         ).permitAll().anyRequest().authenticated())
                 .build();
     }

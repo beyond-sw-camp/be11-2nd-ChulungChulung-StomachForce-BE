@@ -9,6 +9,7 @@ import com.beyond.StomachForce.menu.dto.MenuUpdateDto;
 import com.beyond.StomachForce.menu.service.MenuService;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +27,7 @@ public class MenuController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> menuCreate(@RequestBody MenuCreateDto dto){
+    public ResponseEntity<?> menuCreate(@ModelAttribute MenuCreateDto dto){
         MenuResDto menu = menuService.menuCreate(dto);
         return new ResponseEntity<>(menu.getId(), HttpStatus.CREATED);
     }
@@ -37,8 +38,11 @@ public class MenuController {
         return new ResponseEntity<>(menuList, HttpStatus.OK);
     }
 
-    @PatchMapping("/update/{menuId}")
-    public ResponseEntity<?> updateMenu(@PathVariable Long menuId, @RequestBody MenuUpdateDto dto) {
+    @PatchMapping(value = "/update/{menuId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateMenu(
+            @PathVariable Long menuId,
+            @ModelAttribute MenuUpdateDto dto  // @RequestBody 대신 @ModelAttribute 사용
+    ) {
         MenuResDto updatedMenu = menuService.updateMenu(menuId, dto);
         return new ResponseEntity<>(updatedMenu, HttpStatus.OK);
     }

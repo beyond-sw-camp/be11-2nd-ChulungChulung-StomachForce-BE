@@ -2,6 +2,7 @@ package com.beyond.StomachForce.menu.dto;
 
 import com.beyond.StomachForce.menu.domain.AllergyInfo;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -11,6 +12,6 @@ public class MenuUpdateDto {
     private String name;
     private Long price;
     private String description;
-    private String menuPhoto;
+    private MultipartFile menuPhoto;
     private AllergyInfo allergyInfo;
 }
