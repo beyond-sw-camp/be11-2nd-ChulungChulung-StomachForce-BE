@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -18,5 +20,6 @@ public class RestaurantListRes {
     private int reviewCount;            // 리뷰 개수
     private String imagePath;           // 이미지 사진(항상 0번째 사진 표출)
     private String restaurantType;      // 한,중,일,양식,퓨젼
+//    private List<String> convenience;   // 편의사항
 
 }

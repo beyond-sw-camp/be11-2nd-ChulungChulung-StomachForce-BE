@@ -14,10 +14,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.*;
+import java.util.*;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -99,7 +98,7 @@ public class Restaurant extends BaseTimeEntity {
     private List<Review> reviews = new ArrayList<>();               // 레스토랑 리뷰
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private List<RestaurantInfo> infos = new ArrayList<>();               // 레스토랑 리뷰
+    private List<RestaurantInfo> infos = new ArrayList<>();               // 레스토랑 공지사항
 
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
@@ -107,6 +106,9 @@ public class Restaurant extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Menu> menus = new ArrayList<>();                   //메뉴
+
+//    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+//    private List<RestaurantConvenience> conveniences = new ArrayList<>();                   //편의사항
 
     public RestaurantListRes listDtoFromEntity() {
         double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
@@ -118,23 +120,10 @@ public class Restaurant extends BaseTimeEntity {
                 .bookmarkCount((long) this.bookmarks.size())            // 레스토랑 즐겨찾기 한 사람 수
                 .reviewCount(this.reviews.size())                       // 리뷰 수
                 .address(this.address.getFullAddress())                 // 주소
-                .imagePath(this.photos.get(0).toString())               // 사진 url
-                .build();
-    }
+                .imagePath(this.photos.get(0).getPhotoUrl())            // 사진 url
+                .restaurantType(this.restaurantType.toString())         // 레스토랑 타입
 
-    public RestaurantDetailRes detailFromEntity() {
-        double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
-                (r -> r.getRating().getValue()).average().orElse(0.0);
-        return RestaurantDetailRes.builder()
-                .id(this.id)
-                .name(this.name)
-                .email(this.email)
-                .description(this.description)
-                .phoneNumber(this.phoneNumber)
-                .address(this.address.getFullAddress())
-                .averageRating(averageRating)
-                .bookmarkCount((long)this.bookmarks.size())
-                .updatedTime(this.updatedTime)
+
                 .build();
     }
 
@@ -146,23 +135,78 @@ public class Restaurant extends BaseTimeEntity {
         if(dto.getDescription() != null) this.description = dto.getDescription();
         if(dto.getOpeningTime() != null) this.openingTime = dto.getOpeningTime();
         if(dto.getClosingTime() != null) this.closingTime = dto.getClosingTime();
+        if(dto.getBreakTimeStart() != null) this.breakTimeStart = dto.getBreakTimeStart();
+        if(dto.getBreakTimeEnd() != null) this.breakTimeEnd = dto.getBreakTimeEnd();
         if(dto.getLastOrder() != null) this.lastOrder=dto.getLastOrder();
         if(dto.getHoliday() != null) this.holiday = dto.getHoliday();
         if(dto.getCapacity() != 0) this.capacity = dto.getCapacity();
+        if(dto.getRestaurantType() != null) this.restaurantType = dto.getRestaurantType();
         if(dto.getAddress() != null) {
-            if(this.address == null) {
-                this.address = new RestaurantAddress();     // 기존 주소가 없으면 새로 생성하는 것
+                this.address.setCity(dto.getAddress().getCity());
+                this.address.setStreet(dto.getAddress().getStreet());
+        }
+        // 예약금 관련 처리
+        if (dto.getDepositAvailable() != null) {
+            this.depositAvailable = DepositAvailable.valueOf(dto.getDepositAvailable().toUpperCase());
+            if (this.depositAvailable == DepositAvailable.NO) {
+                this.deposit = null;
+            } else {
+                this.deposit = dto.getDeposit();
             }
-            if(dto.getAddress().getCity() != null) this.address.setCity(dto.getAddress().getCity());
-            if(dto.getAddress().getStreet() != null) this.address.setStreet(dto.getAddress().getStreet());
         }
     }
 
+    public RestaurantDetailRes detailFromEntity() {
+        double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
+                (r -> r.getRating().getValue()).average().orElse(0.0);
+
+        List<String> imagePaths = this.photos.isEmpty()
+                ? List.of("/assets/default-image.jpg")
+                : this.photos.stream().map(rp -> rp.getPhotoUrl()).toList();
+
+        return RestaurantDetailRes.builder()
+                .id(this.id)
+                .name(this.name)
+                .email(this.email)
+                .description(this.description)
+                .openingTime(this.openingTime)
+                .closingTime(this.closingTime)
+                .lastOrder(this.lastOrder)
+                .phoneNumber(this.phoneNumber)
+                .breakTimeStart(this.breakTimeStart)
+                .breakTimeEnd(this.breakTimeEnd)
+                .deposit(this.deposit)
+                .alcoholSelling(this.alcoholSelling.toString())
+                .restaurantType(this.restaurantType.toString())
+                .address(this.address.getFullAddress())
+                .averageRating(averageRating)
+                .bookmarkCount((long)this.bookmarks.size())
+                .updatedTime(this.updatedTime)
+                .imagePath(imagePaths)
+                .build();
+    }
+
+
+
     public void addPhotos(List<RestaurantPhoto> newPhotos) {
         for (RestaurantPhoto photo : newPhotos) {
-            if (!this.photos.contains(photo)) { // 기존 사진이 없을 때만 추가
-                photo.setRestaurant(this);
+            if (!this.photos.contains(photo)) {
                 this.photos.add(photo);
+            }
+        }
+    }
+
+    public void removePhotos(List<String> photoUrlsToRemove) {
+
+        // Iterator 인터페이스는 list나 set, map같은 컬렉션요소에서 순차적으로 접근하고 조작할 수 있는 인터페이스.
+        // 특정 요소에 접근해서 삭제나 요소 여부 확인 등을 할 때 용이함. list를 사용할 때 발생되는 예외처리를 미리 막아주는 역할을 함.
+
+        Iterator<RestaurantPhoto> iterator = this.photos.iterator();
+        while (iterator.hasNext()) {
+            RestaurantPhoto photo = iterator.next();
+            if (photoUrlsToRemove.contains(photo.getPhotoUrl())) {
+                photo.photoDeactivate();  // Soft Delete
+                iterator.remove();
             }
         }
     }

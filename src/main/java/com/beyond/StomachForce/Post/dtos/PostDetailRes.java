@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public class PostDetailRes {
     private String contents;
-    private Long likes = 0L;
+    private Long likes;
     private List<String> tags;
     private List<String> postPhotos;
     private List<Long> likedUser;

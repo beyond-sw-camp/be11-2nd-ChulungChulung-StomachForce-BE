@@ -2,10 +2,12 @@ package com.beyond.StomachForce.restaurant.dtos;
 
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.domain.RestaurantAddress;
+import com.beyond.StomachForce.restaurant.domain.RestaurantConvenience;
 import com.beyond.StomachForce.restaurant.domain.RestaurantPhoto;
 import com.beyond.StomachForce.restaurant.domain.select.AlcoholSelling;
 import com.beyond.StomachForce.restaurant.domain.select.DepositAvailable;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantRole;
+import com.beyond.StomachForce.restaurant.domain.select.RestaurantType;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,10 +73,13 @@ public class RestaurantCreateReq {
 
     private int capacity;                       // 최대 수용 인원
 
-    private String restaurantType;              // 한중일식 넣기
+    @NotNull
+    private RestaurantType restaurantType;              // 한중일식 넣기
 
     @NotNull
-    private RestaurantAddress address;           // 주소
+    private RestaurantAddress address;                // 주소
+
+//    private List<RestaurantConvenience> convenience;   //편의사항
 
     @NotEmpty
     private List<MultipartFile> restaurantPhotos = new ArrayList<>();        // 가게 사진 1장 이상
@@ -97,7 +103,9 @@ public class RestaurantCreateReq {
                 .holiday(this.holiday)
                 .capacity(this.capacity)
                 .address(this.address)
+//                .conveniences(this.convenience)
                 .photos(new ArrayList<>())
+                .restaurantType(this.restaurantType)
                 .build();
     }
 

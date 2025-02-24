@@ -31,9 +31,11 @@ public class RestaurantPhoto extends BaseTimeEntity {
     @Builder.Default                        // 기본적으로 활성화 시키기
     private RestaurantPhotoStatus photoStatus = RestaurantPhotoStatus.ACTIVE;
 
-    public void setRestaurant(Restaurant restaurant) {
+    public RestaurantPhoto(String photoUrl, Restaurant restaurant) {
+        this.photoUrl = photoUrl;
         this.restaurant = restaurant;
     }
+
 
     public void photoDeactivate() {
         this.photoStatus = RestaurantPhotoStatus.INACTIVE;

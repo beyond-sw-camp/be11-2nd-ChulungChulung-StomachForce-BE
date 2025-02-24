@@ -1,6 +1,9 @@
 package com.beyond.StomachForce.restaurant.repository;
 
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -30,6 +33,12 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
     Optional<Restaurant> findByRegistrationNumber(String registrationNumber);
 
+    Optional<Restaurant> findByRegistrationNumberAndRestaurantStatus(String registrationNumber, Enum status);
+
+    Page<Restaurant> findAll(Specification<Restaurant> specification, Pageable pageable);
+
+    @Query("SELECT r FROM Restaurant r ORDER BY r.rating DESC, r.id ASC")
+    List<Restaurant> findTopRestaurantsByRating(Pageable pageable);
 
 
 

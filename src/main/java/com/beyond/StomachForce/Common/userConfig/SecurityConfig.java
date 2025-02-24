@@ -35,10 +35,11 @@ public class SecurityConfig {
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests(a -> a.requestMatchers("/user/create", "/user/doLogin",
-                        "/user/refresh-token","/restaurant/create","/restaurant/doLogin","/restaurant/refresh-token",
+
+                        "/user/refresh-token","/restaurant/create","/restaurant/doLogin","/restaurant/refresh-token","restaurant/detail/{id}",
                         "/restaurant/list","/menu/list/{restaurantId}",
                         "/service/list", "/service/answer/create", "/service/answer/update/{answerId}",
-                        "/service/answer/delete/{answerId}", "/report/create", "/report/update/{reportId}",
+                        "/service/answer/delete/{answerId}","user/me", "/report/create", "/report/update/{reportId}",
                         "/report/delete/{reportId}", "/report/admin-comment/{reportId}",
                         "/service/post/{postId}", "/service/answer/{answerId}"
                         ).permitAll().anyRequest().authenticated())

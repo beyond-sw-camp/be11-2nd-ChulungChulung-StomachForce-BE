@@ -77,22 +77,28 @@ public class PostService {
         post.deletePost();
     }
 
-    public Long likes(Long postId){
+    public LikeResDto getLikes(Long postId){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         Long userId = user.getId();
-        Post post = postRepository.findById(postId).orElseThrow(()->new EntityNotFoundException("없는 게시글입니다."));
-        if(post.getLikedUser().contains(userId)){
-            post.getLikedUser().remove(userId);
-        }else{
-            post.getLikedUser().add(userId);
-        }
-        postRepository.save(post);
+        Long Like = likeService.getLikeCount(postId);
+        boolean isLiked = likeService.isUserLikedPost(postId, userId);
+        return LikeResDto.builder()
+                .postId(postId)
+                .likes(Like)
+                .isLiked(isLiked)
+                .build();
+    }
+
+    public void postLikes(Long postId){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        Long userId = user.getId();
         likeService.toggleLike(postId, String.valueOf(userId));
         Long updateLike = likeService.getLikeCount(postId);
+        boolean isLiked = likeService.isUserLikedPost(postId, userId);
         LikeRabbitDto likeRabbitDto = LikeRabbitDto.builder().postId(postId).likes(updateLike).build();
         likeRabbitmqService.publish(likeRabbitDto);
-        return likeService.getLikeCount(postId);
     }
 
     public Comment comments(Long postId,CommentCreateDto commentCreateDto){
@@ -119,7 +125,7 @@ public class PostService {
 
     public PostDetailRes postDetail(Long postId){
         Post post = postRepository.findById(postId).orElseThrow(()->new EntityNotFoundException("없는 게시글입니다."));
-        PostDetailRes postDetailRes = post.postDetails();
+        PostDetailRes postDetailRes = post.postDetails(likeService.getLikeCount(postId));
         return postDetailRes;
     }
 

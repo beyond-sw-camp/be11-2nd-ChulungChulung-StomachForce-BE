@@ -2,14 +2,15 @@ package com.beyond.StomachForce.restaurant.service;
 
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
 import com.beyond.StomachForce.restaurant.domain.*;
-import com.beyond.StomachForce.restaurant.domain.RestaurantRefreshDto;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
 import com.beyond.StomachForce.restaurant.dtos.*;
 import com.beyond.StomachForce.restaurant.domain.select.BookmarkType;
-import com.beyond.StomachForce.restaurant.dtos.LoginDto;
-import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoCreateReq;
-import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoListRes;
-import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoUpdateReq;
+
+import com.beyond.StomachForce.restaurant.dtos.forLogin.LoginDto;
+import com.beyond.StomachForce.restaurant.dtos.forLogin.RestaurantRefreshDto;
+import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoCreateReq;
+import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoListRes;
+import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoUpdateReq;
 import com.beyond.StomachForce.restaurant.repository.BookmarkRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantInfoRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
@@ -17,6 +18,12 @@ import com.beyond.StomachForce.review.repository.ReviewRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,10 +80,32 @@ public class RestaurantService {
         this.s3Client = s3Client;
     }
 
-    public List<RestaurantListRes> findAll(){
-        return restaurantRepository.findAll().stream().map
-                (r->r.listDtoFromEntity()).collect(Collectors.toList());
+    public Page<RestaurantListRes> findAll(Pageable pageable, RestaurantSearchDto searchDto){
+        Specification<Restaurant> specification = new Specification<Restaurant>() {
+            @Override
+            public Predicate toPredicate(Root<Restaurant> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicates = new ArrayList<>();
+                if(searchDto.getName() != null){
+                    predicates.add(criteriaBuilder.like(root.get("name"), "%" + searchDto.getName() + "%"));
+                }
+                if (searchDto.getAddress() != null) {
+                    Join<Restaurant, RestaurantAddress> addressJoin = root.join("address"); // RestaurantAddress와 조인
+                    Predicate cityPredicate = criteriaBuilder.like(addressJoin.get("city"), "%" + searchDto.getAddress() + "%");
+                    Predicate streetPredicate = criteriaBuilder.like(addressJoin.get("street"), "%" + searchDto.getAddress() + "%");
+                    predicates.add(criteriaBuilder.or(cityPredicate, streetPredicate)); // OR 조건 적용
+                }
+                Predicate[] predicateArr = new Predicate[predicates.size()];
+                for(int i=0; i<predicates.size(); i++){
+                    predicateArr[i] = predicates.get(i);
+                }
+                Predicate predicate = criteriaBuilder.and(predicateArr);
+                return predicate;
+            }
+        };
+        Page<Restaurant> restaurantList = restaurantRepository.findAll(specification, pageable);
+        return restaurantList.map(p->p.listDtoFromEntity());
     }
+
     public RestaurantDetailRes findById(Long id){
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("Restaurant with id " + id + " not found"));
         return restaurant.detailFromEntity();
@@ -190,33 +219,86 @@ public class RestaurantService {
                 .orElseThrow(()-> new EntityNotFoundException("없는 사용자입니다."));
 
         if(!registrationNumber.equals(restaurant.getRegistrationNumber())){
-            throw new IllegalArgumentException("남의 것을 탐하지 마시오");
+            throw new IllegalArgumentException("회원정보가 일치하지 않습니다.");     // 사업자등록증 다름.
         }
         if(!passwordEncoder.matches(restaurantUpdateReq.getCurrentPassword(),restaurant.getPassword())){
-            throw new IllegalArgumentException("남의 것을 탐하지 마시오");
+            throw new IllegalArgumentException("회원정보가 일치하지 않습니다.");     // 비번틀림
         }
         if (restaurantUpdateReq.getCurrentPassword() == null || restaurantUpdateReq.getCurrentPassword().isBlank()) {
-            throw new IllegalArgumentException("지금 비번도 모르는놈이 뭘 할 수 있을까?");
+            throw new IllegalArgumentException("회원정보가 일치하지 않습니다.");     // 현재 비밀번호 입력
         }
-
-
 
         String password = passwordEncoder.encode(restaurantUpdateReq.getPassword());
         restaurant.updateProfile(restaurantUpdateReq, password);
 
+        //  사진 삭제 처리
+        if (restaurantUpdateReq.getPhotoUrlsToRemove() != null) {
+            restaurant.removePhotos(restaurantUpdateReq.getPhotoUrlsToRemove());
+        }
+
+        //  새로운 사진 추가 (중복 방지)
+        if (restaurantUpdateReq.getRestaurantPhotos() != null && !restaurantUpdateReq.getRestaurantPhotos().isEmpty()) {
+            List<RestaurantPhoto> newPhotos = new ArrayList<>();
+            for (MultipartFile image : restaurantUpdateReq.getRestaurantPhotos()) {
+                try {
+                    byte[] bytes = image.getBytes();
+                    String fileName = restaurant.getId() + "_" + image.getOriginalFilename();
+                    Path path = Paths.get("C:/Users/Playdata/Desktop/testFolder", fileName);
+                    Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+
+                    PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(fileName)
+                            .build();
+                    s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
+
+                    String s3Url = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
+                    RestaurantPhoto restaurantPhoto = new RestaurantPhoto(s3Url, restaurant);
+
+                    if (!restaurant.getPhotos().contains(restaurantPhoto)) { // 중복 방지
+                        newPhotos.add(restaurantPhoto);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException("이미지 저장 실패");
+                }
+            }
+            restaurant.addPhotos(newPhotos);
+        }
+        // info 관련 로직
+        // RestaurantInfo 생성 또는 수정
+        if (restaurantUpdateReq.getInfoText() != null && !restaurantUpdateReq.getInfoText().isBlank()) {
+            Optional<RestaurantInfo> infotext = restaurantInfoRepository.findTop5ByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(
+                            restaurant.getId(), RestaurantInfoStatus.ACTIVE)
+                    .stream()
+                    .findFirst();
+
+            if(restaurantUpdateReq.getInfoText().length()>20){
+                throw new IllegalArgumentException("20글자를 넘을 수 없습니다.");
+            }
+
+            if (infotext.isPresent()) {
+                // 기존 정보가 있으면 업데이트
+                infotext.get().updateInfo(restaurantUpdateReq.getInfoText());
+                restaurantInfoRepository.save(infotext.get());
+            } else {
+                // 기존 정보가 없으면 새로 생성
+                RestaurantInfo newInfo = RestaurantInfo.builder()
+                        .restaurant(restaurant)
+                        .informationText(restaurantUpdateReq.getInfoText())
+                        .build();
+                restaurantInfoRepository.save(newInfo);
+            }
+        }
+
     }
 
-    public Restaurant delete (Long id){
+    public void delete (){
 
-        String registrationNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-        Restaurant restaurant = restaurantRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("없는 레스토랑입니다."));
-
-        if (!restaurant.getRegistrationNumber().equals(registrationNumber)) {
-            throw new IllegalArgumentException("니 계정이 아닌데 왜 지우려고하냐?");
-        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Restaurant restaurant = restaurantRepository
+                .findByRegistrationNumberAndRestaurantStatus(authentication.getName(), RestaurantInfoStatus.ACTIVE)
+                .orElseThrow(()-> new EntityNotFoundException("없는 아이디 입니다."));
         restaurant.deleteRestaurant();
-        return restaurant;
     }
 
     //id로 사진 찾는 메서드(레스토랑 아이디 활용)        //사진 강의 참고하여 수정 필요
@@ -293,4 +375,29 @@ public class RestaurantService {
 //            bookmarkRepository.save(newBookmark); // 즐겨찾기 추가
 //        }
 //    }
+    public List<TopFavoriteRestaurantRes> getTopFavoriteRestaurants(int limit) {
+        List<Restaurant> topRestaurants = restaurantRepository.findTopRestaurantsByRating(PageRequest.of(0, limit));
+
+        return topRestaurants.stream().map(restaurant -> TopFavoriteRestaurantRes.builder()
+                .restaurantId(restaurant.getId())
+                .restaurantImage(restaurant.getPhotos().isEmpty() ? null : restaurant.getPhotos().get(0).getPhotoUrl())
+                .restaurantName(restaurant.getName())
+                .rating(Double.valueOf(restaurant.getRating())) // ⭐ 여기서 별점 직접 가져오기
+                .build()
+        ).collect(Collectors.toList());
+    }
+
+    public List<CategoryRes> getCategories() {
+        List<Restaurant> restaurants = restaurantRepository.findAll();
+
+        return restaurants.stream()
+                .map(Restaurant::getRestaurantType) // 레스토랑에서 카테고리만 추출
+                .distinct() // 중복 제거
+                .map(type -> CategoryRes.builder()
+                        .categoryId((long) type.ordinal()) // Enum의 ordinal을 ID처럼 사용
+                        .categoryName(type.name()) // Enum의 name()을 카테고리명으로 사용
+                        .categoryIcon(null) // 아이콘 URL (추후 설정 가능)
+                        .build())
+                .collect(Collectors.toList());
+    }
 }
