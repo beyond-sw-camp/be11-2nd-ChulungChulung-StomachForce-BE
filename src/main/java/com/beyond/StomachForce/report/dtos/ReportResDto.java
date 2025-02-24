@@ -1,10 +1,15 @@
 package com.beyond.StomachForce.report.dtos;
 
 import com.beyond.StomachForce.report.domain.Report;
+import com.beyond.StomachForce.report.domain.select.ReportClass;
+import com.beyond.StomachForce.serviceCenter.domain.ServicePost;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,16 +21,16 @@ public class ReportResDto {
     private Long reportedId;
     private String reportClass;
     private String contents;
-    private String photo;
-    private String adminComment;
+    private List<String> photos;
 
     public ReportResDto(Report report) {
         this.id = report.getId();
         this.reporterId = report.getReporter().getId();
-        this.reportedId = report.getReported().getId();
+        this.reportedId = report.getReported();
         this.reportClass = report.getReportClass().name();
         this.contents = report.getContents();
-        this.photo = report.getPhoto();
-        this.adminComment = report.getAdminComment();
+        this.photos = report.getReportPhotos().stream()
+                .map(photo -> photo.getPhoto())
+                .collect(Collectors.toList());
     }
 }

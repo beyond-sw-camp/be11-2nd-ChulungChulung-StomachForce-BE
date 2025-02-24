@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class AdminCommentUpdateReq {
-    private String adminComment;
+public class ReportAnswerUpdateReq {
+    private String contents;
 }

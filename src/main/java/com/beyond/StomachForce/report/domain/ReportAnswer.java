@@ -1,8 +1,7 @@
-package com.beyond.StomachForce.serviceCenter.domain;
+package com.beyond.StomachForce.report.domain;
 
 import com.beyond.StomachForce.Common.domain.BaseReservationTimeEntity;
-import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
-import com.beyond.StomachForce.User.domain.User;
+import com.beyond.StomachForce.serviceCenter.domain.ServicePost;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,18 +11,15 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-public class ServiceAnswer extends BaseReservationTimeEntity {
-
+public class ReportAnswer extends BaseReservationTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "post_id")
-    private ServicePost servicePost;
+    @JoinColumn(name = "report_id")
+    private Report report;
 
     @Column(nullable = false)
     private String contents;
-
-
 }
