@@ -14,11 +14,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.time.*;
+import java.util.*;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -100,7 +98,7 @@ public class Restaurant extends BaseTimeEntity {
     private List<Review> reviews = new ArrayList<>();               // 레스토랑 리뷰
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private List<RestaurantInfo> infos = new ArrayList<>();               // 레스토랑 리뷰
+    private List<RestaurantInfo> infos = new ArrayList<>();               // 레스토랑 공지사항
 
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
@@ -108,6 +106,9 @@ public class Restaurant extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Menu> menus = new ArrayList<>();                   //메뉴
+
+//    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+//    private List<RestaurantConvenience> conveniences = new ArrayList<>();                   //편의사항
 
     public RestaurantListRes listDtoFromEntity() {
         double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
@@ -121,6 +122,8 @@ public class Restaurant extends BaseTimeEntity {
                 .address(this.address.getFullAddress())                 // 주소
                 .imagePath(this.photos.get(0).getPhotoUrl())            // 사진 url
                 .restaurantType(this.restaurantType.toString())         // 레스토랑 타입
+
+
                 .build();
     }
 
@@ -156,16 +159,30 @@ public class Restaurant extends BaseTimeEntity {
     public RestaurantDetailRes detailFromEntity() {
         double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
                 (r -> r.getRating().getValue()).average().orElse(0.0);
+
+        List<String> imagePaths = this.photos.isEmpty()
+                ? List.of("/assets/default-image.jpg")
+                : this.photos.stream().map(rp -> rp.getPhotoUrl()).toList();
+
         return RestaurantDetailRes.builder()
                 .id(this.id)
                 .name(this.name)
                 .email(this.email)
                 .description(this.description)
+                .openingTime(this.openingTime)
+                .closingTime(this.closingTime)
+                .lastOrder(this.lastOrder)
                 .phoneNumber(this.phoneNumber)
+                .breakTimeStart(this.breakTimeStart)
+                .breakTimeEnd(this.breakTimeEnd)
+                .deposit(this.deposit)
+                .alcoholSelling(this.alcoholSelling.toString())
+                .restaurantType(this.restaurantType.toString())
                 .address(this.address.getFullAddress())
                 .averageRating(averageRating)
                 .bookmarkCount((long)this.bookmarks.size())
                 .updatedTime(this.updatedTime)
+                .imagePath(imagePaths)
                 .build();
     }
 

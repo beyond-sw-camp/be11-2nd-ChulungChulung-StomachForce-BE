@@ -1,4 +1,4 @@
-package com.beyond.StomachForce.restaurant.dtos;
+package com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo;
 
 
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;

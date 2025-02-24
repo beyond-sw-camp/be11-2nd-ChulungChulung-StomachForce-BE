@@ -1,5 +1,7 @@
 package com.beyond.StomachForce.review.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 @Getter
@@ -16,6 +18,12 @@ public enum Rating {
         this.value = value;
     }
 
+    @JsonValue
+    public int getValue() {
+        return value;
+    }
+
+    @JsonCreator
     public static Rating fromValue(int value) {
         for (Rating rating : Rating.values()) {
             if (rating.getValue() == value) {

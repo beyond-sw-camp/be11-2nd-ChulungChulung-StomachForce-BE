@@ -4,11 +4,12 @@ import com.beyond.StomachForce.Common.dtos.CommonDto;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.domain.RestaurantInfo;
 import com.beyond.StomachForce.restaurant.dtos.*;
-import com.beyond.StomachForce.restaurant.domain.RestaurantRefreshDto;
-import com.beyond.StomachForce.restaurant.dtos.LoginDto;
-import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoCreateReq;
-import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoListRes;
-import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoUpdateReq;
+
+import com.beyond.StomachForce.restaurant.dtos.forLogin.LoginDto;
+import com.beyond.StomachForce.restaurant.dtos.forLogin.RestaurantRefreshDto;
+import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoCreateReq;
+import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoListRes;
+import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoUpdateReq;
 import com.beyond.StomachForce.restaurant.service.RestaurantService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +42,7 @@ public class RestaurantController {
         restaurantService.save(restaurantCreateReq);
         return "OK";
     }
-    @PostMapping("/doLogin")
+    @PostMapping("/login")
     public ResponseEntity<?> doLogin(@RequestBody LoginDto dto) {
         Map<String, Object> loginInfo = restaurantService.login(dto);
         return new ResponseEntity<>(loginInfo, HttpStatus.OK);

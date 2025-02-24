@@ -6,7 +6,9 @@ import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.review.converter.RatingConverter;
 import com.beyond.StomachForce.review.dtos.ReviewListRes;
 import com.beyond.StomachForce.review.dtos.ReviewRes;
+import com.beyond.StomachForce.review.dtos.ReviewUpdateReq;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,11 +33,15 @@ public class Review extends BaseTimeEntity {
     private Rating rating = Rating.FIVE;              // 별점
     @Column(nullable = false, length = 3000)
     private String contents;                          // 내용
+    @Enumerated
+    @Builder.Default
+    private ReviewStatus reviewStatus = ReviewStatus.ACTIVE;
+
 
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
-    private User customer;                           //customer id랑 합쳐야함
+    private User user;                           //customer id랑 합쳐야함
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
@@ -44,15 +50,46 @@ public class Review extends BaseTimeEntity {
     @OneToMany(mappedBy = "review",cascade = CascadeType.ALL) // 사진 넣으면 자동으로 리뷰에 추가됨
     private List<ReviewPhoto> reviewPhotos = new ArrayList<>();
 
+    public Review(User user, Restaurant restaurant, Rating rating, @NotBlank(message = "비울 수 없는 항목입니다.") String contents) {
+        super();
+    }
+
     public ReviewRes fromEntity(Review review) {
+        List<String> imagePaths = this.reviewPhotos.isEmpty()
+                ? List.of("/assets/default-image.jpg")
+                : this.reviewPhotos.stream().map(ReviewPhoto::getReviewImagePath).toList();
+
         return ReviewRes.builder()
-                .id(review.getId())
-                .contents(review.getContents())
-                .rating(Double.valueOf(review.getRating().getValue()))
-                .reviewPhotoUrl(review.getReviewPhotos().stream()
-                        .map(reviewPhoto -> reviewPhoto.getReviewImagePath()).collect(Collectors.toList()))
+                .id(this.id)
+                .contents(this.contents)
+                .rating((double) this.rating.getValue())
+                .reviewPhotoUrl(imagePaths)
                 .build();
     }
+
+    public ReviewListRes toListDto() {
+        return ReviewListRes.builder()
+                .id(this.id)
+                .contents(this.contents)
+                .RestaurantName(this.restaurant.getName())
+                .userIdentify(this.user.getIdentify())
+                .rating(this.rating.getValue())
+                .reviewPhotos(this.reviewPhotos)
+                .createdTime(this.getCreatedTime())
+                .updatedTime(this.getUpdatedTime())
+                .build();
+    }
+
+    public void updateReview(String contents, Rating rating) {
+        if (contents != null && !contents.isBlank()) {
+            this.contents = contents;
+        }
+        if (rating != null) {
+            this.rating = rating;
+        }
+    }
+
+
 
 
 
