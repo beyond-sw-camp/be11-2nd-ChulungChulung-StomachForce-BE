@@ -25,11 +25,11 @@ public class RestaurantUpdateReq {
     private String currentPassword;     //현재 비밀번호랑 확인 후에 바꿀 수 있도록 하기 위해서 넣었읍니다.
     private String phoneNumber;
     private String description;
-    private LocalDateTime openingTime;
-    private LocalDateTime closingTime;
-    private LocalDateTime breakTimeStart;        // 브레이크 타임 시작
-    private LocalDateTime breakTimeEnd;          // 브레이크 타임 끗
-    private LocalDateTime lastOrder;
+    private LocalTime openingTime;
+    private LocalTime closingTime;
+    private LocalTime breakTimeStart;        // 브레이크 타임 시작
+    private LocalTime breakTimeEnd;          // 브레이크 타임 끗
+    private LocalTime lastOrder;
     private LocalDate holiday;
     private int capacity;
     private RestaurantAddress address;

@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -22,7 +23,7 @@ import java.util.List;
 @Builder
 public class ReservationCreateReq {
     private LocalDate reservationDate;
-    private LocalDateTime reservationTime;
+    private LocalTime reservationTime;
     private Integer peopleNumber;
     private Payment payment;
     private Integer mileage;

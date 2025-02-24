@@ -44,27 +44,25 @@ public class Restaurant extends BaseTimeEntity {
     private String description;                  // 가게 설명
 
     @Column(nullable = false)
-    private LocalDateTime openingTime;           // 여는 시간
+    private LocalTime openingTime;           // 여는 시간
 
     @Column(nullable = false)
-    private LocalDateTime closingTime;           // 닫는 시간
+    private LocalTime closingTime;           // 닫는 시간
 
     @Column(nullable = false)
-    private LocalDateTime lastOrder;             // 라스트 오더
+    private LocalTime lastOrder;             // 라스트 오더
 
     private String phoneNumber;                  // 가게 연락처
 
-    private LocalDateTime breakTimeStart;        // 브레이크 타임 시작
+    private LocalTime breakTimeStart;        // 브레이크 타임 시작
 
-    private LocalDateTime breakTimeEnd;          // 브레이크 타임 끗
+    private LocalTime breakTimeEnd;          // 브레이크 타임 끗
 
     private Long deposit;                        //예약금
 
     private LocalDate holiday;                   // 휴무일
 
     private Integer capacity;                    // 최대 수용 인원
-
-    private Integer rating;                      // 별점
 
     private LocalDateTime updatedTime;          // 정보 수정 시간
 
@@ -111,19 +109,20 @@ public class Restaurant extends BaseTimeEntity {
 //    private List<RestaurantConvenience> conveniences = new ArrayList<>();                   //편의사항
 
     public RestaurantListRes listDtoFromEntity() {
-        double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
-                (r -> r.getRating().getValue()).average().orElse(0.0);
+        double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream()
+                .mapToDouble(r -> r.getRating().getValue())
+                .average()
+                .orElse(0.0);
+
         return RestaurantListRes.builder()
-                .id(this.id)                                            // 레스토랑 Id
-                .name(this.name)                                        // 레스토랑 이름
-                .averageRating(averageRating)                           // 레스토랑 평균 별점
-                .bookmarkCount((long) this.bookmarks.size())            // 레스토랑 즐겨찾기 한 사람 수
-                .reviewCount(this.reviews.size())                       // 리뷰 수
-                .address(this.address.getFullAddress())                 // 주소
-                .imagePath(this.photos.get(0).getPhotoUrl())            // 사진 url
-                .restaurantType(this.restaurantType.toString())         // 레스토랑 타입
-
-
+                .id(this.id)
+                .name(this.name)
+                .averageRating(averageRating)
+                .bookmarkCount((long) this.bookmarks.size())
+                .reviewCount(this.reviews.size())
+                .address(this.address.getFullAddress())
+                .imagePath(this.photos.isEmpty() ? "/assets/noImage.jpg" : this.photos.get(0).getPhotoUrl())
+                .restaurantType(this.restaurantType.toString())
                 .build();
     }
 

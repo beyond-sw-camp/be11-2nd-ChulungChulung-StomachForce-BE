@@ -37,7 +37,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
     Page<Restaurant> findAll(Specification<Restaurant> specification, Pageable pageable);
 
-    @Query("SELECT r FROM Restaurant r ORDER BY r.rating DESC, r.id ASC")
+    @Query("SELECT r FROM Restaurant r LEFT JOIN r.reviews rev GROUP BY r.id ORDER BY COALESCE(AVG(CAST(rev.rating AS integer)), 0) DESC")
     List<Restaurant> findTopRestaurantsByRating(Pageable pageable);
 
 
