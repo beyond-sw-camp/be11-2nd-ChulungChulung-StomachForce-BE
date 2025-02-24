@@ -2,6 +2,7 @@ package com.beyond.StomachForce.restaurant.dtos;
 
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.domain.RestaurantAddress;
+import com.beyond.StomachForce.restaurant.domain.RestaurantConvenience;
 import com.beyond.StomachForce.restaurant.domain.RestaurantPhoto;
 import com.beyond.StomachForce.restaurant.domain.select.AlcoholSelling;
 import com.beyond.StomachForce.restaurant.domain.select.DepositAvailable;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,7 +77,9 @@ public class RestaurantCreateReq {
     private RestaurantType restaurantType;              // 한중일식 넣기
 
     @NotNull
-    private RestaurantAddress address;           // 주소
+    private RestaurantAddress address;                // 주소
+
+//    private List<RestaurantConvenience> convenience;   //편의사항
 
     @NotEmpty
     private List<MultipartFile> restaurantPhotos = new ArrayList<>();        // 가게 사진 1장 이상
@@ -99,6 +103,7 @@ public class RestaurantCreateReq {
                 .holiday(this.holiday)
                 .capacity(this.capacity)
                 .address(this.address)
+//                .conveniences(this.convenience)
                 .photos(new ArrayList<>())
                 .restaurantType(this.restaurantType)
                 .build();

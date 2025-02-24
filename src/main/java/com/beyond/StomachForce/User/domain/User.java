@@ -10,7 +10,15 @@ import com.beyond.StomachForce.serviceCenter.domain.ServicePost;
 import com.beyond.StomachForce.reservation.domain.Reservation;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,9 +62,7 @@ public class User extends BaseTimeEntity {
     private List<Post> posts = new ArrayList<>();
     @OneToMany(mappedBy = "user")
     private List<Reservation> reservationList;//홍성혁 추가 - user의 예약내역확인.
-
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-
     @Builder.Default
     private List<UserAddress> userAddresses = new ArrayList<>();
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
@@ -71,26 +77,22 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "reported",cascade = CascadeType.ALL)
     @Builder.Default
     private List<Report> reportsReceived = new ArrayList<>();
-
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
     @Builder.Default
     private List<Follower> followers = new ArrayList<>();
-
     @OneToMany(mappedBy = "followerUser", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Follower> following = new ArrayList<>();
 
 
 
-    public void updateUser(UserUpdateReq userUpdateReq){
-        this.identify = userUpdateReq.getIdentify();
-        this.password = userUpdateReq.getPassword();
+    public void updateUser(UserUpdateReq userUpdateReq, String s3Url){
         this.name = userUpdateReq.getName();
         this.nickName = userUpdateReq.getNickName();
         this.email = userUpdateReq.getEmail();
         this.phoneNumber = userUpdateReq.getPhoneNumber();
         this.gender = userUpdateReq.getGender();
-        this.profilePhoto = userUpdateReq.getProfilePhoto();
+        this.profilePhoto = s3Url;
     }
 
     public void userStop(){

@@ -6,12 +6,14 @@ import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
 import com.beyond.StomachForce.review.dtos.ReviewCreateReq;
 import com.beyond.StomachForce.review.dtos.ReviewListRes;
+import com.beyond.StomachForce.review.dtos.ReviewUpdateReq;
 import com.beyond.StomachForce.review.entity.Rating;
 import com.beyond.StomachForce.review.entity.Review;
 import com.beyond.StomachForce.review.entity.ReviewPhoto;
-import com.beyond.StomachForce.review.repository.ReviewPhotoRepository;
 import com.beyond.StomachForce.review.repository.ReviewRepository;
-import org.springframework.beans.factory.annotation.Value;
+import com.beyond.StomachForce.review.repository.ReviewPhotoRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,113 +23,125 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class ReviewService {
 
-    private final RestaurantRepository restaurantRepository;
     private final ReviewRepository reviewRepository;
     private final ReviewPhotoRepository reviewPhotoRepository;
+    private final RestaurantRepository restaurantRepository;
     private final UserRepository userRepository;
-
-    //사진의존성
     private final S3Client s3Client;
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
+    private final String bucket = "your-s3-bucket-name";
 
-
-    public ReviewService(RestaurantRepository restaurantRepository, ReviewRepository reviewRepository, ReviewPhotoRepository reviewPhotoRepository, UserRepository userRepository, S3Client s3Client) {
-        this.restaurantRepository = restaurantRepository;
+    public ReviewService(
+            ReviewRepository reviewRepository,
+            ReviewPhotoRepository reviewPhotoRepository,
+            RestaurantRepository restaurantRepository,
+            UserRepository userRepository,
+            S3Client s3Client) {
         this.reviewRepository = reviewRepository;
         this.reviewPhotoRepository = reviewPhotoRepository;
+        this.restaurantRepository = restaurantRepository;
         this.userRepository = userRepository;
         this.s3Client = s3Client;
     }
+    // SecurityContextHolder 안쓰는게 뭐 모킹이 쉬워지고 테스트하기 쉽고 책임분리가 잘되서 Authentication 쓰길래 썻는데 우선 제개
+    // 이거 코드 리뷰좀 해야할 것 같습니다.
+    public void reviewCreate(Long restaurantId, ReviewCreateReq req) {
+        String userIdentify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(userIdentify)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-    //리뷰생성
-    public Long createReview(Long id, ReviewCreateReq reviewCreateReq) {
-        try {
-            // user 검증
-            String identify = SecurityContextHolder.getContext().getAuthentication().getName();
-            User user = userRepository.findByIdentify(identify).orElseThrow(() -> new IllegalArgumentException("없는 사용자"));
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
-            // 레스토렁 정보 확인
-            Restaurant restaurant = restaurantRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("없는 레스토랑"));
+        Review review = Review.builder()
+                .user(user)
+                .restaurant(restaurant)
+                .rating(Rating.fromValue(req.getRating()))
+                .contents(req.getContents())
+                .build();
 
-            if (reviewCreateReq.getContents().length() < 10) {
-                throw new IllegalArgumentException("리뷰 성의 없이 쓰지 마세요.");
-            }
-            if (reviewCreateReq.getRating() < 1 || reviewCreateReq.getRating() > 5) {
-                throw new IllegalArgumentException("별점은 1~5점 사이여야 합니다.");
-            }
-            Review review = reviewCreateReq.toEntity(user, restaurant);
-            reviewRepository.save(review);
-            if (reviewCreateReq.getReviewImage() != null && !reviewCreateReq.getReviewImage().isEmpty()) {
-                List<ReviewPhoto> reviewPhotos = new ArrayList<>();
-                for (MultipartFile file : reviewCreateReq.getReviewImage()) {
-                    byte[] bytes = file.getBytes();
-                    String fileName = restaurant.getName() + "_" + file.getOriginalFilename();
+        reviewRepository.save(review);
 
-                    // 데스크탑 폴더에 저장
-                    Path path = Paths.get("C:/Users/Playdata/Desktop/testFolder", fileName);
-                    Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        if (req.getReviewImage() != null) {
+            saveReviewPhotos(review, req.getReviewImage());
+        }
+    }
 
-                    // s3 저장을 위한 request 객체 생성
-                    PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                            .bucket(bucket)
-                            .key(fileName)
-                            .build();
-                    // s3 업로드(경로를 file로 변환함)
-                    s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
-                    // s3 업로드된 url갖고옴
-                    String s3Url =s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
+    public List<ReviewListRes> reviewList(Long restaurantId) {
+        return reviewRepository.findByRestaurantId(restaurantId)
+                .stream()
+                .map(Review::toListDto) // 엔티티 내부에서 변환 처리
+                .collect(Collectors.toList());
+    }
 
-                    //리뷰사진 엔티티 생성 및 저장
-                    ReviewPhoto reviewPhoto = ReviewPhoto.builder()
-                            .reviewImagePath(s3Url)
-                            .review(review)
-                            .build();
+    public void updateReview(Long restaurantId, Long reviewId, ReviewUpdateReq req) {
+        String userIdentify = SecurityContextHolder.getContext().getAuthentication().getName();
+        Review review = reviewRepository.findByIdAndRestaurantId(reviewId, restaurantId)
+                .orElseThrow(() -> new EntityNotFoundException("Review not found"));
 
-                    reviewPhotos.add(reviewPhotoRepository.save(reviewPhoto));
-                }
-
-                review.getReviewPhotos().addAll(reviewPhotos);
-            }
-
-            return review.getId();
-        }catch (IOException e){
-            throw new RuntimeException("이미지 저장 싶래",e);
+        if (!review.getUser().getIdentify().equals(userIdentify)) {
+            throw new IllegalArgumentException("Unauthorized action");
         }
 
+        review.updateReview(req.getContents(), req.getRating()); // 기존 코드 유지
 
+        if (req.getReviewPhotos() != null) {
+            saveReviewPhotos(review, req.getReviewPhotos());
+        }
+
+        if (req.getReviewPhotoRemove() != null) {
+            deleteReviewPhotos(req.getReviewPhotoRemove());
+        }
     }
 
-    // 리뷰 이미지 저장
-    public String saveImage(MultipartFile image){
-        return "image_path/" + image.getOriginalFilename();
+    public void deleteReview(Long restaurantId, Long reviewId, Authentication authentication) {
+        String userIdentify = authentication.getName();
+        Review review = reviewRepository.findByIdAndRestaurantId(reviewId, restaurantId)
+                .orElseThrow(() -> new EntityNotFoundException("Review not found"));
+
+        if (!review.getUser().getIdentify().equals(userIdentify)) {
+            throw new IllegalArgumentException("Unauthorized action");
+        }
+
+        reviewRepository.delete(review);
     }
 
-    // 리스트 뽑을 메서드
-    public List<ReviewListRes> findReviewsByRestaurant(Long restaurantId) {
-        List<Review> reviewList = reviewRepository.findByRestaurantId(restaurantId);
-        return reviewList.stream().map(review ->
-                ReviewListRes.builder()
-                        .id(review.getId())
-                        .contents(review.getContents())
-                        .memberEmail(review.getCustomer().getEmail())
-                        .createdTime(review.getCreatedTime())
-                        .updatedTime(review.getUpdatedTime())
-                        .build()
-        ).collect(Collectors.toList());
+    private void saveReviewPhotos(Review review, List<MultipartFile> reviewImages) {
+        List<ReviewPhoto> reviewPhotos = new ArrayList<>();
+
+        for (MultipartFile image : reviewImages) {
+            try {
+                String fileName = review.getId() + "_" + image.getOriginalFilename();
+                Path path = Paths.get("C:/Users/Playdata/Desktop/testFolder", fileName);
+                Files.write(path, image.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+
+                PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(fileName)
+                        .build();
+                s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
+
+                String s3Url = s3Client.utilities().getUrl(r -> r.bucket(bucket).key(fileName)).toExternalForm();
+
+                ReviewPhoto reviewPhoto = new ReviewPhoto(review, s3Url);
+                reviewPhotos.add(reviewPhoto);
+            } catch (IOException e) {
+                throw new RuntimeException("Image upload failed");
+            }
+        }
+
+        reviewPhotoRepository.saveAll(reviewPhotos);
     }
 
+    private void deleteReviewPhotos(List<String> photoUrlsToRemove) {
+        List<ReviewPhoto> reviewPhotos = reviewPhotoRepository.findByReviewImagePathIn(photoUrlsToRemove);
+        reviewPhotoRepository.deleteAll(reviewPhotos);
+    }
 }

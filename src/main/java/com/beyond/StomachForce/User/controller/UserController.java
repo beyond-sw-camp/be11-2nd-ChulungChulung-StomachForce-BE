@@ -2,9 +2,10 @@ package com.beyond.StomachForce.User.controller;
 
 import com.beyond.StomachForce.Common.dtos.StatusCode;
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
-import com.beyond.StomachForce.User.domain.Follower;
+import com.beyond.StomachForce.User.domain.Enum.BlockUser;
 import com.beyond.StomachForce.User.domain.Mileage;
 import com.beyond.StomachForce.User.domain.User;
+import com.beyond.StomachForce.User.domain.VipBenefit;
 import com.beyond.StomachForce.User.dtos.*;
 import com.beyond.StomachForce.User.repository.UserRepository;
 import com.beyond.StomachForce.User.service.UserService;
@@ -51,7 +52,7 @@ public class UserController {
 
 
     @PostMapping("/create")
-    public ResponseEntity<?> postCreatePost(@Valid @RequestBody UserSaveReq userSaveReq)  {
+    public ResponseEntity<?> postCreatePost(@Valid @RequestBody UserSaveReq userSaveReq) {
         User user = userService.save(userSaveReq);
         return new ResponseEntity<>(new StatusCode(HttpStatus.CREATED.value(),
                 "회원가입이 완료되었습니다.",user.getId()),HttpStatus.CREATED);
@@ -64,15 +65,15 @@ public class UserController {
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<?> userUpdate(@Valid @RequestBody UserUpdateReq userUpdateReq){
+    public ResponseEntity<?> userUpdate(UserUpdateReq userUpdateReq) throws IOException {
         userService.updateByIdentify(userUpdateReq);
         return new ResponseEntity<>(new StatusCode(HttpStatus.OK.value(),
                 "회원정보가 수정되었습니다.","ok"),HttpStatus.OK);
     }
 
     @PatchMapping("/stop")
-    public ResponseEntity<?> delete(@Valid String identify){
-        userService.quit(identify);
+    public ResponseEntity<?> delete(){
+        userService.quit();
         return new ResponseEntity<>(new StatusCode(HttpStatus.OK.value(),
                 "회원탈퇴가 완료되었습니다.","ok"),HttpStatus.OK);
     }
@@ -83,7 +84,6 @@ public class UserController {
         String token = jwtTokenProvider.createToken(user.getIdentify() ,user.getRole().toString());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getIdentify() ,user.getRole().toString());
         redisTemplate.opsForValue().set(user.getIdentify(),refreshToken, 200, TimeUnit.DAYS);
-
         Map<String, Object> loginInfo = new HashMap<>();
         loginInfo.put("id",user.getId());
         loginInfo.put("token",token);
@@ -159,6 +159,7 @@ public class UserController {
         YourPageRes response = userService.yourPage(pageable,userSearchDto);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
     @GetMapping("/top-influencers")
     public ResponseEntity<List<TopInfluencerRes>> getTopInfluencers(
             @RequestParam(defaultValue = "5") int limit) {
@@ -188,5 +189,44 @@ public class UserController {
         }
 
         return userService.getUserInfo(user);
+
+
+    @GetMapping("/myVip")
+    public ResponseEntity<?> myVip(Pageable pageable){
+        Page<VipBenefitRes> response = userService.myVip(pageable);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PostMapping("/vipBenefitRegist")
+    public ResponseEntity<?> vipBenefitRegist(VipBenefitRegistDto vipBenefitRegistDto) throws IOException {
+        VipBenefit response = userService.vipBenefitRegist(vipBenefitRegistDto);
+        return new ResponseEntity<>(new StatusCode(HttpStatus.CREATED.value(),
+                "혜택이 등록되었습니다.",response),HttpStatus.CREATED);
+    }
+
+    @PostMapping("/block")
+    public ResponseEntity<?> block(@Valid @RequestBody UserBlockingDto userBlockingDto) {
+        BlockUser response = userService.blocking(userBlockingDto);
+        return new ResponseEntity<>(new StatusCode(HttpStatus.CREATED.value(),
+                "차단되었습니다.",response),HttpStatus.OK);
+    }
+
+    @PostMapping("/isblocked")
+    public ResponseEntity<?> isblocked(@Valid @RequestBody UserBlockingDto userBlockingDto) {
+        boolean[] response = userService.isBlockedBy(userBlockingDto);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PostMapping("/unblock")
+    public ResponseEntity<?> unblock(@Valid @RequestBody UserBlockingDto userBlockingDto) {
+        BlockUser response = userService.unblockUser(userBlockingDto);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @GetMapping("/blockedList")
+    public ResponseEntity<?> blockedList() {
+        List<BlockedUserRes> response = userService.blockedUsers();
+        return new ResponseEntity<>(response,HttpStatus.OK);
+
     }
 }

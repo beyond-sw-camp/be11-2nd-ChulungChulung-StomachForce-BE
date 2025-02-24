@@ -29,6 +29,10 @@ public class ReviewPhoto extends BaseTimeEntity {
     @JoinColumn(name = "review_id")
     private Review review;          // 레스토랑 리뷰 페이지랑 FK설정
 
+    public ReviewPhoto(Review review, String s3Url) {
+        super();
+    }
+
     public ReviewPhotoRes fromEntity(User user) {
         return ReviewPhotoRes.builder()
                 .photoUrl(this.reviewImagePath)
