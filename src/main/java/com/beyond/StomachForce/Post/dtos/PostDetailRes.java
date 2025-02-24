@@ -13,6 +13,7 @@ import java.util.List;
 @Data
 @Builder
 public class PostDetailRes {
+    private Long postId;
     private String contents;
     private Long likes;
     private List<String> tags;

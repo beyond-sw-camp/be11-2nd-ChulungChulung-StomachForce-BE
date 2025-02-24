@@ -190,6 +190,12 @@ public class UserService {
         return user.followerList();
     }
 
+    public boolean isFollowing(String userNickName){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        return user.isFollowing(userNickName);
+    }
+
     public List<FollowingListRes> follwings(){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
