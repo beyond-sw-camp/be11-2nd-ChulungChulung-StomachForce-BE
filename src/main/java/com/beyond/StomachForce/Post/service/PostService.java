@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.Post.service;
 
 import com.beyond.StomachForce.Post.domain.Comment;
+import com.beyond.StomachForce.Post.domain.Enum.PostStatus;
 import com.beyond.StomachForce.Post.dtos.*;
 import com.beyond.StomachForce.Post.repository.CommentRepository;
 import com.beyond.StomachForce.User.domain.User;
@@ -9,6 +10,10 @@ import com.beyond.StomachForce.Post.repository.PostRepository;
 import com.beyond.StomachForce.User.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -127,6 +132,33 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(()->new EntityNotFoundException("없는 게시글입니다."));
         PostDetailRes postDetailRes = post.postDetails(likeService.getLikeCount(postId));
         return postDetailRes;
+    }
+
+    public Page<PostDetailRes> findAll(Pageable pageable){
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "id")
+        );
+
+        Page<Post> posts = postRepository.findByPostStatus(PostStatus.Y,sortedPageable);
+        return posts.map(post -> PostDetailRes.builder()
+                        .postId(post.getId())
+                        .contents(post.getContents())
+                        .likes(likeService.getLikeCount(post.getId()))
+                        .tags(post.getTags())
+                        .postPhotos(post.getPostPhotos())
+                        .build());
+    }
+
+    public FindWriterDto findWriter(Long postId){
+        Post post = postRepository.findById(postId).orElseThrow(()->new EntityNotFoundException("해당 게시글 없습니다."));
+        User user = post.getUser();
+        FindWriterDto findWriterDto = FindWriterDto.builder()
+                .userNickName(user.getNickName())
+                .userProfile(user.getProfilePhoto())
+                .build();
+        return findWriterDto;
     }
 
 }

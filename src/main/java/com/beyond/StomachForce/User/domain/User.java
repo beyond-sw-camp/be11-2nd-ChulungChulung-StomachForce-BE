@@ -137,6 +137,17 @@ public class User extends BaseTimeEntity {
         return followingList;
     }
 
+    public boolean isFollowing(String userNickName){
+        boolean result = false;
+        for(Follower f: following){
+            if(f.getUser().getNickName().equals(userNickName)){
+                result = true;
+                return result;
+            }
+        }
+        return result;
+    }
+
 
     public void updateImagePath(String imagePath){
         this.profilePhoto = imagePath;

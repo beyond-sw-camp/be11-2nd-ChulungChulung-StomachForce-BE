@@ -7,6 +7,8 @@ import com.beyond.StomachForce.Post.dtos.*;
 import com.beyond.StomachForce.Post.service.LikeService;
 import com.beyond.StomachForce.Post.service.PostService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +56,12 @@ public class PostController extends BaseTimeEntity {
                 "좋아요","ok"),HttpStatus.OK);
     }
 
+    @PostMapping("/writerInfo/{postId}")
+    public ResponseEntity<?> writerInfo(@PathVariable Long postId){
+        FindWriterDto response = postService.findWriter(postId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
     @PostMapping("/getLike/{postId}")
     public ResponseEntity<?> getLike(@PathVariable Long postId){
         LikeResDto response = postService.getLikes(postId);
@@ -76,6 +84,12 @@ public class PostController extends BaseTimeEntity {
     @GetMapping("/postDetail/{postId}")
     public ResponseEntity<?> postDetail(@PathVariable Long postId){
         PostDetailRes response = postService.postDetail(postId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @GetMapping("/postList")
+    public ResponseEntity<?> postDetail(Pageable pageable){
+        Page<PostDetailRes> response = postService.findAll(pageable);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 

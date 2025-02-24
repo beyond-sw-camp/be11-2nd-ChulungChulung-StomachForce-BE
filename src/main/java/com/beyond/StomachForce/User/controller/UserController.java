@@ -136,6 +136,12 @@ public class UserController {
         return new ResponseEntity<>(response,HttpStatus.CREATED);
     }
 
+    @PostMapping("/isFollowing")
+    public ResponseEntity<?> istFollowing(String userNickName){
+        boolean response = userService.isFollowing(userNickName);
+        return new ResponseEntity<>(response,HttpStatus.CREATED);
+    }
+
     @GetMapping("/userInfo")
     public ResponseEntity<?> userInfo(){
         UserInfoRes response = userService.userInfo();
