@@ -51,22 +51,19 @@ public class ReservationService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new EntityNotFoundException("예약할 레스토랑을 찾을 수 없습니다."));
 
-        LocalDateTime reservationDateTime = dto.getReservationDateTime();
-
         // ✅ reservationDateTime이 null이면 오류 발생 방지
-        if (reservationDateTime == null) {
+        if (dto.getReservationDate() == null || dto.getReservationTime()==null) {
             throw new IllegalStateException("예약할 날짜 및 시간이 올바르게 설정되지 않았습니다.");
         }
 
         // ✅ 날짜와 시간 분리
-        LocalDate reservationDate = reservationDateTime.toLocalDate();
 
         // ✅ 라스트 오더 체크 (String → LocalTime 변환 후 비교)
         if (restaurant.getLastOrder() != null) {
             System.out.println("📌 라스트 오더 시간: " + restaurant.getLastOrder());
-            System.out.println("📌 예약 시간: " + reservationDateTime);
+            System.out.println("📌 예약 시간: " + dto.getReservationTime());
 
-            if (reservationDateTime.isAfter(restaurant.getLastOrder())) {
+            if (dto.getReservationTime().isAfter(restaurant.getLastOrder())) {
                 throw new IllegalStateException("라스트 오더 이후에는 예약이 불가능합니다.");
             }
         } else {
@@ -74,25 +71,25 @@ public class ReservationService {
 
         }
         // ✅ 영업시간 체크
-        if (restaurant.getOpeningTime().isAfter(reservationDateTime)) {
+        if (restaurant.getOpeningTime().isAfter(dto.getReservationTime())) {
             throw new IllegalStateException("레스토랑 오픈 전에는 예약이 불가능합니다.");
         }
 
         // ✅ 휴무일 체크
-        if (restaurant.getHoliday() != null && restaurant.getHoliday().equals(reservationDate)) {
+        if (restaurant.getHoliday() != null && restaurant.getHoliday().equals(dto.getReservationDate())) {
             throw new IllegalStateException("해당 날짜는 휴무일입니다.");
         }
 
         // ✅ 브레이크 타임 체크
         if (restaurant.getBreakTimeStart() != null && restaurant.getBreakTimeEnd() != null) {
-            if (!reservationDateTime.isBefore(restaurant.getBreakTimeStart()) && !reservationDateTime.isAfter(restaurant.getBreakTimeEnd())) {
+            if (!dto.getReservationTime().isBefore(restaurant.getBreakTimeStart()) && !dto.getReservationTime().isAfter(restaurant.getBreakTimeEnd())) {
                 throw new IllegalStateException("브레이크 타임 동안에는 예약이 불가능합니다.");
             }
         }
 
         // ✅ 예약 인원 초과 체크
-        LocalDateTime startTime = reservationDateTime.withMinute(0).withSecond(0);
-        LocalDateTime endTime = startTime.plusHours(1);
+        LocalTime startTime = dto.getReservationTime().withMinute(0).withSecond(0);
+        LocalTime endTime = startTime.plusHours(1);
 
         Integer currentReservationsPeopleNumber = reservationRepository.sumPeopleNumberByRestaurantAndReservationTimeBetween(restaurant, startTime, endTime);
         if (currentReservationsPeopleNumber == null) {
