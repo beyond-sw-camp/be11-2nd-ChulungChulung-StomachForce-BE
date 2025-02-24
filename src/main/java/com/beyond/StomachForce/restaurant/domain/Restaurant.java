@@ -44,19 +44,19 @@ public class Restaurant extends BaseTimeEntity {
     private String description;                  // 가게 설명
 
     @Column(nullable = false)
-    private LocalTime openingTime;           // 여는 시간
+    private LocalDateTime openingTime;           // 여는 시간
 
     @Column(nullable = false)
-    private LocalTime closingTime;           // 닫는 시간
+    private LocalDateTime closingTime;           // 닫는 시간
 
     @Column(nullable = false)
-    private LocalTime lastOrder;             // 라스트 오더
+    private LocalDateTime lastOrder;             // 라스트 오더
 
     private String phoneNumber;                  // 가게 연락처
 
-    private LocalTime breakTimeStart;        // 브레이크 타임 시작
+    private LocalDateTime breakTimeStart;        // 브레이크 타임 시작
 
-    private LocalTime breakTimeEnd;          // 브레이크 타임 끗
+    private LocalDateTime breakTimeEnd;          // 브레이크 타임 끗
 
     private Long deposit;                        //예약금
 
@@ -98,7 +98,7 @@ public class Restaurant extends BaseTimeEntity {
     private List<Review> reviews = new ArrayList<>();               // 레스토랑 리뷰
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private List<RestaurantInfo> infos = new ArrayList<>();               // 레스토랑 리뷰
+    private List<RestaurantInfo> infos = new ArrayList<>();               // 레스토랑 공지사항
 
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
@@ -106,6 +106,9 @@ public class Restaurant extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Menu> menus = new ArrayList<>();                   //메뉴
+
+//    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+//    private List<RestaurantConvenience> conveniences = new ArrayList<>();                   //편의사항
 
     public RestaurantListRes listDtoFromEntity() {
         double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
@@ -119,6 +122,8 @@ public class Restaurant extends BaseTimeEntity {
                 .address(this.address.getFullAddress())                 // 주소
                 .imagePath(this.photos.get(0).getPhotoUrl())            // 사진 url
                 .restaurantType(this.restaurantType.toString())         // 레스토랑 타입
+
+
                 .build();
     }
 

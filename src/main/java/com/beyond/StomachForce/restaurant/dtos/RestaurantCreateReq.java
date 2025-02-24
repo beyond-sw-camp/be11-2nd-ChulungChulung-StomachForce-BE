@@ -2,6 +2,7 @@ package com.beyond.StomachForce.restaurant.dtos;
 
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.domain.RestaurantAddress;
+import com.beyond.StomachForce.restaurant.domain.RestaurantConvenience;
 import com.beyond.StomachForce.restaurant.domain.RestaurantPhoto;
 import com.beyond.StomachForce.restaurant.domain.select.AlcoholSelling;
 import com.beyond.StomachForce.restaurant.domain.select.DepositAvailable;
@@ -56,17 +57,17 @@ public class RestaurantCreateReq {
     private Long deposit;                        // 예약금
 
     @NotNull
-    private LocalTime openingTime;           // 여는 시간
+    private LocalDateTime openingTime;           // 여는 시간
 
     @NotNull
-    private LocalTime closingTime;           // 닫는 시간
+    private LocalDateTime closingTime;           // 닫는 시간
 
-    private LocalTime breakTimeStart;        // 브레이크 타임 시작
+    private LocalDateTime breakTimeStart;        // 브레이크 타임 시작
 
-    private LocalTime breakTimeEnd;        // 브레이크 타임 끗!
+    private LocalDateTime breakTimeEnd;        // 브레이크 타임 끗!
 
     @NotNull
-    private LocalTime lastOrder;             // 라스트 오더
+    private LocalDateTime lastOrder;             // 라스트 오더
 
     private LocalDate holiday;                   // 휴무일
 
@@ -76,7 +77,9 @@ public class RestaurantCreateReq {
     private RestaurantType restaurantType;              // 한중일식 넣기
 
     @NotNull
-    private RestaurantAddress address;           // 주소
+    private RestaurantAddress address;                // 주소
+
+//    private List<RestaurantConvenience> convenience;   //편의사항
 
     @NotEmpty
     private List<MultipartFile> restaurantPhotos = new ArrayList<>();        // 가게 사진 1장 이상
@@ -100,6 +103,7 @@ public class RestaurantCreateReq {
                 .holiday(this.holiday)
                 .capacity(this.capacity)
                 .address(this.address)
+//                .conveniences(this.convenience)
                 .photos(new ArrayList<>())
                 .restaurantType(this.restaurantType)
                 .build();

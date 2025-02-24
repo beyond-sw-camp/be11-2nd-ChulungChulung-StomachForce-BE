@@ -2,14 +2,15 @@ package com.beyond.StomachForce.restaurant.service;
 
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
 import com.beyond.StomachForce.restaurant.domain.*;
-import com.beyond.StomachForce.restaurant.domain.RestaurantRefreshDto;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
 import com.beyond.StomachForce.restaurant.dtos.*;
 import com.beyond.StomachForce.restaurant.domain.select.BookmarkType;
-import com.beyond.StomachForce.restaurant.dtos.LoginDto;
-import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoCreateReq;
-import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoListRes;
-import com.beyond.StomachForce.restaurant.dtos.RestaurantInfoUpdateReq;
+
+import com.beyond.StomachForce.restaurant.dtos.forLogin.LoginDto;
+import com.beyond.StomachForce.restaurant.dtos.forLogin.RestaurantRefreshDto;
+import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoCreateReq;
+import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoListRes;
+import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoUpdateReq;
 import com.beyond.StomachForce.restaurant.repository.BookmarkRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantInfoRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
@@ -262,6 +263,32 @@ public class RestaurantService {
             }
             restaurant.addPhotos(newPhotos);
         }
+        // info 관련 로직
+        // RestaurantInfo 생성 또는 수정
+        if (restaurantUpdateReq.getInfoText() != null && !restaurantUpdateReq.getInfoText().isBlank()) {
+            Optional<RestaurantInfo> infotext = restaurantInfoRepository.findTop5ByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(
+                            restaurant.getId(), RestaurantInfoStatus.ACTIVE)
+                    .stream()
+                    .findFirst();
+
+            if(restaurantUpdateReq.getInfoText().length()>20){
+                throw new IllegalArgumentException("20글자를 넘을 수 없습니다.");
+            }
+
+            if (infotext.isPresent()) {
+                // 기존 정보가 있으면 업데이트
+                infotext.get().updateInfo(restaurantUpdateReq.getInfoText());
+                restaurantInfoRepository.save(infotext.get());
+            } else {
+                // 기존 정보가 없으면 새로 생성
+                RestaurantInfo newInfo = RestaurantInfo.builder()
+                        .restaurant(restaurant)
+                        .informationText(restaurantUpdateReq.getInfoText())
+                        .build();
+                restaurantInfoRepository.save(newInfo);
+            }
+        }
+
     }
 
     public void delete (){
