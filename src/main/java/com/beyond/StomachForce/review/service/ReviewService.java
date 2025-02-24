@@ -13,6 +13,7 @@ import com.beyond.StomachForce.review.entity.ReviewPhoto;
 import com.beyond.StomachForce.review.repository.ReviewRepository;
 import com.beyond.StomachForce.review.repository.ReviewPhotoRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,8 @@ public class ReviewService {
     private final RestaurantRepository restaurantRepository;
     private final UserRepository userRepository;
     private final S3Client s3Client;
-    private final String bucket = "your-s3-bucket-name";
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket ;
 
     public ReviewService(
             ReviewRepository reviewRepository,
@@ -49,6 +51,7 @@ public class ReviewService {
         this.restaurantRepository = restaurantRepository;
         this.userRepository = userRepository;
         this.s3Client = s3Client;
+
     }
     // SecurityContextHolder 안쓰는게 뭐 모킹이 쉬워지고 테스트하기 쉽고 책임분리가 잘되서 Authentication 쓰길래 썻는데 우선 제개
     // 이거 코드 리뷰좀 해야할 것 같습니다.

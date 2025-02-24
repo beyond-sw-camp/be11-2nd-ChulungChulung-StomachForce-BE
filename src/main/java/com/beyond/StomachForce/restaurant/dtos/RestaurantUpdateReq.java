@@ -22,6 +22,7 @@ public class RestaurantUpdateReq {
     private String email;
     @Size(min = 8)
     private String password;
+    private String registrationNumber;  // 사업자덩록번호
     private String currentPassword;     //현재 비밀번호랑 확인 후에 바꿀 수 있도록 하기 위해서 넣었읍니다.
     private String phoneNumber;
     private String description;
