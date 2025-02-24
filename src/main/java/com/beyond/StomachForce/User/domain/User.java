@@ -112,28 +112,35 @@ public class User extends BaseTimeEntity {
 
 
     public List<FollowerListRes> followerList(){
-        List<FollowerListRes> follwerList = new ArrayList<>();
+        List<FollowerListRes> followerList = new ArrayList<>();
         for(Follower f: followers){
-            FollowerListRes followerListRes = FollowerListRes.builder()
-                    .userId(f.getFollowerUser().getId())
-                    .userName(f.getFollowerUser().getName())
-                    .userProfile(f.getFollowerUser().getProfilePhoto())
-                    .build();
-            follwerList.add(followerListRes);
+            // 팔로워(팔로우한 사람)의 상태가 탈퇴 상태가 아니라면 추가
+            if(f.getFollowerUser().getUserStatus() != UserStatus.S){
+                FollowerListRes followerListRes = FollowerListRes.builder()
+                        .userId(f.getFollowerUser().getId())
+                        .userName(f.getFollowerUser().getName())
+                        .userProfile(f.getFollowerUser().getProfilePhoto())
+                        .build();
+                followerList.add(followerListRes);
+            }
         }
-        return follwerList;
+        return followerList;
     }
 
     public List<FollowingListRes> followingList(){
-        List<FollowingListRes> follwingList = new ArrayList<>();
-        for(Follower f:following){
-            FollowingListRes followingListRes = FollowingListRes.builder()
-                    .userId(f.getUser().getId())
-                    .userName(f.getUser().getName())
-                    .userProfile(f.getUser().getProfilePhoto()).build();
-            follwingList.add(followingListRes);
+        List<FollowingListRes> followingList = new ArrayList<>();
+        for(Follower f: following){
+            // 팔로잉(팔로우 당한 사람)의 상태가 탈퇴 상태가 아니라면 추가
+            if(f.getUser().getUserStatus() != UserStatus.S){
+                FollowingListRes followingListRes = FollowingListRes.builder()
+                        .userId(f.getUser().getId())
+                        .userName(f.getUser().getName())
+                        .userProfile(f.getUser().getProfilePhoto())
+                        .build();
+                followingList.add(followingListRes);
+            }
         }
-        return follwingList;
+        return followingList;
     }
 
 

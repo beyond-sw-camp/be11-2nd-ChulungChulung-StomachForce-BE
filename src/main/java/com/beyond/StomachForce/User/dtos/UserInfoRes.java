@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.User.dtos;
 
 import com.beyond.StomachForce.User.domain.Enum.Gender;
+import com.beyond.StomachForce.User.domain.Enum.UserStatus;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -22,4 +23,5 @@ public class UserInfoRes {
     private String profilePhoto;
     private String role; //홍성혁 추가
     private Gender gender;
+    private UserStatus userStatus;
 }

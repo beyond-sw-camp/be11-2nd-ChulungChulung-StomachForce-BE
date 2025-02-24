@@ -1,11 +1,14 @@
 package com.beyond.StomachForce.User.service;
 
+import com.beyond.StomachForce.Post.domain.Enum.PostStatus;
 import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.Post.dtos.MyPostDto;
 import com.beyond.StomachForce.Post.repository.PostRepository;
+import com.beyond.StomachForce.Post.service.LikeService;
 import com.beyond.StomachForce.User.domain.*;
 import com.beyond.StomachForce.User.domain.Enum.BlockUser;
 import com.beyond.StomachForce.User.domain.Enum.EarnedMileage;
+import com.beyond.StomachForce.User.domain.Enum.UserStatus;
 import com.beyond.StomachForce.User.domain.Enum.VipGrade;
 import com.beyond.StomachForce.User.dtos.*;
 import com.beyond.StomachForce.User.repository.BlockingRepository;
@@ -52,11 +55,12 @@ public class UserService {
     private final VipBenefitRepository vipBenefitRepository;
     private final BlockingRepository blockingRepository;
     private final S3Client s3Client;
+    private final LikeService likeService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public UserService(PostRepository postRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, MileageRepository mileageRepository, VipBenefitRepository vipBenefitRepository, BlockingRepository blockingRepository, S3Client s3Client) {
+    public UserService(PostRepository postRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, MileageRepository mileageRepository, VipBenefitRepository vipBenefitRepository, BlockingRepository blockingRepository, S3Client s3Client, LikeService likeService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -64,6 +68,7 @@ public class UserService {
         this.vipBenefitRepository = vipBenefitRepository;
         this.blockingRepository = blockingRepository;
         this.s3Client = s3Client;
+        this.likeService = likeService;
     }
 
     public User save(UserSaveReq userSaveReq) throws IllegalArgumentException{
@@ -83,7 +88,7 @@ public class UserService {
         String s3Url = s3Client.utilities().getUrl(a->a.bucket(bucket).key("basicProfile.jpg")).toExternalForm();
         user.updateImagePath(s3Url);
         return finalUser;
-}
+    }
 
     public String profile(ProfileReq profileReq) throws IOException {
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -121,22 +126,27 @@ public class UserService {
     public void quit(){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 사람입니다."));
+        likeService.removeUserLikes(String.valueOf(user.getId()));
         user.userStop();
     }
 
     public User login(LoginDto dto){
         boolean check = true;
         Optional<User> optionalUser = userRepository.findByIdentify(dto.getIdentify());
-        if(!optionalUser.isPresent()){
-            check = false;
-        }
-        if(!passwordEncoder.matches(dto.getPassword(), optionalUser.get().getPassword())){
-            check =false;
-        }
-        if(!check){
+        if(!optionalUser.get().getUserStatus().equals(UserStatus.S)) {
+            if(!optionalUser.isPresent()){
+                check = false;
+            }
+            if(!passwordEncoder.matches(dto.getPassword(), optionalUser.get().getPassword())){
+                check =false;
+            }
+            if(!check){
+                throw new IllegalArgumentException("ID 또는 비밀번호가 일치하지 않습니다.");
+            }
+            return optionalUser.get();
+        }else{
             throw new IllegalArgumentException("ID 또는 비밀번호가 일치하지 않습니다.");
         }
-        return optionalUser.get();
     }
 
     public Mileage mangeMileage(ManageMileageDto manageMileageDto){
@@ -212,7 +222,7 @@ public class UserService {
                 pageable.getPageSize(),
                 Sort.by(Sort.Direction.DESC, "id")
         );
-        Page<Post> postPage = postRepository.findByUser(user, sortedPageable);
+        Page<Post> postPage = postRepository.findByUserAndPostStatus(user, PostStatus.Y, sortedPageable);
 
         List<String> postPhotos = postPage.getContent().stream()
                 .map(post -> post.getPostPhotos().isEmpty() ? null : post.getPostPhotos().get(0))
@@ -245,7 +255,7 @@ public class UserService {
         // 페이징에 내림차순 정렬 조건 추가 (postId가 큰 순서대로)
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
                 Sort.by(Sort.Direction.DESC, "id"));
-        Page<Post> postPage = postRepository.findByUser(user, sortedPageable);
+        Page<Post> postPage = postRepository.findByUserAndPostStatus(user,PostStatus.Y ,sortedPageable);
 
         List<String> postPhotos = postPage.getContent().stream()
                 .map(post -> post.getPostPhotos().isEmpty() ? null : post.getPostPhotos().get(0))
@@ -277,20 +287,18 @@ public class UserService {
             @Override
             public Predicate toPredicate(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicates = new ArrayList<>();
-                if(searchDto.getNickName()!=null){
-                    predicates.add(criteriaBuilder.like(root.get("nickName"), "%"+searchDto.getNickName()+"%"));
+                if(searchDto.getNickName() != null){
+                    predicates.add(criteriaBuilder.like(root.get("nickName"), "%" + searchDto.getNickName() + "%"));
                 }
-                Predicate[] predicateArr = new Predicate[predicates.size()];
-                for(int i=0; i<predicates.size();i++){
-                    predicateArr[i] = predicates.get(i);
-                }
-                Predicate predicate = criteriaBuilder.and(predicateArr);
-                return predicate;
+                // 항상 탈퇴 상태(S)가 아닌 회원만 검색 결과에 포함
+                predicates.add(criteriaBuilder.notEqual(root.get("userStatus"), UserStatus.S));
+                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
             }
         };
-        Page<User> userList = userRepository.findAll(specification,pageable);
-        return userList.map(u->u.userInfoRes());
+        Page<User> userList = userRepository.findAll(specification, pageable);
+        return userList.map(u -> u.userInfoRes());
     }
+
 
     public Page<VipBenefitRes> myVip(Pageable pageable){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();

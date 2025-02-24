@@ -16,15 +16,19 @@ public class LikeService {
     }
 
     public void toggleLike(Long postId, String userId) {
-        String key = String.valueOf(postId);
-        Boolean isMember = redisTemplate.opsForSet().isMember(key, userId); // 유저가 이미 좋아요 했는지 확인
+        String postKey = String.valueOf(postId);
+        Boolean isMember = redisTemplate.opsForSet().isMember(postKey, userId);
 
         if (Boolean.TRUE.equals(isMember)) {
-            // 이미 좋아요를 눌렀다면 → 좋아요 취소 (Set에서 삭제)
-            redisTemplate.opsForSet().remove(key, userId);
+            // 좋아요 취소: 포스트 set에서 userId 삭제
+            redisTemplate.opsForSet().remove(postKey, userId);
+            // 역인덱스에서도 해당 postId 삭제 (문자열로 저장)
+            redisTemplate.opsForSet().remove("user:likedPosts:" + userId, String.valueOf(postId));
         } else {
-            // 좋아요 추가 (Set에 userId 추가)
-            redisTemplate.opsForSet().add(key, userId);
+            // 좋아요 추가: 포스트 set에 userId 추가
+            redisTemplate.opsForSet().add(postKey, userId);
+            // 역인덱스에 해당 postId 추가 (문자열로 저장)
+            redisTemplate.opsForSet().add("user:likedPosts:" + userId, String.valueOf(postId));
         }
     }
     public Long getLikeCount(Long postId) {
@@ -36,5 +40,20 @@ public class LikeService {
         String key = String.valueOf(postId);
         Boolean isMember = redisTemplate.opsForSet().isMember(key, String.valueOf(userId));
         return Boolean.TRUE.equals(isMember); // 좋아요 했으면 true, 안 했으면 false 반환
+    }
+
+    // 회원 탈퇴 시 해당 사용자의 좋아요 정보를 모두 제거하는 메서드
+    public void removeUserLikes(String userId) {
+        String userLikedKey = "user:likedPosts:" + userId;
+        Set<Object> likedPosts = redisTemplate.opsForSet().members(userLikedKey);
+        if (likedPosts != null) {
+            for (Object postIdObj : likedPosts) {
+                String postKey = String.valueOf(postIdObj);
+                // 각 포스트의 좋아요 set에서 해당 userId를 삭제
+                redisTemplate.opsForSet().remove(postKey, userId);
+            }
+            // 역인덱스 키 삭제
+            redisTemplate.delete(userLikedKey);
+        }
     }
 }
