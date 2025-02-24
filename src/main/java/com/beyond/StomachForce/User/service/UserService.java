@@ -381,4 +381,30 @@ public class UserService {
                 .collect(Collectors.toList());
         return blockedUserResList;
     }
+
+    public List<TopInfluencerRes> getTopInfluencers(int limit) {
+        List<User> topUsers = userRepository.findTopInfluencers(PageRequest.of(0, limit));
+
+        return topUsers.stream()
+                .map(user -> TopInfluencerRes.builder()
+                        .userId(user.getId())
+                        .profileImage(user.getProfilePhoto())
+                        .nickname(user.getNickName())
+                        .followersCount(user.getFollowers().size())//유저 팔로워로 팔로워수 체크
+                        .build())
+                .collect(Collectors.toList());
+    }
+    public UserInfoRes getUserInfo(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인한 유저가 존재하지 않습니다.");
+        }
+
+        return UserInfoRes.builder()
+                .userId(user.getId())
+                .userName(user.getName())
+                .userNickName(user.getNickName())
+                .role(user.getRole().toString()) // 🔹 유저 역할 반환
+                .profilePhoto(user.getProfilePhoto())
+                .build();
+    }
 }

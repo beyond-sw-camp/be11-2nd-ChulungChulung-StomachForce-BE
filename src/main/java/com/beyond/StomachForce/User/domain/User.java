@@ -160,6 +160,7 @@ public class User extends BaseTimeEntity {
                 .userName(this.getName())
                 .profilePhoto(this.getProfilePhoto())
                 .userId(this.getId())
+                .role(String.valueOf(this.getRole()))
                 .build();
     }
 

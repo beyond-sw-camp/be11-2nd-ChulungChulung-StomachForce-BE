@@ -7,6 +7,7 @@ import com.beyond.StomachForce.User.domain.Mileage;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.User.domain.VipBenefit;
 import com.beyond.StomachForce.User.dtos.*;
+import com.beyond.StomachForce.User.repository.UserRepository;
 import com.beyond.StomachForce.User.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,6 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -31,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class UserController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
     @Qualifier("rtdb")
     private final RedisTemplate<String,Object> redisTemplate;
@@ -38,9 +43,10 @@ public class UserController {
     @Value("${jwt.secretKeyRT}")
     private String secretKeyRT;
 
-    public UserController(UserService userService, JwtTokenProvider jwtTokenProvider, @Qualifier("rtdb") RedisTemplate<String, Object> redisTemplate) {
+    public UserController(UserService userService, JwtTokenProvider jwtTokenProvider, UserRepository userRepository, @Qualifier("rtdb") RedisTemplate<String, Object> redisTemplate) {
         this.userService = userService;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.userRepository = userRepository;
         this.redisTemplate = redisTemplate;
     }
 
@@ -154,6 +160,37 @@ public class UserController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
+    @GetMapping("/top-influencers")
+    public ResponseEntity<List<TopInfluencerRes>> getTopInfluencers(
+            @RequestParam(defaultValue = "5") int limit) {
+
+        List<TopInfluencerRes> influencers = userService.getTopInfluencers(limit);
+        return ResponseEntity.ok(influencers);
+    }
+    @GetMapping("/me")
+    public UserInfoRes getCurrentUserInfo() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalArgumentException("로그인한 유저가 존재하지 않습니다.");
+        }
+
+        Object principal = authentication.getPrincipal();
+        User user;
+
+        // 🔹 Principal이 User 객체인지 확인 후 변환
+        if (principal instanceof User) {
+            user = (User) principal;
+        } else if (principal instanceof String) {
+            // 🔹 만약 Principal이 String이면, DB에서 직접 User 조회
+            user = userRepository.findByIdentify((String) principal)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+        } else {
+            throw new IllegalArgumentException("유효하지 않은 인증 정보입니다.");
+        }
+
+        return userService.getUserInfo(user);
+
+
     @GetMapping("/myVip")
     public ResponseEntity<?> myVip(Pageable pageable){
         Page<VipBenefitRes> response = userService.myVip(pageable);
@@ -190,5 +227,6 @@ public class UserController {
     public ResponseEntity<?> blockedList() {
         List<BlockedUserRes> response = userService.blockedUsers();
         return new ResponseEntity<>(response,HttpStatus.OK);
+
     }
 }

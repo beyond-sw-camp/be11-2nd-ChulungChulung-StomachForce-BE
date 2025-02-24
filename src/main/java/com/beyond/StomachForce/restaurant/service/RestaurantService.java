@@ -20,6 +20,7 @@ import io.jsonwebtoken.Jwts;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
@@ -374,4 +375,29 @@ public class RestaurantService {
 //            bookmarkRepository.save(newBookmark); // 즐겨찾기 추가
 //        }
 //    }
+    public List<TopFavoriteRestaurantRes> getTopFavoriteRestaurants(int limit) {
+        List<Restaurant> topRestaurants = restaurantRepository.findTopRestaurantsByRating(PageRequest.of(0, limit));
+
+        return topRestaurants.stream().map(restaurant -> TopFavoriteRestaurantRes.builder()
+                .restaurantId(restaurant.getId())
+                .restaurantImage(restaurant.getPhotos().isEmpty() ? null : restaurant.getPhotos().get(0).getPhotoUrl())
+                .restaurantName(restaurant.getName())
+                .rating(Double.valueOf(restaurant.getRating())) // ⭐ 여기서 별점 직접 가져오기
+                .build()
+        ).collect(Collectors.toList());
+    }
+
+    public List<CategoryRes> getCategories() {
+        List<Restaurant> restaurants = restaurantRepository.findAll();
+
+        return restaurants.stream()
+                .map(Restaurant::getRestaurantType) // 레스토랑에서 카테고리만 추출
+                .distinct() // 중복 제거
+                .map(type -> CategoryRes.builder()
+                        .categoryId((long) type.ordinal()) // Enum의 ordinal을 ID처럼 사용
+                        .categoryName(type.name()) // Enum의 name()을 카테고리명으로 사용
+                        .categoryIcon(null) // 아이콘 URL (추후 설정 가능)
+                        .build())
+                .collect(Collectors.toList());
+    }
 }

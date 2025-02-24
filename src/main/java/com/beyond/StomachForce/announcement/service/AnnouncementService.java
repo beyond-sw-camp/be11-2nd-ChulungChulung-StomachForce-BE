@@ -5,10 +5,10 @@ import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.User.repository.UserRepository;
 import com.beyond.StomachForce.accouncementImage.domain.AnnouncementImage;
 import com.beyond.StomachForce.accouncementImage.repository.AnnouncementImageRepository;
+import com.beyond.StomachForce.announcement.domain.AnnounceStatus;
 import com.beyond.StomachForce.announcement.domain.Announcement;
-import com.beyond.StomachForce.announcement.dtos.AnnouncementCreateReq;
-import com.beyond.StomachForce.announcement.dtos.AnnouncementListRes;
-import com.beyond.StomachForce.announcement.dtos.AnnouncementUpdateReq;
+import com.beyond.StomachForce.announcement.domain.Type;
+import com.beyond.StomachForce.announcement.dtos.*;
 import com.beyond.StomachForce.announcement.repository.AnnouncementRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,8 +29,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.rmi.RemoteException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -53,11 +56,16 @@ public class AnnouncementService {
     public Announcement createAnnouncement(AnnouncementCreateReq dto) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.findByIdentify(authentication.getName()).orElseThrow(()-> new EntityNotFoundException("user is not found"));
-
+        LocalDateTime parsedEndDate = null;
+        if (dto.getEndDate() != null && !dto.getEndDate().isBlank()) {
+            parsedEndDate = LocalDateTime.parse(dto.getEndDate(), DateTimeFormatter.ISO_DATE_TIME);
+        }
         Announcement announcement = Announcement.builder()
                 .title(dto.getTitle())
+                .endTime(parsedEndDate)
                 .contents(dto.getContents())
                 .user(user)
+                .type(Type.valueOf(dto.getType()))
                 .build();
         announcementRepository.save(announcement);
         List<AnnouncementImage> imageList = new ArrayList<>();
@@ -110,6 +118,7 @@ public class AnnouncementService {
     public Announcement updateAnnouncement(AnnouncementUpdateReq dto, Long id) throws IOException {
         Announcement announcement = announcementRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 게시글 입니다."));
         // 2. 새로운 이미지 리스트 생성 (S3 업로드 후 URL 리스트 생성)
+
         List<AnnouncementImage> newImageList = new ArrayList<>();
         if (dto.getImages() != null && !dto.getImages().isEmpty()) {
             for (MultipartFile image : dto.getImages()) {
@@ -140,7 +149,15 @@ public class AnnouncementService {
                 newImageList.add(announcementImage);
             }
         }
-        announcement.updateAnnouncement(dto.getTitle(), dto.getContents(), dto.getStatus(), newImageList);
+        LocalDateTime parsedEndDate = null;
+        if (dto.getEndDate() != null && !dto.getEndDate().isBlank()) {
+            try {
+                parsedEndDate = LocalDateTime.parse(dto.getEndDate(), DateTimeFormatter.ISO_DATE_TIME);
+            } catch (Exception e) {
+                System.err.println("❌ LocalDateTime 변환 오류: " + e.getMessage());
+            }
+        }
+        announcement.updateAnnouncement(dto.getTitle(), dto.getContents(), dto.getStatus(), newImageList, parsedEndDate);
 
         System.out.println("이미지에용 : " + newImageList);
         announcementImageRepository.saveAll(newImageList);
@@ -173,10 +190,42 @@ public class AnnouncementService {
     public List<AnnouncementListRes> getAnnouncements() {
         return announcementRepository.findAll().stream()
                 .map(announcement -> AnnouncementListRes.builder()
+                        .id(announcement.getId())
                         .title(announcement.getTitle())
-                        .creaetedDate(LocalDate.from(announcement.getCreatedTime())) // 엔티티에서 생성 날짜 가져오기
+                        .createdDate(LocalDate.from(announcement.getCreatedTime())) // 엔티티에서 생성 날짜 가져오기
                         .announcementType(announcement.getType().name()) // Enum 타입을 문자열로 변환
+                        .endDate(Optional.ofNullable(announcement.getEndTime())
+                                .map(LocalDate::from)
+                                .orElse(null))
+                        .images(announcement.getImages())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public List<EventBannerRes> getOngoingEvents() {
+        List<Announcement> eventAnnouncements = announcementRepository.findByTypeAndStatus(Type.EVENT, AnnounceStatus.ON);
+
+        return eventAnnouncements.stream().map(event -> EventBannerRes.builder()
+                .eventId(event.getId())
+                .eventTitle(event.getTitle())
+                .eventImage(event.getImages().isEmpty() ? null : event.getImages().get(0).getImagePath()) // 첫 번째 이미지 기준
+                .build()
+        ).collect(Collectors.toList());
+    }
+    public AnnouncementDetailRes getAnnouncementDetail(Long id) {
+        Announcement announcement = announcementRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ID의 공지사항이 존재하지 않습니다."));
+
+        return AnnouncementDetailRes.builder()
+                .id(announcement.getId())
+                .title(announcement.getTitle())
+                .createdDate(LocalDate.from(announcement.getCreatedTime())) // 생성 날짜
+                .endDate(Optional.ofNullable(announcement.getEndTime())
+                .map(LocalDate::from)
+                .orElse(null))
+                .announcementType(announcement.getType().name()) // 공지 or 이벤트
+                .contents(announcement.getContents()) // 본문 내용
+                .images(announcement.getImages()) // 이미지 리스트
+                .build();
     }
 }

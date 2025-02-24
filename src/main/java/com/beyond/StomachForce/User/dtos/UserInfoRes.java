@@ -20,5 +20,6 @@ public class UserInfoRes {
     private String userEmail;
     private String userPhoneNumber;
     private String profilePhoto;
+    private String role; //홍성혁 추가
     private Gender gender;
 }
