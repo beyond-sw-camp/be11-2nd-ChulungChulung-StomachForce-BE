@@ -22,6 +22,7 @@ import java.util.List;
 @Data
 @Builder
 public class ReservationCreateReq {
+
     private LocalDate reservationDate;
     private LocalTime reservationTime;
     private Integer peopleNumber;
@@ -35,11 +36,11 @@ public class ReservationCreateReq {
     public Reservation toEntity(User user, Coupon coupon, Restaurant restaurant){
         return Reservation.builder()
                 .peopleNumber(this.peopleNumber)
-                .reservationDate(this.reservationDate)
-                .paymentMethod(this.payment)
+                .paymentMethod(this.payment != null ? this.payment : Payment.CARD)
+                .reservationDate(reservationDateTime.toLocalDate())  // 날짜만 저장
+                .reservationTime(reservationDateTime)
                 .mileage(this.mileage)
                 .menuList(this.menuList)
-                .reservationTime(this.reservationTime)
                 .restaurant(restaurant)
                 .user(user)
                 .coupon(coupon)
@@ -48,9 +49,9 @@ public class ReservationCreateReq {
     public Reservation toEntity(User user, Restaurant restaurant){
         return Reservation.builder()
                 .peopleNumber(this.peopleNumber)
-                .reservationDate(this.reservationDate)
-                .reservationTime(this.reservationTime)
-                .paymentMethod(this.payment)
+                .paymentMethod(this.payment != null ? this.payment : Payment.CARD)
+                .reservationDate(reservationDateTime.toLocalDate())  // 날짜만 저장
+                .reservationTime(reservationDateTime)
                 .mileage(this.mileage)
                 .menuList(this.menuList)
                 .restaurant(restaurant)
