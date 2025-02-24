@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -16,6 +17,14 @@ import java.time.LocalTime;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 //    동시성이슈해결
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT SUM(r.peopleNumber) FROM Reservation r WHERE r.restaurant = :restaurant AND r.reservationTime BETWEEN :startTime AND :endTime")
-    Integer sumPeopleNumberByRestaurantAndReservationTimeBetween(Restaurant restaurant, LocalTime startTime, LocalTime endTime);
+    @Query("SELECT SUM(r.peopleNumber) FROM Reservation r " +
+            "WHERE r.restaurant = :restaurant " +
+            "AND r.reservationDate = :reservationDate " + // ✅ 날짜 추가!
+            "AND r.reservationTime BETWEEN :startTime AND :endTime")
+    Integer sumPeopleNumberByRestaurantAndReservationTimeBetween(
+            Restaurant restaurant,
+            LocalDate reservationDate, // ✅ 날짜 추가
+            LocalTime startTime,
+            LocalTime endTime
+    );
 }

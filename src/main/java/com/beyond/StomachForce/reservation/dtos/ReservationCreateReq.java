@@ -7,10 +7,12 @@ import com.beyond.StomachForce.menu.domain.Menu;
 import com.beyond.StomachForce.reservation.domain.Payment;
 import com.beyond.StomachForce.reservation.domain.Reservation;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,8 +24,12 @@ import java.util.List;
 @Data
 @Builder
 public class ReservationCreateReq {
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate reservationDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
     private LocalTime reservationTime;
     private Integer peopleNumber;
     private Payment payment;

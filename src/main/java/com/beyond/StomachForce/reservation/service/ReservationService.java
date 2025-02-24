@@ -51,6 +51,8 @@ public class ReservationService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new EntityNotFoundException("예약할 레스토랑을 찾을 수 없습니다."));
 
+        System.out.println("📌 [DEBUG] 받은 예약 데이터: 날짜=" + dto.getReservationDate() + ", 시간=" + dto.getReservationTime());
+
         // ✅ reservationDateTime이 null이면 오류 발생 방지
         if (dto.getReservationDate() == null || dto.getReservationTime()==null) {
             throw new IllegalStateException("예약할 날짜 및 시간이 올바르게 설정되지 않았습니다.");
@@ -82,7 +84,9 @@ public class ReservationService {
 
         // ✅ 브레이크 타임 체크
         if (restaurant.getBreakTimeStart() != null && restaurant.getBreakTimeEnd() != null) {
-            if (!dto.getReservationTime().isBefore(restaurant.getBreakTimeStart()) && !dto.getReservationTime().isAfter(restaurant.getBreakTimeEnd())) {
+            if (!dto.getReservationTime().isBefore(restaurant.getBreakTimeStart()) &&
+                    !dto.getReservationTime().equals(restaurant.getBreakTimeEnd()) &&
+                    !dto.getReservationTime().isAfter(restaurant.getBreakTimeEnd())) {
                 throw new IllegalStateException("브레이크 타임 동안에는 예약이 불가능합니다.");
             }
         }
@@ -91,10 +95,11 @@ public class ReservationService {
         LocalTime startTime = dto.getReservationTime().withMinute(0).withSecond(0);
         LocalTime endTime = startTime.plusHours(1);
 
-        Integer currentReservationsPeopleNumber = reservationRepository.sumPeopleNumberByRestaurantAndReservationTimeBetween(restaurant, startTime, endTime);
+        Integer currentReservationsPeopleNumber = reservationRepository.sumPeopleNumberByRestaurantAndReservationTimeBetween(restaurant, dto.getReservationDate(),startTime, endTime);
         if (currentReservationsPeopleNumber == null) {
             currentReservationsPeopleNumber = 0;  // 예약된 인원이 없으면 0으로 설정
         }
+        System.out.println("현재 예약인원 :" + currentReservationsPeopleNumber );
         if (currentReservationsPeopleNumber + dto.getPeopleNumber() > restaurant.getCapacity()) {
             throw new IllegalStateException("이 시간대에는 최대 인원을 초과하여 예약할 수 없습니다.");
         }
@@ -124,6 +129,23 @@ public class ReservationService {
         }
         return reservationListRes;
     }
+    public void deleteReservation(Long reservationId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByIdentify(authentication.getName())
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 예약 조회
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 예약을 찾을 수 없습니다."));
+
+        // 현재 사용자가 본인의 예약만 삭제할 수 있도록 체크
+        if (!reservation.getUser().equals(user)) {
+            throw new IllegalStateException("본인의 예약만 삭제할 수 있습니다.");
+        }
+
+        // 예약 삭제
+        reservationRepository.delete(reservation);
+    }
     public ReservationDetailRes reservationDetail(Long id){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.findByIdentify(authentication.getName()).orElseThrow(()->new EntityNotFoundException("user is not found"));
@@ -144,7 +166,7 @@ public class ReservationService {
                     .reservationPeopleNumber(reservation.getPeopleNumber())
                     .userName(reservation.getUser().getName())
                     .reservationStatus(reservation.getStatus().toString())
-                    .restaurantAddress(reservation.getRestaurant().getAddress().getStreet())
+                    .restaurantAddress(reservation.getRestaurant().getAddress().getFullAddress())
                     .restaurantNumber(reservation.getRestaurant().getPhoneNumber())
                     .paymentMethod(reservation.getPaymentMethod().toString())
                     .reservationStatus(reservation.getStatus().toString())
@@ -159,7 +181,7 @@ public class ReservationService {
                     .userName(reservation.getUser().getName())
                     .restaurantName(reservation.getRestaurant().getName())
                     .reservationStatus(reservation.getStatus().toString())
-                    .restaurantAddress(reservation.getRestaurant().getAddress().getStreet())
+                    .restaurantAddress(reservation.getRestaurant().getAddress().getFullAddress())
                     .restaurantNumber(reservation.getRestaurant().getPhoneNumber())
                     .paymentMethod(reservation.getPaymentMethod().toString())
                     .reservationStatus(reservation.getStatus().toString())
