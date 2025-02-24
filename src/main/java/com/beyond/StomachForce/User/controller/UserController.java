@@ -78,7 +78,6 @@ public class UserController {
         String token = jwtTokenProvider.createToken(user.getIdentify() ,user.getRole().toString());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getIdentify() ,user.getRole().toString());
         redisTemplate.opsForValue().set(user.getIdentify(),refreshToken, 200, TimeUnit.DAYS);
-
         Map<String, Object> loginInfo = new HashMap<>();
         loginInfo.put("id",user.getId());
         loginInfo.put("token",token);
