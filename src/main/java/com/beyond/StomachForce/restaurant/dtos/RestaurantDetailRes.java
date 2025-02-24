@@ -20,12 +20,12 @@ public class RestaurantDetailRes {
     private String name;                //가게명
     private String email;               //가게 이메일
     private String description;         //설명
-    private LocalDateTime openingTime;      // 여는시간
-    private LocalDateTime closingTime;      // 닫는시간
-    private LocalDateTime lastOrder;        // 라콜
+    private LocalTime openingTime;      // 여는시간
+    private LocalTime closingTime;      // 닫는시간
+    private LocalTime lastOrder;        // 라콜
     private String phoneNumber;         //전번
-    private LocalDateTime breakTimeStart;   //브레이크 시작
-    private LocalDateTime breakTimeEnd;     //브레이크 끝
+    private LocalTime breakTimeStart;   //브레이크 시작
+    private LocalTime breakTimeEnd;     //브레이크 끝
     private Long deposit;               //예약금
     private String alcoholSelling;      // 주류 판매 여부
     private String restaurantType;      // 레스토랑 종류(한중일식)

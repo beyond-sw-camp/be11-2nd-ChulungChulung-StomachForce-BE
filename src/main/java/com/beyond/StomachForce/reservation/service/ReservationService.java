@@ -23,6 +23,7 @@ import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,7 @@ public class ReservationService {
 
     public void save(ReservationCreateReq dto, Long restaurantId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         User user = userRepository.findByIdentify(authentication.getName())
                 .orElseThrow(() -> new EntityNotFoundException("로그인되지 않은 사용자입니다. 로그인을 해주세요."));
 
@@ -69,6 +71,7 @@ public class ReservationService {
             }
         } else {
             System.out.println("⚠️ 라스트 오더 시간이 설정되지 않음 (비교 스킵)");
+
         }
         // ✅ 영업시간 체크
         if (restaurant.getOpeningTime().isAfter(reservationDateTime)) {

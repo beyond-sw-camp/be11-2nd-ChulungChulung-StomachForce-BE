@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,7 +19,7 @@ public class ReservationDetailRes {
 
     private Long id;
     private LocalDate reservationDate;
-    private LocalDateTime reservationTime;
+    private LocalTime reservationTime;
     private String userName;
     private String reservationStatus;
     private String restaurantName;
