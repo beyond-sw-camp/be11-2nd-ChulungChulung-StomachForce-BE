@@ -3,22 +3,27 @@ package com.beyond.StomachForce.User.service;
 import com.beyond.StomachForce.Post.domain.Post;
 import com.beyond.StomachForce.Post.dtos.MyPostDto;
 import com.beyond.StomachForce.Post.repository.PostRepository;
+import com.beyond.StomachForce.User.domain.*;
+import com.beyond.StomachForce.User.domain.Enum.BlockUser;
 import com.beyond.StomachForce.User.domain.Enum.EarnedMileage;
-import com.beyond.StomachForce.User.domain.Follower;
-import com.beyond.StomachForce.User.domain.Mileage;
-import com.beyond.StomachForce.User.domain.User;
-import com.beyond.StomachForce.User.domain.UserAddress;
+import com.beyond.StomachForce.User.domain.Enum.VipGrade;
 import com.beyond.StomachForce.User.dtos.*;
+import com.beyond.StomachForce.User.repository.BlockingRepository;
 import com.beyond.StomachForce.User.repository.MileageRepository;
 import com.beyond.StomachForce.User.repository.UserRepository;
+import com.beyond.StomachForce.User.repository.VipBenefitRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Block;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,10 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,20 +49,24 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MileageRepository mileageRepository;
+    private final VipBenefitRepository vipBenefitRepository;
+    private final BlockingRepository blockingRepository;
     private final S3Client s3Client;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public UserService(PostRepository postRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, MileageRepository mileageRepository, S3Client s3Client) {
+    public UserService(PostRepository postRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, MileageRepository mileageRepository, VipBenefitRepository vipBenefitRepository, BlockingRepository blockingRepository, S3Client s3Client) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.mileageRepository = mileageRepository;
+        this.vipBenefitRepository = vipBenefitRepository;
+        this.blockingRepository = blockingRepository;
         this.s3Client = s3Client;
     }
 
-    public User save(UserSaveReq userSaveReq) throws IllegalArgumentException {
+    public User save(UserSaveReq userSaveReq) throws IllegalArgumentException{
         if(userRepository.findByName(userSaveReq.getName()).isPresent()){
             if(userRepository.findByBirth(userSaveReq.getBirth()).isPresent()){
                 throw new IllegalArgumentException("이미 가입된 회원입니다.");
@@ -74,8 +80,10 @@ public class UserService {
         UserAddress userAddress  = UserAddress.builder().state(state).city(city).village(village).user(user).build();
         user.getUserAddresses().add(userAddress);
         User finalUser = userRepository.save(user);
+        String s3Url = s3Client.utilities().getUrl(a->a.bucket(bucket).key("basicProfile.jpg")).toExternalForm();
+        user.updateImagePath(s3Url);
         return finalUser;
-    }
+}
 
     public String profile(ProfileReq profileReq) throws IOException {
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -91,13 +99,27 @@ public class UserService {
         user.updateImagePath(s3Url);
         return "프로필이 등록되었습니다.";
     }
-    public void updateByIdentify(UserUpdateReq userUpdateReq){
-        String identify = userUpdateReq.getIdentify();
-        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 id입니다"));
-        user.updateUser(userUpdateReq);
+    public void updateByIdentify(UserUpdateReq userUpdateReq) throws IOException {
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        String s3Url = "";
+        if(userUpdateReq.getProfilePhoto()!= null){
+            MultipartFile image = userUpdateReq.getProfilePhoto();
+            byte[] bytes = image.getBytes();
+            String fileName =image.getOriginalFilename();
+            Path path = Paths.get("C:/Users/Playdata/Desktop/tmp/",fileName);
+            Files.write(path,bytes, StandardOpenOption.CREATE,StandardOpenOption.WRITE);
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucket).key(fileName).build();
+            s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
+            s3Url = s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
+        }else{
+            s3Url = user.getProfilePhoto();
+        }
+        user.updateUser(userUpdateReq,s3Url);
     }
 
-    public void quit(String identify){
+    public void quit(){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 사람입니다."));
         user.userStop();
     }
@@ -167,7 +189,16 @@ public class UserService {
     public UserInfoRes userInfo(){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
-        UserInfoRes userInfoRes = UserInfoRes.builder().userId(user.getId()).userName(user.getName()).profilePhoto(user.getProfilePhoto()).build();
+        UserInfoRes userInfoRes = UserInfoRes.builder()
+                .userId(user.getId())
+                .identify(user.getIdentify())
+                .userNickName(user.getNickName())
+                .userName(user.getName())
+                .userEmail(user.getEmail())
+                .userPhoneNumber(user.getPhoneNumber())
+                .gender(user.getGender())
+                .profilePhoto(user.getProfilePhoto())
+                .build();
         return userInfoRes;
     }
 
@@ -176,9 +207,13 @@ public class UserService {
         User user = userRepository.findByIdentify(identify)
                 .orElseThrow(() -> new EntityNotFoundException("없는 회원입니다."));
 
-        Page<Post> postPage = postRepository.findByUser(user, pageable);
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "id")
+        );
+        Page<Post> postPage = postRepository.findByUser(user, sortedPageable);
 
-        // 게시글 사진 리스트 생성
         List<String> postPhotos = postPage.getContent().stream()
                 .map(post -> post.getPostPhotos().isEmpty() ? null : post.getPostPhotos().get(0))
                 .filter(Objects::nonNull)
@@ -196,6 +231,44 @@ public class UserService {
                 .postIds(postIds)
                 .totalPost((int) postPage.getTotalElements())
                 .build();
+    }
+
+    public YourPageRes yourPage(Pageable pageable, UserSearchDto userSearchDto) {
+        String nickName = userSearchDto.getNickName();
+        User user = userRepository.findByNickName(nickName)
+                .orElseThrow(() -> new EntityNotFoundException("없는 회원입니다."));
+        String currentIdentify = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        boolean isFollowing = user.getFollowers().stream()
+                .anyMatch(f -> f.getFollowerUser().getIdentify().equals(currentIdentify));
+
+        // 페이징에 내림차순 정렬 조건 추가 (postId가 큰 순서대로)
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "id"));
+        Page<Post> postPage = postRepository.findByUser(user, sortedPageable);
+
+        List<String> postPhotos = postPage.getContent().stream()
+                .map(post -> post.getPostPhotos().isEmpty() ? null : post.getPostPhotos().get(0))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        List<MyPostDto> postIds = postPage.getContent().stream()
+                .map(post -> new MyPostDto(post.getId()))
+                .collect(Collectors.toList());
+
+        YourPageRes yourpageRes = YourPageRes.builder()
+                .profile(user.getProfilePhoto())
+                .followings(user.followingList().size())
+                .follwers(user.followerList().size())
+                .nickName(user.getNickName())
+                .email(user.getEmail())
+                .influencer(user.getInfluencer())
+                .postPhotos(postPhotos)
+                .totalPost((int) postPage.getTotalElements())
+                .postIds(postIds)
+                .isFollowing(isFollowing)
+                .build();
+        return yourpageRes;
     }
 
 
@@ -219,38 +292,102 @@ public class UserService {
         return userList.map(u->u.userInfoRes());
     }
 
-    public YourPageRes yourPage(Pageable pageable,UserSearchDto userSearchDto){
-        String nickName = userSearchDto.getNickName();
-        User user = userRepository.findByNickName(nickName).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
-        String currentIdentify = SecurityContextHolder.getContext().getAuthentication().getName();
-        boolean isFollowing = user.getFollowers().stream()
-                .anyMatch(f -> f.getFollowerUser().getIdentify().equals(currentIdentify));
-        List<Post> myPost = user.getPosts();
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), myPost.size());
-        List<Post> pagedPosts = new ArrayList<>();
-        if(start < end) {
-            pagedPosts = myPost.subList(start, end);
-        }
+    public Page<VipBenefitRes> myVip(Pageable pageable){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        VipGrade myGrade = user.getVipGrade();
 
-        List<String> myPostPhotos = new ArrayList<>();
-        for (Post p : pagedPosts) {
-            List<String> photos = p.getPostPhotos();
-            if (photos != null && !photos.isEmpty()) {
-                myPostPhotos.add(photos.get(0));
-            }
-        }
-        YourPageRes yourpageRes = YourPageRes.builder()
-                .profile(user.getProfilePhoto())
-                .followings(user.followingList().size())
-                .follwers(user.followerList().size())
-                .nickName(user.getNickName())
-                .email(user.getEmail())
-                .influencer(user.getInfluencer())
-                .postPhotos(myPostPhotos)
-                .totalPost(myPost.size())
-                .isFollowing(isFollowing)
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "id")
+        );
+
+        Page<VipBenefit> vipBenefits = vipBenefitRepository.findByVipGrade(myGrade,sortedPageable);
+//        List<VipBenefitRes> vipBenefitResList = vipBenefits.stream()
+//                .map(vb -> VipBenefitRes.builder()
+//                        .vipGrade(myGrade)
+//                        .title(vb.getTitle())
+//                        .contents(vb.getContents())
+//                        .benefitPhoto(vb.getBenefitPhoto())
+//                        .build())
+//                .collect(Collectors.toList());
+//        return vipBenefitResList;
+        return vipBenefits.map(vb -> VipBenefitRes.builder()
+                .vipGrade(myGrade)
+                .title(vb.getTitle())
+                .contents(vb.getContents())
+                .benefitPhoto(vb.getBenefitPhoto())
+                .build());
+    }
+
+    public VipBenefit vipBenefitRegist(VipBenefitRegistDto vipBenefitRegistDto) throws IOException {
+        MultipartFile image = vipBenefitRegistDto.getBenefitPhoto();
+        byte[] bytes = image.getBytes();
+        String fileName = image.getOriginalFilename();
+        Path path = Paths.get("C:/Users/Playdata/Desktop/tmp/",fileName);
+        Files.write(path,bytes, StandardOpenOption.CREATE,StandardOpenOption.WRITE);
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucket).key(fileName).build();
+        s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
+        String s3Url = s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
+        VipBenefit vipBenefitRegist = VipBenefit.builder()
+                .vipGrade(vipBenefitRegistDto.getVipGrade())
+                .title(vipBenefitRegistDto.getTitle())
+                .contents(vipBenefitRegistDto.getContents())
+                .benefitPhoto(s3Url)
                 .build();
-        return yourpageRes;
+        VipBenefit vipBenefit = vipBenefitRepository.save(vipBenefitRegist);
+        return vipBenefit;
+    }
+
+    public BlockUser blocking(UserBlockingDto userBlockingDto){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User blockingUser = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        String blockedUserNickName = userBlockingDto.getBlockedUserNickName();
+        User blockedUser = userRepository.findByNickName(blockedUserNickName).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        BlockUser blockUser = blockingRepository.save(BlockUser.builder().blocker(blockingUser).blocked(blockedUser).build());
+        return blockUser;
+    }
+
+    public boolean[] isBlockedBy(UserBlockingDto userBlockingDto){
+        String currentIdentify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByIdentify(currentIdentify)
+                .orElseThrow(() -> new EntityNotFoundException("없는 회원입니다."));
+        String otherUserNickName = userBlockingDto.getBlockedUserNickName();
+        User otherUser = userRepository.findByNickName(otherUserNickName)
+                .orElseThrow(() -> new EntityNotFoundException("없는 회원입니다."));
+
+        List<BlockUser> blocks = blockingRepository.findByBlocker(otherUser).orElse(Collections.emptyList());
+        List<BlockUser> blocked = blockingRepository.findByBlocker(currentUser).orElse(Collections.emptyList());
+        boolean[] result = new boolean[2];
+        result[0] = blocks.stream().anyMatch(block -> block.getBlocked().getId().equals(currentUser.getId()));
+        result[1] = blocked.stream().anyMatch(block -> block.getBlocked().getId().equals(otherUser.getId()));
+        return result;
+    }
+
+    public BlockUser unblockUser(UserBlockingDto userBlockingDto) {
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User blocker = userRepository.findByIdentify(identify)
+                .orElseThrow(() -> new EntityNotFoundException("차단하는 회원을 찾을 수 없습니다."));
+        User blocked = userRepository.findByNickName(userBlockingDto.getBlockedUserNickName())
+                .orElseThrow(() -> new EntityNotFoundException("차단당한 회원을 찾을 수 없습니다."));
+
+        // 차단 관계가 존재하는지 확인 후 삭제
+        BlockUser blockOpt = blockingRepository.findByBlockerAndBlocked(blocker, blocked).orElseThrow(()->new EntityNotFoundException("해당 차단 내역이 없습니다."));
+        blockingRepository.delete(blockOpt);
+        return blockOpt;
+    }
+
+    public List<BlockedUserRes> blockedUsers(){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        List<BlockUser> blocks = blockingRepository.findByBlocker(user).orElse(Collections.emptyList());
+        List<BlockedUserRes> blockedUserResList = blocks.stream()
+                .map(block -> BlockedUserRes.builder()
+                        .userNickName(block.getBlocked().getNickName())
+                        .userProfile(block.getBlocked().getProfilePhoto()) // User 엔티티에 프로필 사진이 profilePhoto라 가정
+                        .build())
+                .collect(Collectors.toList());
+        return blockedUserResList;
     }
 }
