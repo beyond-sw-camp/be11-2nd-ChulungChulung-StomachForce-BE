@@ -1,9 +1,13 @@
 package com.beyond.StomachForce.report.domain;
 
+import com.beyond.StomachForce.Common.domain.BaseReservationTimeEntity;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.report.domain.select.ReportClass;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -11,7 +15,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-public class Report {
+public class Report extends BaseReservationTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,9 +25,8 @@ public class Report {
     @JoinColumn(name = "reporter_id", nullable = false)
     private User reporter;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reported_id", nullable = false)
-    private User reported;
+    @Column(nullable = false)
+    private Long reported;
 
     @Enumerated(EnumType.STRING)
     private ReportClass reportClass;
@@ -31,9 +34,9 @@ public class Report {
     @Column(nullable = false)
     private String contents;
 
-    @Column(nullable = false)
-    private String photo;
+    @OneToMany(mappedBy = "report",cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<ReportPhoto> reportPhotos = new ArrayList<>();
 
-    private String adminComment;
 
 }

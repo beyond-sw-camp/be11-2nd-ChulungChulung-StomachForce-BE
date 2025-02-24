@@ -262,7 +262,6 @@ public class ServiceService {
         // 답변 생성
         ServiceAnswer answer = ServiceAnswer.builder()
                 .servicePost(post)
-                .user(user)
                 .contents(req.getContents())
                 .build();
 

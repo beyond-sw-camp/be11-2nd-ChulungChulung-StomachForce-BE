@@ -1,6 +1,6 @@
 package com.beyond.StomachForce.serviceCenter.domain;
 
-import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
+import com.beyond.StomachForce.Common.domain.BaseReservationTimeEntity;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.serviceCenter.domain.select.Category;
 import com.beyond.StomachForce.serviceCenter.domain.select.Visibility;
@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 @Getter
 @Setter
-public class ServicePost extends BaseTimeEntity {
+public class ServicePost extends BaseReservationTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

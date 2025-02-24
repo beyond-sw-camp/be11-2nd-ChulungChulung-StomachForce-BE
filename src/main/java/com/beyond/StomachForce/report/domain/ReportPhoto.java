@@ -1,6 +1,5 @@
-package com.beyond.StomachForce.serviceCenter.domain;
+package com.beyond.StomachForce.report.domain;
 
-import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,14 +11,14 @@ import lombok.NoArgsConstructor;
 @Entity
 @Builder
 @Getter
-public class ServicePostPhoto{
+public class ReportPhoto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
-    private ServicePost servicePost;
+    @JoinColumn(name = "report_id", nullable = false)
+    private Report report;
 
     @Column(nullable = false)
     private String photo;

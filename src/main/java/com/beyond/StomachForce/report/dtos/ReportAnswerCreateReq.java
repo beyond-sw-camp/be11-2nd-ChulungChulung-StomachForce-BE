@@ -1,4 +1,4 @@
-package com.beyond.StomachForce.serviceCenter.dtos;
+package com.beyond.StomachForce.report.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class ServiceAnswerCreateReq {
-    private Long postId;
+public class ReportAnswerCreateReq {
+    private Long reportId;
     private String contents;
 }

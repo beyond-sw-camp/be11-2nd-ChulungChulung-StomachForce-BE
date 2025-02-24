@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
 
-                .authorizeHttpRequests(a -> a.requestMatchers("/user/create", "/user/doLogin",
+                .authorizeHttpRequests(a -> a.requestMatchers("/user/create", "/user/doLogin","/",
 
                         "/user/refresh-token","/restaurant/create","/restaurant/login","/restaurant/refresh-token","restaurant/detail/{id}",
                         "/restaurant/list","/menu/list/{restaurantId}",
