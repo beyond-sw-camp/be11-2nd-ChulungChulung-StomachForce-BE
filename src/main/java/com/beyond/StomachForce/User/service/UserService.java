@@ -304,15 +304,6 @@ public class UserService {
         );
 
         Page<VipBenefit> vipBenefits = vipBenefitRepository.findByVipGrade(myGrade,sortedPageable);
-//        List<VipBenefitRes> vipBenefitResList = vipBenefits.stream()
-//                .map(vb -> VipBenefitRes.builder()
-//                        .vipGrade(myGrade)
-//                        .title(vb.getTitle())
-//                        .contents(vb.getContents())
-//                        .benefitPhoto(vb.getBenefitPhoto())
-//                        .build())
-//                .collect(Collectors.toList());
-//        return vipBenefitResList;
         return vipBenefits.map(vb -> VipBenefitRes.builder()
                 .vipGrade(myGrade)
                 .title(vb.getTitle())
