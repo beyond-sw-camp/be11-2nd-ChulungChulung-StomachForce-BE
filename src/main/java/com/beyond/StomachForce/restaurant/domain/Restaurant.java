@@ -64,7 +64,8 @@ public class Restaurant extends BaseTimeEntity {
 
     private Integer capacity;                    // 최대 수용 인원
 
-    private Integer rating;                      // 별점
+    @Column(nullable = false)
+    private Integer rating = 0;                     // 별점, hans 기본값을 0으로 설정에서 null 문제 방지
 
     private LocalDateTime updatedTime;          // 정보 수정 시간
 

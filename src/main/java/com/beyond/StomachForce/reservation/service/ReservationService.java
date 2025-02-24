@@ -18,8 +18,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,36 +41,54 @@ public class ReservationService {
         this.restaurantRepository = restaurantRepository;
     }
 
-    public void save(ReservationCreateReq dto, Long restaurantId){
+    public void save(ReservationCreateReq dto, Long restaurantId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        //1. 로그인 했는지 확인하기.
-        User user = userRepository.findByIdentify(authentication.getName()).orElseThrow(()-> new EntityNotFoundException("로그인 되지않은 사용자입니다. 로그인을 해주세요."));
-        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(()-> new EntityNotFoundException("예약할 레스토랑을 찾아서주세요."));
-        LocalDateTime reservationTime = dto.getReservationTime();
-        LocalDate reservationDate = dto.getReservationDate();
-        int reservationHour = reservationTime.getHour();
+        User user = userRepository.findByIdentify(authentication.getName())
+                .orElseThrow(() -> new EntityNotFoundException("로그인되지 않은 사용자입니다. 로그인을 해주세요."));
 
-        // 1. 휴무일 체크하기.
-        if (restaurant.getHoliday() != null && restaurant.getHoliday().equals(reservationDate)) {
-            throw new IllegalStateException("예약할 수 없는 날입니다. (휴무일)");
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new EntityNotFoundException("예약할 레스토랑을 찾을 수 없습니다."));
+
+        LocalDateTime reservationDateTime = dto.getReservationDateTime();
+
+        // ✅ reservationDateTime이 null이면 오류 발생 방지
+        if (reservationDateTime == null) {
+            throw new IllegalStateException("예약할 날짜 및 시간이 올바르게 설정되지 않았습니다.");
         }
-//        영업시간 전에 예약 제한하기
-        if (restaurant.getOpeningTime().isAfter(reservationTime)) {
+
+        // ✅ 날짜와 시간 분리
+        LocalDate reservationDate = reservationDateTime.toLocalDate();
+
+        // ✅ 라스트 오더 체크 (String → LocalTime 변환 후 비교)
+        if (restaurant.getLastOrder() != null) {
+            System.out.println("📌 라스트 오더 시간: " + restaurant.getLastOrder());
+            System.out.println("📌 예약 시간: " + reservationDateTime);
+
+            if (reservationDateTime.isAfter(restaurant.getLastOrder())) {
+                throw new IllegalStateException("라스트 오더 이후에는 예약이 불가능합니다.");
+            }
+        } else {
+            System.out.println("⚠️ 라스트 오더 시간이 설정되지 않음 (비교 스킵)");
+        }
+        // ✅ 영업시간 체크
+        if (restaurant.getOpeningTime().isAfter(reservationDateTime)) {
             throw new IllegalStateException("레스토랑 오픈 전에는 예약이 불가능합니다.");
         }
-        // 2. 라스트 오더 이후 예약 제한하기.
-        if (restaurant.getLastOrder().isBefore(reservationTime)) {
-            throw new IllegalStateException("라스트 오더 이후에는 예약이 불가능합니다.");
+
+        // ✅ 휴무일 체크
+        if (restaurant.getHoliday() != null && restaurant.getHoliday().equals(reservationDate)) {
+            throw new IllegalStateException("해당 날짜는 휴무일입니다.");
         }
 
-        // 3. 브레이크 타임 체크하기.
+        // ✅ 브레이크 타임 체크
         if (restaurant.getBreakTimeStart() != null && restaurant.getBreakTimeEnd() != null) {
-            if (!reservationTime.isBefore(restaurant.getBreakTimeStart()) && !reservationTime.isAfter(restaurant.getBreakTimeEnd())) {
+            if (!reservationDateTime.isBefore(restaurant.getBreakTimeStart()) && !reservationDateTime.isAfter(restaurant.getBreakTimeEnd())) {
                 throw new IllegalStateException("브레이크 타임 동안에는 예약이 불가능합니다.");
             }
         }
-        // 4. 한 타임(정각 기준 1시간) 예약 인원 초과 체크
-        LocalDateTime startTime = reservationDate.atTime(reservationTime.getHour(), reservationTime.getMinute());
+
+        // ✅ 예약 인원 초과 체크
+        LocalDateTime startTime = reservationDateTime.withMinute(0).withSecond(0);
         LocalDateTime endTime = startTime.plusHours(1);
 
         Integer currentReservationsPeopleNumber = reservationRepository.sumPeopleNumberByRestaurantAndReservationTimeBetween(restaurant, startTime, endTime);
@@ -77,27 +98,15 @@ public class ReservationService {
         if (currentReservationsPeopleNumber + dto.getPeopleNumber() > restaurant.getCapacity()) {
             throw new IllegalStateException("이 시간대에는 최대 인원을 초과하여 예약할 수 없습니다.");
         }
-        // 5. 예약 저장 (쿠폰 적용 여부 확인)
+
+        // ✅ 예약 저장 (쿠폰 적용 여부 확인)
         if (dto.getCouponCode() == null || dto.getCouponCode().isEmpty()) {
             reservationRepository.save(dto.toEntity(user, restaurant));
         } else {
             Coupon coupon = couponRepository.findByCouponCode(dto.getCouponCode())
-                    .orElseThrow(() -> new EntityNotFoundException("coupon is not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("쿠폰을 찾을 수 없습니다."));
             reservationRepository.save(dto.toEntity(user, coupon, restaurant));
         }
-
-
-//        if (dto.getCouponCode()==null||dto.getCouponCode().isEmpty()){
-//            User user = userRepository.findByIdentify(authentication.getName()).orElseThrow(()->new EntityNotFoundException("user is not found"));
-//            Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(()->new EntityNotFoundException("restaurant is not found"));
-//            reservationRepository.save(dto.toEntity(user, restaurant));
-//        }else {
-//            User user = userRepository.findByIdentify(authentication.getName()).orElseThrow(()->new EntityNotFoundException("user is not found"));
-//            Coupon coupon = couponRepository.findByCouponCode(dto.getCouponCode()).orElseThrow(()->new EntityNotFoundException("coupon is not found"));
-//            Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(()->new EntityNotFoundException("restaurant is not found"));
-//            reservationRepository.save(dto.toEntity(user, coupon, restaurant));
-//        }
-
     }
 
     public List<ReservationListRes> myReservation(Long id){
