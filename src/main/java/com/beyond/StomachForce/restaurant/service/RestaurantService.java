@@ -193,6 +193,7 @@ public class RestaurantService {
         loginInfo.put("email",restaurant.getEmail());
         loginInfo.put("userType",restaurant.getRole().toString());
         loginInfo.put("profilePhoto", restaurant.getPhotos().isEmpty() ? null : restaurant.getPhotos().get(0).getPhotoUrl());
+        loginInfo.put("restaurantType", restaurant.getRestaurantType());
         loginInfo.put("token",at);
         loginInfo.put("refreshToken",rt);
         return loginInfo;
@@ -331,9 +332,7 @@ public class RestaurantService {
         return restaurantInfoRepository.findTop5ByRestaurantIdAndRestaurantInfoStatusOrderByCreatedTimeDesc(
                         restaurantId, RestaurantInfoStatus.ACTIVE)
                 .stream()
-                .map(info -> new RestaurantInfoListRes(
-                        info.getId(), info.getInformationText(), info.getRestaurantInfoStatus(), info.getCreatedTime()))
-                .collect(Collectors.toList());
+                .map(info -> info.restaurantInfoListRes()).collect(Collectors.toList());
     }
 
     // 정보 수정

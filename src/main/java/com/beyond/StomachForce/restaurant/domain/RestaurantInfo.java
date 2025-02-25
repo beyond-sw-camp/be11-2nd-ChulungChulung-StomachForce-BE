@@ -2,6 +2,7 @@ package com.beyond.StomachForce.restaurant.domain;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
+import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoListRes;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +29,12 @@ public class RestaurantInfo extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
+
+    public RestaurantInfoListRes restaurantInfoListRes(){
+        return RestaurantInfoListRes.builder()
+                .informationText(this.informationText)
+                .build();
+    }
 
 
     //      생성할 때 쓰는 메서드

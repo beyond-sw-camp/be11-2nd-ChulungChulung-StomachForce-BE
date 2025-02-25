@@ -15,7 +15,4 @@ public class RestaurantInfoListRes {
     private String informationText;
     private RestaurantInfoStatus status;
 
-
-    public RestaurantInfoListRes(Long id, String informationText, RestaurantInfoStatus restaurantInfoStatus, LocalDateTime createdTime) {
-    }
 }
