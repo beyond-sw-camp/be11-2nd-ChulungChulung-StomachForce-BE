@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.Post.service;
 
 import com.beyond.StomachForce.Post.domain.Comment;
+import com.beyond.StomachForce.Post.domain.CommentDeleteReq;
 import com.beyond.StomachForce.Post.domain.Enum.PostStatus;
 import com.beyond.StomachForce.Post.dtos.*;
 import com.beyond.StomachForce.Post.repository.CommentRepository;
@@ -27,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,13 +126,26 @@ public class PostService {
                         .contents(c.getContents())
                         .userNickname(c.getUserNickname())
                         .userProfile(c.getUserProfile())
+                        .updatedTime(c.getUpdatedTime())
                         .build())
                 .collect(Collectors.toList());
     }
 
+    public Comment updateComment(CommentUpdateDto commentUpdateDto){
+        Comment comment = commentRepository.findById(commentUpdateDto.getCommentId()).orElseThrow(()->new EntityNotFoundException("해당 댓글이 없습니다."));
+        comment.update(commentUpdateDto.getContents());
+        return comment;
+    }
+
+    public String deleteComment(CommentDeleteReq commentDeleteReq){
+        commentRepository.deleteById(commentDeleteReq.getCommentId());
+        return "댓글이 삭제되었습니다.";
+    }
+
     public PostDetailRes postDetail(Long postId){
         Post post = postRepository.findById(postId).orElseThrow(()->new EntityNotFoundException("없는 게시글입니다."));
-        PostDetailRes postDetailRes = post.postDetails(likeService.getLikeCount(postId));
+        LocalDateTime createdtime = post.getCreatedTime();
+        PostDetailRes postDetailRes = post.postDetails(likeService.getLikeCount(postId),createdtime);
         return postDetailRes;
     }
 
@@ -150,6 +165,7 @@ public class PostService {
                         .postPhotos(post.getPostPhotos())
                         .userNickName(post.getUser().getNickName())
                         .userProfile(post.getUser().getProfilePhoto())
+                        .createdTime(post.getCreatedTime())
                         .build());
     }
 

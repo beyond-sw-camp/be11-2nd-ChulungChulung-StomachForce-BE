@@ -3,6 +3,7 @@ package com.beyond.StomachForce.Post.controller;
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.Common.dtos.StatusCode;
 import com.beyond.StomachForce.Post.domain.Comment;
+import com.beyond.StomachForce.Post.domain.CommentDeleteReq;
 import com.beyond.StomachForce.Post.dtos.*;
 import com.beyond.StomachForce.Post.service.LikeService;
 import com.beyond.StomachForce.Post.service.PostService;
@@ -75,10 +76,22 @@ public class PostController extends BaseTimeEntity {
                 "댓글작성이 완료되었습니다.","ok"),HttpStatus.OK);
     }
 
-    @GetMapping("getComments/{postId}")
+    @GetMapping("/getComments/{postId}")
     public ResponseEntity<?> getComments(@PathVariable Long postId){
         List<CommentListRes> commentList = postService.getComments(postId);
         return new ResponseEntity<>(commentList,HttpStatus.OK);
+    }
+
+    @PostMapping("/updateComment")
+    public ResponseEntity<?> updateComment(@Valid @RequestBody CommentUpdateDto commentUpdateDto){
+        Comment response = postService.updateComment(commentUpdateDto);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PostMapping("/deleteComment")
+    public ResponseEntity<?> deleteComment(@Valid @RequestBody CommentDeleteReq commentDeleteReq){
+        String response = postService.deleteComment(commentDeleteReq);
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
     @GetMapping("/postDetail/{postId}")

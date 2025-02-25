@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,4 +22,5 @@ public class PostDetailRes {
     private List<Long> likedUser;
     private String userNickName;
     private String userProfile;
+    private LocalDateTime createdTime;
 }
