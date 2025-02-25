@@ -12,6 +12,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -62,12 +63,13 @@ public class Post extends BaseTimeEntity{
         this.postPhotos.add(postPhotos);
     }
 
-    public PostDetailRes postDetails(Long likes){
+    public PostDetailRes postDetails(Long likes, LocalDateTime createdTime){
         PostDetailRes postDetailRes = PostDetailRes.builder().
                 contents(this.contents).
                 likes(likes).
                 postPhotos(this.postPhotos).
                 tags(this.tags).
+                createdTime(createdTime).
                 build();
         return postDetailRes;
     }

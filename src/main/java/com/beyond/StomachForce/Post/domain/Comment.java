@@ -22,4 +22,7 @@ public class Comment extends BaseTimeEntity{
     @JoinColumn(name = "post_id",nullable = false)
     private Post post;
 
+    public void update(String contents){
+        this.contents = contents;
+    }
 }
