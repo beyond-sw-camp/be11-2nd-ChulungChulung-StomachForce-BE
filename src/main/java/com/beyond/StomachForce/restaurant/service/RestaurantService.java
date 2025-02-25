@@ -14,6 +14,7 @@ import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoU
 import com.beyond.StomachForce.restaurant.repository.BookmarkRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantInfoRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
+import com.beyond.StomachForce.review.entity.Review;
 import com.beyond.StomachForce.review.repository.ReviewRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -381,8 +382,8 @@ public class RestaurantService {
 //    }
     public List<TopFavoriteRestaurantRes> getTopFavoriteRestaurants(int limit) {
         List<Restaurant> topRestaurants = restaurantRepository.findTopRestaurantsByRating(PageRequest.of(0, limit));
-
         return topRestaurants.stream().map(restaurant -> TopFavoriteRestaurantRes.builder()
+                .rating(restaurant.getReviews().isEmpty() ? 0.0 : restaurant.getReviews().stream().mapToDouble(r -> r.getRating().getValue()).average().orElse(0.0))
                 .restaurantId(restaurant.getId())
                 .restaurantImage(restaurant.getPhotos().isEmpty() ? null : restaurant.getPhotos().get(0).getPhotoUrl())
                 .restaurantName(restaurant.getName())

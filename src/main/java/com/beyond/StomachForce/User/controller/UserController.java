@@ -51,6 +51,18 @@ public class UserController {
     }
 
 
+    @PostMapping("/idValid")
+    public ResponseEntity<?> idValid(@Valid @RequestBody IdValidReq idValidReq) {
+        boolean response = userService.validId(idValidReq);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PostMapping("/nickNameValid")
+    public ResponseEntity<?> nickNameValid(@Valid @RequestBody NickNameValidReq nickNameValidReq) {
+        boolean response = userService.validNickName(nickNameValidReq);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> postCreatePost(@Valid @RequestBody UserSaveReq userSaveReq) {
         User user = userService.save(userSaveReq);
@@ -234,7 +246,6 @@ public class UserController {
     public ResponseEntity<?> blockedList() {
         List<BlockedUserRes> response = userService.blockedUsers();
         return new ResponseEntity<>(response,HttpStatus.OK);
-
     }
 
     @GetMapping("/list")

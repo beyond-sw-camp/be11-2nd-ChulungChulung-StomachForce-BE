@@ -34,14 +34,16 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
 
-                .authorizeHttpRequests(a -> a.requestMatchers("/user/create", "/user/doLogin","/",
+                .authorizeHttpRequests(a -> a.requestMatchers("/user/idValid","/user/nickNameValid","/user/create", "/user/doLogin","/",
 
                         "/user/refresh-token","/restaurant/create","/restaurant/login","/restaurant/refresh-token","restaurant/detail/{id}",
                         "/restaurant/list","/menu/list/{restaurantId}","/restaurant/{restaurantId}/review/list",
                         "/service/list", "/service/answer/create", "/service/answer/update/{answerId}",
                         "/service/answer/delete/{answerId}","user/me", "/report/create", "/report/update/{reportId}",
                         "/report/delete/{reportId}", "/report/admin-comment/{reportId}",
-                        "/service/post/{postId}", "/service/answer/{answerId}"
+                        "/service/post/{postId}", "/service/answer/{answerId}","/restaurant/top-favorites","/user/top-influencers",
+                        "/announcement/event/ongoing","/restaurant/categories","/post/postList"
+
                         ).permitAll().anyRequest().authenticated())
                 .build();
     }

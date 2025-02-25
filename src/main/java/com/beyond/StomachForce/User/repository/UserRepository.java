@@ -27,4 +27,12 @@ public interface UserRepository extends JpaRepository<User,Long> {
     @Query("SELECT u FROM User u ORDER BY SIZE(u.followers) DESC")
     List<User> findTopInfluencers(Pageable pageable);
 
+    @Query(
+            value = "SELECT u.* FROM user u " +
+                    "LEFT JOIN follower f ON u.id = f.user_id " +
+                    "GROUP BY u.id " +
+                    "ORDER BY COUNT(f.follower_user_id) DESC " +
+                    "LIMIT 10",
+            nativeQuery = true)
+    List<User> findTop10UsersByFollowerCountNative();
 }
