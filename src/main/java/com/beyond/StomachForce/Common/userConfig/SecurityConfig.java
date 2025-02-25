@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a.requestMatchers("/user/create", "/user/doLogin","/",
 
                         "/user/refresh-token","/restaurant/create","/restaurant/login","/restaurant/refresh-token","restaurant/detail/{id}",
-                        "/restaurant/list","/menu/list/{restaurantId}","/restaurant/{restaurantId}/review/list",
+                        "/restaurant/list","/menu/list/{restaurantId}","/restaurant/{restaurantId}/review/list","/restaurant/info/list/{id}",
                         "/service/list", "/service/answer/create", "/service/answer/update/{answerId}",
                         "/service/answer/delete/{answerId}","user/me", "/report/create", "/report/update/{reportId}",
                         "/report/delete/{reportId}", "/report/admin-comment/{reportId}",

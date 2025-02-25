@@ -56,7 +56,7 @@ public class Review extends BaseTimeEntity {
 
     public ReviewRes fromEntity(Review review) {
         List<String> imagePaths = this.reviewPhotos.isEmpty()
-                ? List.of("/assets/default-image.jpg")
+                ? List.of("/assets/noImage.jpg")
                 : this.reviewPhotos.stream().map(ReviewPhoto::getReviewImagePath).toList();
 
         return ReviewRes.builder()
