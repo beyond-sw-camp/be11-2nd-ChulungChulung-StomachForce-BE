@@ -253,12 +253,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUserProfiles());
     }
 
-    @PatchMapping("/update/status/{userId}")
+    @PatchMapping("/update/status/{id}")
     public ResponseEntity<String> updateUser(
-            @PathVariable Long userId,
+            @PathVariable Long id,
             @RequestBody UserStatusUpdateDto dto) {
         try {
-            userService.updateUserStatus(userId, dto);
+            userService.updateUserStatus(id, dto);
             return ResponseEntity.ok("사용자 정보가 성공적으로 업데이트되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("업데이트 실패: " + e.getMessage());

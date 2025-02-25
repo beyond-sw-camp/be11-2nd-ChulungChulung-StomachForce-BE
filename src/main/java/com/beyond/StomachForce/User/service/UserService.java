@@ -439,8 +439,8 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public void updateUserStatus(Long userId, UserStatusUpdateDto dto) {
-        User user = userRepository.findById(userId)
+    public void updateUserStatus(Long id, UserStatusUpdateDto dto) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다."));
 
         user.updateUserStatus(dto.getVipGrade(), dto.getInfluencer(), dto.getUserStatus());
