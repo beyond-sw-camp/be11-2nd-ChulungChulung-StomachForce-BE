@@ -130,6 +130,7 @@ public class Restaurant extends BaseTimeEntity {
         if(dto.getName() != null) this.name = dto.getName();        // 안고치면 안바뀜
         if(dto.getEmail() != null) this.email = dto.getEmail();
         if(dto.getPassword() != null) this.password = password;
+        if(dto.getRegistrationNumber() !=null) this.registrationNumber = dto.getRegistrationNumber();
         if(dto.getPhoneNumber() != null) this.phoneNumber = dto.getPhoneNumber();
         if(dto.getDescription() != null) this.description = dto.getDescription();
         if(dto.getOpeningTime() != null) this.openingTime = dto.getOpeningTime();
@@ -139,7 +140,6 @@ public class Restaurant extends BaseTimeEntity {
         if(dto.getLastOrder() != null) this.lastOrder=dto.getLastOrder();
         if(dto.getHoliday() != null) this.holiday = dto.getHoliday();
         if(dto.getCapacity() != 0) this.capacity = dto.getCapacity();
-        if(dto.getRestaurantType() != null) this.restaurantType = dto.getRestaurantType();
         if(dto.getAddress() != null) {
                 this.address.setCity(dto.getAddress().getCity());
                 this.address.setStreet(dto.getAddress().getStreet());
@@ -153,6 +153,22 @@ public class Restaurant extends BaseTimeEntity {
                 this.deposit = dto.getDeposit();
             }
         }
+        if(dto.getRestaurantType() != null) this.restaurantType = dto.getRestaurantType();
+        if(dto.getInfoText() != null && dto.getInfoText().isBlank()){
+            Optional<RestaurantInfo> restaurantInfo = this.infos.stream()
+                    .filter(info -> info.getRestaurantInfoStatus()==RestaurantInfoStatus.ACTIVE)
+                    .findFirst();
+
+            if(restaurantInfo.isPresent()){
+                restaurantInfo.get().updateInfo(dto.getInfoText());
+            }else {
+                RestaurantInfo newInfo = RestaurantInfo.builder()
+                        .restaurant(this)
+                        .informationText(dto.getInfoText())
+                        .build();
+                this.infos.add(newInfo);
+            }
+        }
     }
 
     public RestaurantDetailRes detailFromEntity() {
@@ -160,7 +176,7 @@ public class Restaurant extends BaseTimeEntity {
                 (r -> r.getRating().getValue()).average().orElse(0.0);
 
         List<String> imagePaths = this.photos.isEmpty()
-                ? List.of("/assets/default-image.jpg")
+                ? List.of("/assets/noImage.jpg")
                 : this.photos.stream().map(rp -> rp.getPhotoUrl()).toList();
 
         return RestaurantDetailRes.builder()

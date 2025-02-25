@@ -20,7 +20,7 @@ public class ReviewListRes {
     private String RestaurantName;
     private String userIdentify;
     private Integer rating;
-    private List<ReviewPhoto> reviewPhotos;
+    private List<String> reviewPhotos;
     private LocalDateTime createdTime;
     private LocalDateTime updatedTime;
 }

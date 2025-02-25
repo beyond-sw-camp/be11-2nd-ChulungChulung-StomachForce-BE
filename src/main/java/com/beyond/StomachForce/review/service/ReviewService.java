@@ -75,6 +75,8 @@ public class ReviewService {
         if (req.getReviewImage() != null) {
             saveReviewPhotos(review, req.getReviewImage());
         }
+
+
     }
 
     public List<ReviewListRes> reviewList(Long restaurantId) {
@@ -121,6 +123,7 @@ public class ReviewService {
 
         for (MultipartFile image : reviewImages) {
             try {
+//                byte[] bytes = image.getBytes();
                 String fileName = review.getId() + "_" + image.getOriginalFilename();
                 Path path = Paths.get("C:/Users/Playdata/Desktop/testFolder", fileName);
                 Files.write(path, image.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
@@ -136,7 +139,7 @@ public class ReviewService {
                 ReviewPhoto reviewPhoto = new ReviewPhoto(review, s3Url);
                 reviewPhotos.add(reviewPhoto);
             } catch (IOException e) {
-                throw new RuntimeException("Image upload failed");
+                throw new RuntimeException("사진 저장에 실패했습니다.");
             }
         }
 

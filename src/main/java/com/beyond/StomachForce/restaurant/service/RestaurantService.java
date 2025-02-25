@@ -188,6 +188,10 @@ public class RestaurantService {
         //      사용자에게 at, rt 지급
         Map<String, Object> loginInfo = new HashMap<>();
         loginInfo.put("id",restaurant.getId());
+        loginInfo.put("name",restaurant.getName());
+        loginInfo.put("email",restaurant.getEmail());
+        loginInfo.put("userType",restaurant.getRole().toString());
+        loginInfo.put("profilePhoto", restaurant.getPhotos().isEmpty() ? null : restaurant.getPhotos().get(0).getPhotoUrl());
         loginInfo.put("token",at);
         loginInfo.put("refreshToken",rt);
         return loginInfo;
