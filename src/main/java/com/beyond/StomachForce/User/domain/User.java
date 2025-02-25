@@ -112,7 +112,7 @@ public class User extends BaseTimeEntity {
             if(f.getFollowerUser().getUserStatus() != UserStatus.S){
                 FollowerListRes followerListRes = FollowerListRes.builder()
                         .userId(f.getFollowerUser().getId())
-                        .userName(f.getFollowerUser().getName())
+                        .userNickName(f.getFollowerUser().getNickName())
                         .userProfile(f.getFollowerUser().getProfilePhoto())
                         .build();
                 followerList.add(followerListRes);
@@ -128,7 +128,7 @@ public class User extends BaseTimeEntity {
             if(f.getUser().getUserStatus() != UserStatus.S){
                 FollowingListRes followingListRes = FollowingListRes.builder()
                         .userId(f.getUser().getId())
-                        .userName(f.getUser().getName())
+                        .userNickName(f.getUser().getNickName())
                         .userProfile(f.getUser().getProfilePhoto())
                         .build();
                 followingList.add(followingListRes);

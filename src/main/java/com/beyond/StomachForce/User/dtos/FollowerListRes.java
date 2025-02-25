@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FollowerListRes {
     private Long userId;
-    private String userName;
+    private String userNickName;
     private String userProfile;
 }
