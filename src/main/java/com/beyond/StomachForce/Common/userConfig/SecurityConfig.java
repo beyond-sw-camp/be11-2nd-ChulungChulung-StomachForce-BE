@@ -41,7 +41,9 @@ public class SecurityConfig {
                         "/service/list", "/service/answer/create", "/service/answer/update/{answerId}",
                         "/service/answer/delete/{answerId}","user/me", "/report/create", "/report/update/{reportId}",
                         "/report/delete/{reportId}", "/report/admin-comment/{reportId}",
-                        "/service/post/{postId}", "/service/answer/{answerId}"
+                        "/service/post/{postId}", "/service/answer/{answerId}","/restaurant/top-favorites","/user/top-influencers",
+                        "/announcement/event/ongoing","/restaurant/categories","/post/postList"
+
                         ).permitAll().anyRequest().authenticated())
                 .build();
     }
