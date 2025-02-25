@@ -176,4 +176,10 @@ public class User extends BaseTimeEntity {
                 .build();
     }
 
+    public void updateUserStatus(VipGrade vipGrade, Influencer influencer, UserStatus userStatus) {
+        this.vipGrade = vipGrade;
+        this.influencer = influencer;
+        this.userStatus = userStatus;
+    }
+
 }
