@@ -80,7 +80,7 @@ public class ReviewService {
     }
 
     public List<ReviewListRes> reviewList(Long restaurantId) {
-        return reviewRepository.findByRestaurantId(restaurantId)
+        return reviewRepository.findByRestaurantIdOrderByCreatedTimeDesc(restaurantId)
                 .stream()
                 .map(Review::toListDto) // 엔티티 내부에서 변환 처리
                 .collect(Collectors.toList());

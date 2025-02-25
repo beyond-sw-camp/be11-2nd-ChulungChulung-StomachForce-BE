@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByRestaurantId(Long restaurantId);
+    List<Review> findByRestaurantIdOrderByCreatedTimeDesc(Long restaurantId);
     Optional<Review> findByIdAndRestaurantId(Long id, Long restaurantId);
 }
