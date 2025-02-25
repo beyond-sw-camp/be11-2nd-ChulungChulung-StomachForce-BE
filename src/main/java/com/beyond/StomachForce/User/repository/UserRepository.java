@@ -25,6 +25,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
 
     Page<User> findAll(Specification<User> specification, Pageable pageable);
 
+
     @Query("SELECT u.id, u.profilePhoto, u.nickName, COUNT(f) " +
             "FROM User u LEFT JOIN u.followers f " +
             "WHERE u.influencer = :influencer " +
@@ -32,4 +33,17 @@ public interface UserRepository extends JpaRepository<User,Long> {
             "ORDER BY COUNT(f) DESC")
     List<Object[]> findTopInfluencersByInfluencer(
             @Param("influencer") Influencer influencer, Pageable pageable);
+
+    @Query("SELECT u FROM User u ORDER BY SIZE(u.followers) DESC")
+    List<User> findTopInfluencers(Pageable pageable);
+
+    @Query(
+            value = "SELECT u.* FROM user u " +
+                    "LEFT JOIN follower f ON u.id = f.user_id " +
+                    "GROUP BY u.id " +
+                    "ORDER BY COUNT(f.follower_user_id) DESC " +
+                    "LIMIT 10",
+            nativeQuery = true)
+    List<User> findTop10UsersByFollowerCountNative();
+
 }

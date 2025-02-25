@@ -51,6 +51,18 @@ public class UserController {
     }
 
 
+    @PostMapping("/idValid")
+    public ResponseEntity<?> idValid(@Valid @RequestBody IdValidReq idValidReq) {
+        boolean response = userService.validId(idValidReq);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PostMapping("/nickNameValid")
+    public ResponseEntity<?> nickNameValid(@Valid @RequestBody NickNameValidReq nickNameValidReq) {
+        boolean response = userService.validNickName(nickNameValidReq);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> postCreatePost(@Valid @RequestBody UserSaveReq userSaveReq) {
         User user = userService.save(userSaveReq);
@@ -234,7 +246,23 @@ public class UserController {
     public ResponseEntity<?> blockedList() {
         List<BlockedUserRes> response = userService.blockedUsers();
         return new ResponseEntity<>(response,HttpStatus.OK);
+    }
 
+    @GetMapping("/list")
+    public ResponseEntity<List<UserListRes>> getAllUserProfiles() {
+        return ResponseEntity.ok(userService.getAllUserProfiles());
+    }
+
+    @PatchMapping("/update/status/{userId}")
+    public ResponseEntity<String> updateUser(
+            @PathVariable Long userId,
+            @RequestBody UserStatusUpdateDto dto) {
+        try {
+            userService.updateUserStatus(userId, dto);
+            return ResponseEntity.ok("사용자 정보가 성공적으로 업데이트되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("업데이트 실패: " + e.getMessage());
+        }
     }
 
 

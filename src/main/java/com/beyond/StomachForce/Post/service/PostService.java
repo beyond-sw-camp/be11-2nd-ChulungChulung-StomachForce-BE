@@ -148,6 +148,8 @@ public class PostService {
                         .likes(likeService.getLikeCount(post.getId()))
                         .tags(post.getTags())
                         .postPhotos(post.getPostPhotos())
+                        .userNickName(post.getUser().getNickName())
+                        .userProfile(post.getUser().getProfilePhoto())
                         .build());
     }
 

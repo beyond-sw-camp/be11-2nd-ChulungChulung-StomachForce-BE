@@ -19,4 +19,6 @@ public class PostDetailRes {
     private List<String> tags;
     private List<String> postPhotos;
     private List<Long> likedUser;
+    private String userNickName;
+    private String userProfile;
 }

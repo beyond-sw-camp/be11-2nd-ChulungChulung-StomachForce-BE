@@ -68,6 +68,8 @@ public class UserService {
         this.likeService = likeService;
     }
 
+
+
     public User save(UserSaveReq userSaveReq) throws IllegalArgumentException{
         if(userRepository.findByName(userSaveReq.getName()).isPresent()){
             if(userRepository.findByBirth(userSaveReq.getBirth()).isPresent()){
@@ -419,5 +421,43 @@ public class UserService {
                 .role(user.getRole().toString()) // 🔹 유저 역할 반환
                 .profilePhoto(user.getProfilePhoto())
                 .build();
+    }
+
+    public List<UserListRes> getAllUserProfiles() {
+        return userRepository.findAll().stream()
+                .map(user -> UserListRes.builder()
+                        .userId(user.getId())
+                        .profilePhoto(user.getProfilePhoto())
+                        .identify(user.getIdentify())
+                        .email(user.getEmail())
+                        .phoneNumber(user.getPhoneNumber())
+                        .vipGrade(user.getVipGrade())
+                        .influencer(user.getInfluencer())
+                        .userStatus(user.getUserStatus())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public void updateUserStatus(Long userId, UserStatusUpdateDto dto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다."));
+
+        user.updateUserStatus(dto.getVipGrade(), dto.getInfluencer(), dto.getUserStatus());
+    }
+
+    public boolean validId(IdValidReq idValidReq){
+        Optional<User> optionalUser = userRepository.findByIdentify(idValidReq.getIdentify());
+        if(optionalUser.isPresent() && optionalUser.get().getUserStatus() != UserStatus.S) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean validNickName(NickNameValidReq nickNameValidReq){
+        Optional<User> optionalUser = userRepository.findByNickName(nickNameValidReq.getNickName());
+        if(optionalUser.isPresent() && optionalUser.get().getUserStatus() != UserStatus.S) {
+            return false;
+        }
+        return true;
     }
 }
