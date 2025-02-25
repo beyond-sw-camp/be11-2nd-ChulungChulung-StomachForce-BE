@@ -73,7 +73,7 @@ public class ServiceService {
 
         ServicePost savedPost = servicePostRepository.save(post); // 게시글 저장 (postId 생성됨)
 
-        // 🔹 사진 업로드 (각 postId별 폴더 생성)
+        // 사진 업로드 (각 postId별 폴더 생성)
         List<ServicePostPhoto> photoList = req.getPhotos().stream()
                 .map(photo -> {
                     String photoUrl = uploadImageToS3(photo, savedPost.getId()); // postId를 폴더로 활용!
@@ -95,7 +95,7 @@ public class ServiceService {
     private String uploadImageToS3(MultipartFile image, Long postId) {
         try {
             byte[] bytes = image.getBytes();
-            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename(); // 🔹 파일명에 타임스탬프 추가
+            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename(); // 파일명에 타임스탬프 추가
 
             // S3에 저장할 경로 (각 게시글의 폴더를 생성)
             String s3Key = "service_posts/" + postId + "/" + fileName;

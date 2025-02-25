@@ -46,4 +46,10 @@ public class MenuController {
         MenuResDto updatedMenu = menuService.updateMenu(menuId, dto);
         return new ResponseEntity<>(updatedMenu, HttpStatus.OK);
     }
+
+    @DeleteMapping("/delete/{menuId}")
+    public ResponseEntity<String> deleteMenu(@PathVariable Long menuId) {
+        menuService.deleteMenu(menuId);
+        return ResponseEntity.ok("메뉴가 삭제되었습니다.");
+    }
 }

@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -80,7 +81,7 @@ public class MenuService {
     private String uploadImageToS3(MultipartFile image, String folder) {
         try {
             byte[] bytes = image.getBytes();
-            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename(); // 🔹 파일명만 생성
+            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename(); // 파일명만 생성
 
             // 로컬 저장 경로 설정 (폴더 중복 방지)
             Path dirPath = Paths.get("C:/Users/Playdata/Desktop/testFolder", folder);
@@ -164,6 +165,51 @@ public class MenuService {
         }
 
         return new MenuResDto(menu);
+    }
+
+    public void deleteMenu(Long menuId) {
+        // 현재 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String registrationNumber = authentication.getName(); // JWT에서 registrationNumber 추출
+
+        // 사업자 등록번호로 레스토랑 조회
+        Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber)
+                .orElseThrow(() -> new EntityNotFoundException("레스토랑 정보를 찾을 수 없습니다."));
+
+        // 삭제할 메뉴 가져오기
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 메뉴가 존재하지 않습니다."));
+
+        // 메뉴의 restaurantId와 로그인한 사용자의 restaurantId가 일치하는지 검증
+        if (!menu.getRestaurant().getId().equals(restaurant.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 레스토랑의 메뉴를 삭제할 권한이 없습니다.");
+        }
+
+        // S3에 저장된 메뉴 사진 삭제
+        if (menu.getMenuPhoto() != null) {
+            deleteImageFromS3(menu.getMenuPhoto());
+        }
+
+        // 메뉴 삭제
+        menuRepository.delete(menu);
+    }
+
+    // S3에서 이미지 삭제 메서드
+    private void deleteImageFromS3(String photoUrl) {
+        try {
+            // S3에서 파일 키 추출
+            String key = photoUrl.substring(photoUrl.lastIndexOf("/") + 1);
+
+            // S3 객체 삭제 요청
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key("menu_photos/" + key) // 저장된 폴더 경로와 파일명 결합
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+        } catch (Exception e) {
+            throw new RuntimeException("S3 이미지 삭제 실패", e);
+        }
     }
 
 }
