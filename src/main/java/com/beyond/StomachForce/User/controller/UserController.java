@@ -247,4 +247,21 @@ public class UserController {
         List<BlockedUserRes> response = userService.blockedUsers();
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
+    @GetMapping("/list")
+    public ResponseEntity<List<UserListRes>> getAllUserProfiles() {
+        return ResponseEntity.ok(userService.getAllUserProfiles());
+    }
+
+    @PatchMapping("/update/status/{userId}")
+    public ResponseEntity<String> updateUser(
+            @PathVariable Long userId,
+            @RequestBody UserStatusUpdateDto dto) {
+        try {
+            userService.updateUserStatus(userId, dto);
+            return ResponseEntity.ok("사용자 정보가 성공적으로 업데이트되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("업데이트 실패: " + e.getMessage());
+        }
+    }
 }
