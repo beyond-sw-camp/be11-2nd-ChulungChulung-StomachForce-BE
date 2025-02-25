@@ -71,6 +71,8 @@ public class UserService {
         this.likeService = likeService;
     }
 
+
+
     public User save(UserSaveReq userSaveReq) throws IllegalArgumentException{
         if(userRepository.findByName(userSaveReq.getName()).isPresent()){
             if(userRepository.findByBirth(userSaveReq.getBirth()).isPresent()){
@@ -420,5 +422,21 @@ public class UserService {
                 .role(user.getRole().toString()) // 🔹 유저 역할 반환
                 .profilePhoto(user.getProfilePhoto())
                 .build();
+    }
+
+    public boolean validId(IdValidReq idValidReq){
+        Optional<User> optionalUser = userRepository.findByIdentify(idValidReq.getIdentify());
+        if(optionalUser.isPresent() && optionalUser.get().getUserStatus() != UserStatus.S) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean validNickName(NickNameValidReq nickNameValidReq){
+        Optional<User> optionalUser = userRepository.findByNickName(nickNameValidReq.getNickName());
+        if(optionalUser.isPresent() && optionalUser.get().getUserStatus() != UserStatus.S) {
+            return false;
+        }
+        return true;
     }
 }

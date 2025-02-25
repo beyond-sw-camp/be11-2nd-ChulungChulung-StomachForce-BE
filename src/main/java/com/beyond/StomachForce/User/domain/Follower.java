@@ -24,5 +24,4 @@ public class Follower extends BaseTimeEntity{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follower_user_id", nullable = false)
     private User followerUser;  //팔로우한 사람
-
 }
