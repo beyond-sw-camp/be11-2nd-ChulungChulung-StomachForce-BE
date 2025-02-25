@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.reservation.dtos;
 
 
+import com.beyond.StomachForce.coupon.domain.CouponType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,5 +29,7 @@ public class ReservationDetailRes {
     private String paymentMethod;
     private Integer useMilege;
     private String couponName;
+    private CouponType couponType;
+    private Integer discountAmount;
     private Integer reservationPeopleNumber;
 }

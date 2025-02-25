@@ -123,6 +123,7 @@ public class ReservationService {
             ReservationListRes reservationListRes1 = ReservationListRes.builder()
                     .id(r.getId())
                     .restaurantName(r.getRestaurant().getName())
+                    .restaurantId(r.getRestaurant().getId())
                     .build();
 
             reservationListRes.add(reservationListRes1);
@@ -181,12 +182,15 @@ public class ReservationService {
                     .userName(reservation.getUser().getName())
                     .restaurantName(reservation.getRestaurant().getName())
                     .reservationStatus(reservation.getStatus().toString())
+                    .reservationPeopleNumber(reservation.getPeopleNumber())
                     .restaurantAddress(reservation.getRestaurant().getAddress().getFullAddress())
                     .restaurantNumber(reservation.getRestaurant().getPhoneNumber())
                     .paymentMethod(reservation.getPaymentMethod().toString())
                     .reservationStatus(reservation.getStatus().toString())
                     .useMilege(reservation.getMileage())
                     .couponName(reservation.getCoupon().getCouponName())
+                    .discountAmount(reservation.getCoupon().getDiscountAmount())
+                    .couponType(reservation.getCoupon().getCouponType())
                     .build();
             //예약번호,예약일자,예약자,예약입금현황,가게이름,가게연락처,가게주소,결제방법,사용한마일리지, 사용한쿠폰
             return reservationDetailRes;

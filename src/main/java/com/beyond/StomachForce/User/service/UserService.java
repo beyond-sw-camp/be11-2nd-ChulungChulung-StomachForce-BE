@@ -6,10 +6,7 @@ import com.beyond.StomachForce.Post.dtos.MyPostDto;
 import com.beyond.StomachForce.Post.repository.PostRepository;
 import com.beyond.StomachForce.Post.service.LikeService;
 import com.beyond.StomachForce.User.domain.*;
-import com.beyond.StomachForce.User.domain.Enum.BlockUser;
-import com.beyond.StomachForce.User.domain.Enum.EarnedMileage;
-import com.beyond.StomachForce.User.domain.Enum.UserStatus;
-import com.beyond.StomachForce.User.domain.Enum.VipGrade;
+import com.beyond.StomachForce.User.domain.Enum.*;
 import com.beyond.StomachForce.User.dtos.*;
 import com.beyond.StomachForce.User.repository.BlockingRepository;
 import com.beyond.StomachForce.User.repository.MileageRepository;
@@ -397,14 +394,16 @@ public class UserService {
     }
 
     public List<TopInfluencerRes> getTopInfluencers(int limit) {
-        List<User> topUsers = userRepository.findTopInfluencers(PageRequest.of(0, limit));
+        List<Object[]> topUsers = userRepository.findTopInfluencersByInfluencer(
+                Influencer.Y, PageRequest.of(0, limit)
+        );
 
         return topUsers.stream()
-                .map(user -> TopInfluencerRes.builder()
-                        .userId(user.getId())
-                        .profileImage(user.getProfilePhoto())
-                        .nickname(user.getNickName())
-                        .followersCount(user.getFollowers().size())//유저 팔로워로 팔로워수 체크
+                .map(obj -> TopInfluencerRes.builder()
+                        .userId((Long) obj[0])
+                        .profileImage((String)obj[1])
+                        .nickname((String)obj[2])
+                        .followersCount(((Long)obj[3]).intValue())
                         .build())
                 .collect(Collectors.toList());
     }

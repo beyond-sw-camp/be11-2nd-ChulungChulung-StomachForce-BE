@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.User.repository;
 
+import com.beyond.StomachForce.User.domain.Enum.Influencer;
 import com.beyond.StomachForce.User.domain.User;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
@@ -24,7 +25,11 @@ public interface UserRepository extends JpaRepository<User,Long> {
 
     Page<User> findAll(Specification<User> specification, Pageable pageable);
 
-    @Query("SELECT u FROM User u ORDER BY SIZE(u.followers) DESC")
-    List<User> findTopInfluencers(Pageable pageable);
-
+    @Query("SELECT u.id, u.profilePhoto, u.nickName, COUNT(f) " +
+            "FROM User u LEFT JOIN u.followers f " +
+            "WHERE u.influencer = :influencer " +
+            "GROUP BY u.id " +
+            "ORDER BY COUNT(f) DESC")
+    List<Object[]> findTopInfluencersByInfluencer(
+            @Param("influencer") Influencer influencer, Pageable pageable);
 }
