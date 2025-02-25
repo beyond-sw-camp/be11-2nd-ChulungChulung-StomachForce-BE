@@ -33,7 +33,7 @@ public class Review extends BaseTimeEntity {
     private Rating rating = Rating.FIVE;              // 별점
     @Column(nullable = false, length = 3000)
     private String contents;                          // 내용
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private ReviewStatus reviewStatus = ReviewStatus.ACTIVE;
 
@@ -68,13 +68,18 @@ public class Review extends BaseTimeEntity {
     }
 
     public ReviewListRes toListDto() {
+
+        List<String> imagePaths = this.reviewPhotos.isEmpty()
+                ? List.of("/assets/noImage.jpg")
+                : this.reviewPhotos.stream().map(rp -> rp.getReviewImagePath()).toList();
+
         return ReviewListRes.builder()
                 .id(this.id)
                 .contents(this.contents)
                 .RestaurantName(this.restaurant.getName())
                 .userIdentify(this.user.getIdentify())
                 .rating(this.rating.getValue())
-                .reviewPhotos(this.reviewPhotos)
+                .reviewPhotos(imagePaths)
                 .createdTime(this.getCreatedTime())
                 .updatedTime(this.getUpdatedTime())
                 .build();

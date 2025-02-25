@@ -30,7 +30,8 @@ public class ReviewPhoto extends BaseTimeEntity {
     private Review review;          // 레스토랑 리뷰 페이지랑 FK설정
 
     public ReviewPhoto(Review review, String s3Url) {
-        super();
+        this.reviewImagePath = s3Url;
+        this.review = review;
     }
 
     public ReviewPhotoRes fromEntity(User user) {
