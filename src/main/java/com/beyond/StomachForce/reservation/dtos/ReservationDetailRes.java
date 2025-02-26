@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,4 +33,7 @@ public class ReservationDetailRes {
     private CouponType couponType;
     private Integer discountAmount;
     private Integer reservationPeopleNumber;
+
+    // ✅ 주문한 메뉴 정보 추가
+    private List<ReservationMenuRes> orderedMenus;
 }

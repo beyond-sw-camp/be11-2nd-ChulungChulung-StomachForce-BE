@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.restaurant.controller;
 
 import com.beyond.StomachForce.Common.dtos.CommonDto;
+import com.beyond.StomachForce.menu.dto.MenuResDto;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.domain.RestaurantInfo;
 import com.beyond.StomachForce.restaurant.dtos.*;
@@ -133,6 +134,10 @@ public class RestaurantController {
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryRes>> getCategories() {
         return ResponseEntity.ok(restaurantService.getCategories());
+    }
+    @GetMapping("/{restaurantId}/menus")
+    public ResponseEntity<List<MenuResDto>> getRestaurantMenus(@PathVariable Long restaurantId) {
+        return ResponseEntity.ok(restaurantService.getMenusByRestaurantId(restaurantId));
     }
 }
 
