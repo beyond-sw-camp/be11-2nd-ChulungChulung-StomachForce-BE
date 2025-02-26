@@ -107,6 +107,10 @@ public class RestaurantService {
                     Predicate streetPredicate = criteriaBuilder.like(addressJoin.get("street"), "%" + searchDto.getAddress() + "%");
                     predicates.add(criteriaBuilder.or(cityPredicate, streetPredicate)); // OR 조건 적용
                 }
+                if (searchDto.getRestaurantType() != null) {
+                    RestaurantType type = RestaurantType.valueOf(searchDto.getRestaurantType());
+                    predicates.add(criteriaBuilder.equal(root.get("restaurantType"), type));
+                }
                 Predicate[] predicateArr = new Predicate[predicates.size()];
                 for(int i=0; i<predicates.size(); i++){
                     predicateArr[i] = predicates.get(i);
