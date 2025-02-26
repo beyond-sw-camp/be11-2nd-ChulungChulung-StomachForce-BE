@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -53,5 +54,7 @@ public class RestaurantPhoto extends BaseTimeEntity {
     public int hashCode() {
         return Objects.hash(photoUrl);
     }
+
+
 
 }
