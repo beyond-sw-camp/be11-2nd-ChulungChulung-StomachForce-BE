@@ -8,10 +8,9 @@ import com.beyond.StomachForce.Post.service.LikeService;
 import com.beyond.StomachForce.User.domain.*;
 import com.beyond.StomachForce.User.domain.Enum.*;
 import com.beyond.StomachForce.User.dtos.*;
-import com.beyond.StomachForce.User.repository.BlockingRepository;
-import com.beyond.StomachForce.User.repository.MileageRepository;
-import com.beyond.StomachForce.User.repository.UserRepository;
-import com.beyond.StomachForce.User.repository.VipBenefitRepository;
+import com.beyond.StomachForce.User.repository.*;
+import com.beyond.StomachForce.restaurant.domain.Restaurant;
+import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -206,12 +205,15 @@ public class UserService {
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         UserInfoRes userInfoRes = UserInfoRes.builder()
                 .userId(user.getId())
+                .role(user.getRole().toString())
                 .identify(user.getIdentify())
+                .userStatus(user.getUserStatus())
                 .userNickName(user.getNickName())
                 .userName(user.getName())
                 .userEmail(user.getEmail())
                 .userPhoneNumber(user.getPhoneNumber())
                 .gender(user.getGender())
+                .role(user.getRole().toString())
                 .profilePhoto(user.getProfilePhoto())
                 .build();
         return userInfoRes;
@@ -434,6 +436,7 @@ public class UserService {
                         .vipGrade(user.getVipGrade())
                         .influencer(user.getInfluencer())
                         .userStatus(user.getUserStatus())
+                        .nickName(user.getNickName())
                         .build())
                 .collect(Collectors.toList());
     }
