@@ -22,4 +22,6 @@ public class AnnouncementUpdateReq {
     private AnnounceStatus status;
     private String endDate;
     private List<MultipartFile> images;
+    private String keepExistingImages;  // "true" 또는 "false"
+    private List<Long> existingImageIds;
 }

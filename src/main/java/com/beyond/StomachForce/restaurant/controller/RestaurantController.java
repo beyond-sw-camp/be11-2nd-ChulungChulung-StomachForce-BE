@@ -1,9 +1,10 @@
 package com.beyond.StomachForce.restaurant.controller;
 
 import com.beyond.StomachForce.Common.dtos.CommonDto;
+import com.beyond.StomachForce.User.dtos.UserInfoRes;
+import com.beyond.StomachForce.User.dtos.UserSearchDto;
 
 import com.beyond.StomachForce.User.dtos.MypageRes;
-
 import com.beyond.StomachForce.menu.dto.MenuResDto;
 
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
