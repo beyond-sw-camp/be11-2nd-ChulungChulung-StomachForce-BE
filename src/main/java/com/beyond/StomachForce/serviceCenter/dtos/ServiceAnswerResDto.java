@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -15,10 +17,14 @@ public class ServiceAnswerResDto {
     private Long postId;
     private Long userId;
     private String contents;
+    private LocalDateTime createdTime;
+    private LocalDateTime updatedTime;
 
     public ServiceAnswerResDto(ServiceAnswer answer) {
         this.id = answer.getId();
         this.postId = answer.getServicePost().getId();
         this.contents = answer.getContents();
+        this.createdTime = answer.getCreatedTime();
+        this.updatedTime = answer.getUpdatedTime();
     }
 }
