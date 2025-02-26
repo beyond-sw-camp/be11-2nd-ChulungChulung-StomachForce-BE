@@ -47,30 +47,30 @@ public class MenuService {
     }
 
     public MenuResDto menuCreate(MenuCreateDto dto) {
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String registrationNumber = authentication.getName(); // JWT에서 registrationNumber 추출
+        String registrationNumber = authentication.getName();
 
-        // 사업자 등록번호로 레스토랑 조회
         Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber)
                 .orElseThrow(() -> new EntityNotFoundException("레스토랑 정보를 찾을 수 없습니다."));
 
-        // 요청한 restaurantId와 로그인한 사용자의 restaurantId가 일치하는지 검증
         if (!restaurant.getId().equals(dto.getRestaurantId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 레스토랑의 메뉴를 추가할 권한이 없습니다.");
         }
 
         AllergyInfo allergyInfo = dto.getAllergyInfo().toEntity();
 
-        // S3에 이미지 업로드 후 URL 가져오기
-        String menuPhotoUrl = uploadImageToS3(dto.getMenuPhoto(), "menu_photos");
+        // 메뉴 사진이 있는 경우에만 업로드
+        String menuPhotoUrl = null;
+        if (dto.getMenuPhoto() != null) {
+            menuPhotoUrl = uploadImageToS3(dto.getMenuPhoto(), "menu_photos");
+        }
 
         Menu menu = Menu.builder()
                 .restaurant(restaurant)
                 .name(dto.getName())
                 .price(dto.getPrice())
                 .description(dto.getDescription())
-                .menuPhoto(menuPhotoUrl) // 업로드된 S3 URL 저장
+                .menuPhoto(menuPhotoUrl)
                 .allergyInfo(allergyInfo)
                 .build();
 
@@ -121,29 +121,24 @@ public class MenuService {
     }
 
     public MenuResDto updateMenu(Long menuId, MenuUpdateDto dto) {
-        // 현재 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String registrationNumber = authentication.getName(); // JWT에서 registrationNumber 추출
+        String registrationNumber = authentication.getName();
 
-        // 사업자 등록번호로 레스토랑 조회
         Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber)
                 .orElseThrow(() -> new EntityNotFoundException("레스토랑 정보를 찾을 수 없습니다."));
 
-        // 수정할 메뉴 가져오기
         Menu menu = menuRepository.findById(menuId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 메뉴가 존재하지 않습니다."));
 
-        // 메뉴의 restaurantId와 로그인한 사용자의 restaurantId가 일치하는지 검증
         if (!menu.getRestaurant().getId().equals(restaurant.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 레스토랑의 메뉴를 수정할 권한이 없습니다.");
         }
 
-        // 메뉴 정보 업데이트
         if (dto.getName() != null) menu.setName(dto.getName());
         if (dto.getPrice() != null) menu.setPrice(dto.getPrice());
         if (dto.getDescription() != null) menu.setDescription(dto.getDescription());
 
-        // S3에 이미지 업로드 후 URL 변경
+        // 새로운 메뉴 사진이 있는 경우에만 업데이트
         if (dto.getMenuPhoto() != null) {
             String menuPhotoUrl = uploadImageToS3(dto.getMenuPhoto(), "menu_photos");
             menu.setMenuPhoto(menuPhotoUrl);
