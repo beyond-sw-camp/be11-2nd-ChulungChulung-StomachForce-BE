@@ -1,7 +1,7 @@
 package com.beyond.StomachForce.restaurant.domain;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
-import com.beyond.StomachForce.restaurant.domain.select.BookmarkType;
+import com.beyond.StomachForce.User.domain.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,12 +23,8 @@ public class Bookmark extends BaseTimeEntity {
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
-//    @ManyToOne(fetch = FetchType.LAZY)        //      customer이랑 연결 짓는 것
-//    @JoinColumn(name = "customer_id", nullable = false)
-//    private Customer customer;
-
-    @Enumerated(EnumType.STRING)
-    private BookmarkType bookmarkType;
-
+    @ManyToOne(fetch = FetchType.LAZY)          //     레스토랑 테이블과 연결
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
 }
