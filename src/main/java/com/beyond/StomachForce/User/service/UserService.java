@@ -206,7 +206,9 @@ public class UserService {
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         UserInfoRes userInfoRes = UserInfoRes.builder()
                 .userId(user.getId())
+                .role(user.getRole().toString())
                 .identify(user.getIdentify())
+                .userStatus(user.getUserStatus())
                 .userNickName(user.getNickName())
                 .userName(user.getName())
                 .userEmail(user.getEmail())
