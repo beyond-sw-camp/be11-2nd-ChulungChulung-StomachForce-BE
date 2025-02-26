@@ -1,10 +1,12 @@
 package com.beyond.StomachForce.restaurant.service;
 
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
+import com.beyond.StomachForce.User.domain.User;
+import com.beyond.StomachForce.User.repository.UserRepository;
 import com.beyond.StomachForce.restaurant.domain.*;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
+import com.beyond.StomachForce.restaurant.domain.select.RestaurantStatus;
 import com.beyond.StomachForce.restaurant.dtos.*;
-import com.beyond.StomachForce.restaurant.domain.select.BookmarkType;
 
 import com.beyond.StomachForce.restaurant.dtos.forLogin.LoginDto;
 import com.beyond.StomachForce.restaurant.dtos.forLogin.RestaurantRefreshDto;
@@ -14,7 +16,6 @@ import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoU
 import com.beyond.StomachForce.restaurant.repository.BookmarkRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantInfoRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
-import com.beyond.StomachForce.review.entity.Review;
 import com.beyond.StomachForce.review.repository.ReviewRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -23,6 +24,7 @@ import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -59,6 +61,7 @@ public class RestaurantService {
     @Qualifier("rtdb")
     private final RedisTemplate<String, Object> redisTemplate;
     private final RestaurantInfoRepository restaurantInfoRepository;
+    private final UserRepository userRepository;
 
     //사진 넣을 때 필요한 의존성 추가
     private final S3Client s3Client;
@@ -70,7 +73,7 @@ public class RestaurantService {
     public RestaurantService(RestaurantRepository restaurantRepository, ReviewRepository reviewRepository,
                              BookmarkRepository bookmarkRepository, PasswordEncoder passwordEncoder,
                              JwtTokenProvider jwtTokenProvider, RedisTemplate<String, Object> redisTemplate,
-                             S3Client s3Client, RestaurantInfoRepository restaurantInfoRepository) {
+                             S3Client s3Client, RestaurantInfoRepository restaurantInfoRepository, UserRepository userRepository) {
         this.restaurantRepository = restaurantRepository;
         this.reviewRepository = reviewRepository;
         this.bookmarkRepository = bookmarkRepository;
@@ -79,6 +82,7 @@ public class RestaurantService {
         this.redisTemplate = redisTemplate;
         this.restaurantInfoRepository = restaurantInfoRepository;
         this.s3Client = s3Client;
+        this.userRepository = userRepository;
     }
 
     public Page<RestaurantListRes> findAll(Pageable pageable, RestaurantSearchDto searchDto){
@@ -402,5 +406,53 @@ public class RestaurantService {
                         .categoryIcon(null) // 아이콘 URL (추후 설정 가능)
                         .build())
                 .collect(Collectors.toList());
+    }
+
+
+    public String addBookMark(AddBookMarkReq addBookMarkReq){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        Restaurant restaurant = restaurantRepository.findById(addBookMarkReq.getRestaurantId()).orElseThrow(()->new EntityNotFoundException("없는 레스토랑"));
+        bookmarkRepository.save(Bookmark.builder().user(user).restaurant(restaurant).build());
+        return "ok";
+    }
+
+    public String deleteBookMark(DeleteBookMarkReq deleteBookMarkReq){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        Restaurant restaurant = restaurantRepository.findById(deleteBookMarkReq.getRestaurantId()).orElseThrow(()->new EntityNotFoundException("없는 레스토랑"));
+        bookmarkRepository.deleteByUserAndRestaurant(user,restaurant);
+        return "ok";
+    }
+
+    public Page<MyBookMarkRes> myBookMark(Pageable pageable){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "id")
+        );
+
+        Page<Bookmark> bookmarkPage = bookmarkRepository.findByUserAndRestaurant_RestaurantStatus(user, RestaurantStatus.ACTIVE, sortedPageable);
+
+        return bookmarkPage.map(bookmark -> {
+            Restaurant restaurant = bookmark.getRestaurant();
+            String restaurantName = restaurant.getName();
+            String restaurantPhoto = (restaurant.getPhotos() != null && !restaurant.getPhotos().isEmpty())
+                    ? restaurant.getPhotos().get(0).getPhotoUrl()
+                    : null;
+            return MyBookMarkRes.builder()
+                    .restaurantId(restaurant.getId())
+                    .restaurantName(restaurantName)
+                    .restaurantPhoto(restaurantPhoto)
+                    .build();
+        });
+    }
+    public boolean isBookMark(IsBookMarkReq isBookMarkReq){
+        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        Restaurant restaurant = restaurantRepository.findById(isBookMarkReq.getRestaurantId()).orElseThrow(()->new EntityNotFoundException("없는 레스토랑입니다."));
+        return bookmarkRepository.findByUserAndRestaurant(user, restaurant).isPresent();
     }
 }
