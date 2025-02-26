@@ -11,7 +11,6 @@ import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantType;
 
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantStatus;
-
 import com.beyond.StomachForce.restaurant.dtos.*;
 
 import com.beyond.StomachForce.restaurant.dtos.forLogin.LoginDto;
@@ -219,16 +218,16 @@ public class RestaurantService {
 
     public Map<String, Object> login(LoginDto dto){
         // 사업자등록증 여부 확인
-       Restaurant restaurant = restaurantRepository.findByRegistrationNumber(dto.getRegistrationNumber())
-               .orElseThrow(()-> new EntityNotFoundException("사업자등록증 또는 비밀번호를 확인해주세요."));
-       if(!passwordEncoder.matches(dto.getPassword(), restaurant.getPassword())){
-           throw new IllegalArgumentException("사업자등록증 또는 비밀번호를 확인해주세요.");
-       }
+        Restaurant restaurant = restaurantRepository.findByRegistrationNumber(dto.getRegistrationNumber())
+                .orElseThrow(()-> new EntityNotFoundException("사업자등록증 또는 비밀번호를 확인해주세요."));
+        if(!passwordEncoder.matches(dto.getPassword(), restaurant.getPassword())){
+            throw new IllegalArgumentException("사업자등록증 또는 비밀번호를 확인해주세요.");
+        }
 
-       String at = jwtTokenProvider.createToken
-               (restaurant.getRegistrationNumber(),restaurant.getRole().toString());
-       String rt = jwtTokenProvider.createRefreshToken
-               (restaurant.getRegistrationNumber(),restaurant.getRole().toString());
+        String at = jwtTokenProvider.createToken
+                (restaurant.getRegistrationNumber(),restaurant.getRole().toString());
+        String rt = jwtTokenProvider.createRefreshToken
+                (restaurant.getRegistrationNumber(),restaurant.getRole().toString());
         //      redis 에 rt 저장(상단에서 redisTemplate 주입함)
         redisTemplate.opsForValue().set(restaurant.getRegistrationNumber(), rt,200, TimeUnit.DAYS);
         //      사용자에게 at, rt 지급
@@ -525,5 +524,35 @@ public class RestaurantService {
                 .menuPhoto(menu.getMenuPhoto()) // ✅ 메뉴 이미지 URL 추가
                 .build()
         ).collect(Collectors.toList());
+    }
+
+    // 🔹 1. 레스토랑 목록 조회
+    public List<RestaurantManageRes> getAllRestaurants() {
+        List<RestaurantManageRes> restaurantList = restaurantRepository.findAll().stream()
+                .map(r -> {
+                    RestaurantManageRes dto = new RestaurantManageRes(
+                            r.getId(),
+                            r.getRestaurantStatus().toString(),
+                            r.getEmail(),
+                            r.getPhoneNumber(),
+                            r.getName()
+                    );
+                    System.out.println("DTO 생성 확인: " + dto); // ✅ 로그 찍기
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        System.out.println("최종 반환되는 리스트: " + restaurantList); // ✅ 로그 찍기
+        return restaurantList;
+    }
+
+    // 🔹 2. 레스토랑 상태 업데이트
+    public void updateRestaurantStatus(Long id, RestaurantStatusUpdateDto dto) {
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("레스토랑을 찾을 수 없습니다."));
+
+        // 상태 업데이트
+        restaurant.updateStatus(dto.getStatus());
+        restaurantRepository.save(restaurant);
     }
 }

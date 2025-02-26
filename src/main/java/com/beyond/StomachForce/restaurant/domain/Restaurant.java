@@ -227,6 +227,9 @@ public class Restaurant extends BaseTimeEntity {
             }
         }
     }
+    public void updateStatus(RestaurantStatus status) {
+        this.restaurantStatus = status;
+    }
 
     public void deleteRestaurant() {
         this.restaurantStatus = RestaurantStatus.INACTIVE;

@@ -212,6 +212,21 @@ public class RestaurantController {
     public ResponseEntity<List<MenuResDto>> getRestaurantMenus(@PathVariable Long restaurantId) {
         return ResponseEntity.ok(restaurantService.getMenusByRestaurantId(restaurantId));
     }
+    // 🔹 1. 전체 레스토랑 목록 조회 API
+    @GetMapping("/listmanage")
+    public ResponseEntity<List<RestaurantManageRes>> getAllRestaurants() {
+        List<RestaurantManageRes> restaurantList = restaurantService.getAllRestaurants();
+        return ResponseEntity.ok(restaurantList);
+    }
+
+    // 🔹 2. 레스토랑 상태 변경 API
+    @PatchMapping("/update/status/{id}")
+    public ResponseEntity<String> updateRestaurantStatus(
+            @PathVariable Long id,
+            @RequestBody RestaurantStatusUpdateDto dto) {
+        restaurantService.updateRestaurantStatus(id, dto);
+        return ResponseEntity.ok("레스토랑 상태가 변경되었습니다.");
+    }
 }
 
 
