@@ -205,7 +205,8 @@ public class RestaurantController {
     @PostMapping("/isBookMark")
     public ResponseEntity<?> isBookMark(@Valid @RequestBody IsBookMarkReq isBookMarkReq) {
         boolean response = restaurantService.isBookMark(isBookMarkReq);
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     @GetMapping("/{restaurantId}/menus")
     public ResponseEntity<List<MenuResDto>> getRestaurantMenus(@PathVariable Long restaurantId) {
