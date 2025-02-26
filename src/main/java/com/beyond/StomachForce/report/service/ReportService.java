@@ -76,22 +76,23 @@ public class ReportService {
                 .contents(req.getContents())
                 .build();
 
-        Report savedReport = reportRepository.save(report); // 게시글 저장 (postId 생성됨)
+        Report savedReport = reportRepository.save(report);
 
-        // 🔹 사진 업로드 (각 postId별 폴더 생성)
-        List<ReportPhoto> photoList = req.getPhotos().stream()
-                .map(photo -> {
-                    String photoUrl = uploadImageToS3(photo, savedReport.getId()); // postId를 폴더로 활용!
-                    return ReportPhoto.builder()
-                            .photo(photoUrl)
-                            .report(savedReport)
-                            .build();
-                })
-                .collect(Collectors.toList());
+        // 사진이 있는 경우에만 사진 업로드 처리
+        if (req.getPhotos() != null && !req.getPhotos().isEmpty()) {
+            List<ReportPhoto> photoList = req.getPhotos().stream()
+                    .map(photo -> {
+                        String photoUrl = uploadImageToS3(photo, savedReport.getId());
+                        return ReportPhoto.builder()
+                                .photo(photoUrl)
+                                .report(savedReport)
+                                .build();
+                    })
+                    .collect(Collectors.toList());
 
-        // 저장된 post에 사진 추가
-        savedReport.getReportPhotos().addAll(photoList);
-        reportPhotoRepository.saveAll(photoList); // 사진 DB 저장
+            savedReport.getReportPhotos().addAll(photoList);
+            reportPhotoRepository.saveAll(photoList);
+        }
 
         return new ReportResDto(savedReport);
     }
@@ -131,40 +132,36 @@ public class ReportService {
 
 
     public ReportResDto updateReport(Long reportId, ReportUpdateReq req) {
-        // 현재 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userIdentify = authentication.getName(); // JWT에서 userIdentify 추출
+        String userIdentify = authentication.getName();
 
-        // userIdentify로 userId 조회
         User user = userRepository.findByIdentify(userIdentify)
                 .orElseThrow(() -> new EntityNotFoundException("사용자가 존재하지 않습니다."));
 
-        // 수정할 게시글 가져오기
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
 
-        // 본인이 작성한 글인지 확인
         if (!report.getReporter().getId().equals(user.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 게시글을 수정할 권한이 없습니다.");
         }
 
-        // 게시글 정보 업데이트
         if (req.getReportClass() != null) report.setReportClass(req.getReportClass());
         if (req.getContents() != null) report.setContents(req.getContents());
 
-        // 기존 사진 S3 및 DB에서 삭제
-        List<ReportPhoto> existingPhotos = report.getReportPhotos();
-        for (ReportPhoto photo : existingPhotos) {
-            deleteImageFromS3(photo.getPhoto(), reportId); // postId 기반으로 삭제
-        }
-        reportPhotoRepository.deleteAll(existingPhotos);
-        report.getReportPhotos().clear();
-
-        // 새로운 사진 업로드
+        // 새로운 사진이 있는 경우에만 사진 관련 처리
         if (req.getPhotos() != null && !req.getPhotos().isEmpty()) {
+            // 기존 사진 삭제
+            List<ReportPhoto> existingPhotos = report.getReportPhotos();
+            for (ReportPhoto photo : existingPhotos) {
+                deleteImageFromS3(photo.getPhoto(), reportId);
+            }
+            reportPhotoRepository.deleteAll(existingPhotos);
+            report.getReportPhotos().clear();
+
+            // 새로운 사진 업로드
             List<ReportPhoto> newPhotos = req.getPhotos().stream()
                     .map(photo -> {
-                        String photoUrl = uploadImageToS3(photo, reportId); // postId 폴더에 저장
+                        String photoUrl = uploadImageToS3(photo, reportId);
                         return ReportPhoto.builder()
                                 .report(report)
                                 .photo(photoUrl)

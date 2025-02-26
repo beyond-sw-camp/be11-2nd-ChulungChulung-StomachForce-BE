@@ -73,20 +73,22 @@ public class ServiceService {
 
         ServicePost savedPost = servicePostRepository.save(post); // 게시글 저장 (postId 생성됨)
 
-        // 사진 업로드 (각 postId별 폴더 생성)
-        List<ServicePostPhoto> photoList = req.getPhotos().stream()
-                .map(photo -> {
-                    String photoUrl = uploadImageToS3(photo, savedPost.getId()); // postId를 폴더로 활용!
-                    return ServicePostPhoto.builder()
-                            .photo(photoUrl)
-                            .servicePost(savedPost)
-                            .build();
-                })
-                .collect(Collectors.toList());
+        // 사진이 있는 경우에만 사진 업로드 처리
+        if (req.getPhotos() != null && !req.getPhotos().isEmpty()) {
+            List<ServicePostPhoto> photoList = req.getPhotos().stream()
+                    .map(photo -> {
+                        String photoUrl = uploadImageToS3(photo, savedPost.getId());
+                        return ServicePostPhoto.builder()
+                                .photo(photoUrl)
+                                .servicePost(savedPost)
+                                .build();
+                    })
+                    .collect(Collectors.toList());
 
-        // 저장된 post에 사진 추가
-        savedPost.getServicePostPhotos().addAll(photoList);
-        servicePostPhotoRepository.saveAll(photoList); // 사진 DB 저장
+            // 저장된 post에 사진 추가
+            savedPost.getServicePostPhotos().addAll(photoList);
+            servicePostPhotoRepository.saveAll(photoList);
+        }
 
         return new ServicePostResDto(savedPost);
     }
@@ -128,7 +130,7 @@ public class ServiceService {
     public ServicePostResDto updatePost(Long postId, ServicePostUpdateReq req) {
         // 현재 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userIdentify = authentication.getName(); // JWT에서 userIdentify 추출
+        String userIdentify = authentication.getName();
 
         // userIdentify로 userId 조회
         User user = userRepository.findByIdentify(userIdentify)
@@ -149,19 +151,21 @@ public class ServiceService {
         if (req.getCategory() != null) post.setCategory(req.getCategory());
         if (req.getVisibility() != null) post.setVisibility(req.getVisibility());
 
-        // 기존 사진 S3 및 DB에서 삭제
-        List<ServicePostPhoto> existingPhotos = post.getServicePostPhotos();
-        for (ServicePostPhoto photo : existingPhotos) {
-            deleteImageFromS3(photo.getPhoto(), postId); // postId 기반으로 삭제
-        }
-        servicePostPhotoRepository.deleteAll(existingPhotos);
-        post.getServicePostPhotos().clear();
-
-        // 새로운 사진 업로드
+        // 새로운 사진이 있는 경우에만 사진 관련 처리 수행
         if (req.getPhotos() != null && !req.getPhotos().isEmpty()) {
+
+            // 기존 사진 S3 및 DB에서 삭제
+            List<ServicePostPhoto> existingPhotos = post.getServicePostPhotos();
+            for (ServicePostPhoto photo : existingPhotos) {
+                deleteImageFromS3(photo.getPhoto(), postId);
+            }
+            servicePostPhotoRepository.deleteAll(existingPhotos);
+            post.getServicePostPhotos().clear();
+
+            // 새로운 사진 업로드
             List<ServicePostPhoto> newPhotos = req.getPhotos().stream()
                     .map(photo -> {
-                        String photoUrl = uploadImageToS3(photo, postId); // postId 폴더에 저장
+                        String photoUrl = uploadImageToS3(photo, postId);
                         return ServicePostPhoto.builder()
                                 .servicePost(post)
                                 .photo(photoUrl)
@@ -171,9 +175,14 @@ public class ServiceService {
 
             servicePostPhotoRepository.saveAll(newPhotos);
             post.getServicePostPhotos().addAll(newPhotos);
+        } else {
+            // 새로운 사진이 없는 경우 기존 사진 유지
+            // 아무 작업도 하지 않음
         }
 
-        return new ServicePostResDto(post);
+        ServicePost savedPost = servicePostRepository.save(post);
+
+        return new ServicePostResDto(savedPost);
     }
 
     public void deletePost(Long postId) {
