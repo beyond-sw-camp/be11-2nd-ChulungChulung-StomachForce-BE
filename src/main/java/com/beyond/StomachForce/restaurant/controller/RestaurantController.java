@@ -70,7 +70,6 @@ public class RestaurantController {
 
 
     @GetMapping("/list")// 레스토랑 사람들 리스트로 뽑기
-
     public ResponseEntity<?> list(Pageable pageable, @ModelAttribute RestaurantSearchDto dto) {
         System.out.println("Received Name: " + dto.getName());
         System.out.println("Received location: " + dto.getAddress());
@@ -78,6 +77,7 @@ public class RestaurantController {
         Page<RestaurantListRes> restaurantListResList = restaurantService.findAll(pageable, dto);
         return new ResponseEntity<>(restaurantListResList, HttpStatus.OK);
     }
+
 
     @GetMapping("/detail/{id}")//
     public RestaurantDetailRes restaurantDetail (@PathVariable Long id) {
