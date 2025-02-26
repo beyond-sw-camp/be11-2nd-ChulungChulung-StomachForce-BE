@@ -476,6 +476,7 @@ public class RestaurantService {
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         Restaurant restaurant = restaurantRepository.findById(isBookMarkReq.getRestaurantId()).orElseThrow(()->new EntityNotFoundException("없는 레스토랑입니다."));
         return bookmarkRepository.findByUserAndRestaurant(user, restaurant).isPresent();
+    }
     public List<MenuResDto> getMenusByRestaurantId(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
