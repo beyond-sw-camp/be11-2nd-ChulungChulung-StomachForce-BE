@@ -39,16 +39,18 @@ public class Menu {
     @JoinColumn(name = "allergyInfo_id")
     private AllergyInfo allergyInfo;
 
-    @ManyToOne
-    @JoinColumn(name = "reservation_id")
-    private Reservation reservation;
+    @Transient // 데이터베이스 컬럼에는 저장하지 않음
+    private Integer quantity;
+
 
     public MenuResDto listFromEntity(){
         return MenuResDto.builder()
                 .id(this.id)
+                .name(this.name)
                 .price(this.price)
                 .description(this.description)
                 .menuPhoto(this.menuPhoto)
+                .quantity(this.quantity != null ? this.quantity : 1)
                 .build();
     }
 

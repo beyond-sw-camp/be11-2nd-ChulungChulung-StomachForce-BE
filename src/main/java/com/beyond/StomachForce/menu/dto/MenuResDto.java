@@ -19,6 +19,7 @@ public class MenuResDto {
     private String menuPhoto;
     private Long restaurantId;
     private AllergyInfo allergyInfo;
+    private Integer quantity;
 
     public MenuResDto(Menu menu){
         this.id = menu.getId();
