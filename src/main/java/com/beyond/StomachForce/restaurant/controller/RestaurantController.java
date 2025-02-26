@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.restaurant.controller;
 
 import com.beyond.StomachForce.Common.dtos.CommonDto;
+import com.beyond.StomachForce.User.dtos.MypageRes;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.domain.RestaurantInfo;
 import com.beyond.StomachForce.restaurant.dtos.*;
@@ -11,6 +12,7 @@ import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoC
 import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoListRes;
 import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoUpdateReq;
 import com.beyond.StomachForce.restaurant.service.RestaurantService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -18,8 +20,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,10 +79,32 @@ public class RestaurantController {
         return restaurantService.findById(id);
     }
 
+//    @GetMapping("/mypage")
+//    public ResponseEntity<?> getMyRestaurantInfo() {
+//        String registrationNumber = SecurityContextHolder.getContext().getAuthentication().getName();
+//        Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber)
+//                .orElseThrow(() -> new EntityNotFoundException("해당 레스토랑을 찾을 수 없습니다."));
+//
+//        Map<String, Object> restaurantInfo = new HashMap<>();
+//        restaurantInfo.put("id", restaurant.getId());
+//        restaurantInfo.put("name", restaurant.getName());
+//        restaurantInfo.put("email", restaurant.getEmail());
+//        restaurantInfo.put("description", restaurant.getDescription());
+//
+//        return ResponseEntity.ok(restaurantInfo);
+//    }
 
-    @PatchMapping("/update/{id}")
-    public ResponseEntity<?> authorUpdate(@PathVariable Long id, RestaurantUpdateReq dto){
-        restaurantService.update(id,dto);
+
+
+    @GetMapping("/mypage")
+    public ResponseEntity<?> myPage(){
+        RestaurantMypage myPageRes = restaurantService.myPage();
+        return new ResponseEntity<>(myPageRes,HttpStatus.OK);
+    }
+
+    @PatchMapping("/update")
+    public ResponseEntity<?> authorUpdate(@Valid @RequestBody RestaurantUpdateReq dto){
+        restaurantService.update(dto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -86,6 +112,24 @@ public class RestaurantController {
     public ResponseEntity<?> restaurantDelete() {
         restaurantService.delete();
         return new ResponseEntity<>(new CommonDto(HttpStatus.OK.value(),"deletion success","success"),HttpStatus.OK);
+    }
+
+    @GetMapping("/photos")
+    public ResponseEntity<?> findMyPhotos() {
+        List<MyPhotoRes> response = restaurantService.findMyPhotos();
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PostMapping("/photoDelete")
+    public ResponseEntity<?> deletePhoto(@Valid @RequestBody PhotoDeleteReq photoDeleteReq) {
+        String response = restaurantService.deletePhoto(photoDeleteReq);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PostMapping("/photoAdd")
+    public ResponseEntity<?> photoUpdate(RestaurantPhotoAdd dto) throws IOException {
+        String response = restaurantService.addPhoto(dto);
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
     // info 관련 CRUD ------------------------------------------------------------------------------------
     @PostMapping("/info/create/{id}")
