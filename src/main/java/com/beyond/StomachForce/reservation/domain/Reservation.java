@@ -12,6 +12,7 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -45,10 +46,20 @@ public class Reservation extends BaseReservationTimeEntity {
     @ManyToOne
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
-    @OneToMany(mappedBy = "reservation")
-    private List<Menu> menuList;
+    // ✅ 연결 테이블로 변경하여 다대다 문제 해결
+    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReservationMenu> reservationMenus = new ArrayList<>();
 
-//    id ,userId, restaurantId, reservationType, reservationDate, peopleNumber, method, mileage
+    // ✅ 예약에 메뉴 리스트 추가하는 메서드
+    public void addReservationMenu(List<ReservationMenu> reservationMenuList) {
+        if (this.reservationMenus == null) {  // ✅ NullPointerException 방지
+            this.reservationMenus = new ArrayList<>();
+        }
+        for (ReservationMenu reservationMenu : reservationMenuList) {
+            this.reservationMenus.add(reservationMenu);
+            reservationMenu.setReservation(this);
+        }
+    }
 
 
     public void updateReservation(LocalDate reservationDate,LocalTime reservationTime, Integer peopleNumber, Payment paymentMethod, Integer mileage) {

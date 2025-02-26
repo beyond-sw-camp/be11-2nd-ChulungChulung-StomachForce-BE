@@ -1,6 +1,8 @@
 package com.beyond.StomachForce.restaurant.service;
 
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
+import com.beyond.StomachForce.menu.domain.Menu;
+import com.beyond.StomachForce.menu.dto.MenuResDto;
 import com.beyond.StomachForce.restaurant.domain.*;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
 import com.beyond.StomachForce.restaurant.dtos.*;
@@ -422,5 +424,22 @@ public class RestaurantService {
                         .categoryIcon(null) // 아이콘 URL (추후 설정 가능)
                         .build())
                 .collect(Collectors.toList());
+    }
+    public List<MenuResDto> getMenusByRestaurantId(Long restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+        List<Menu> menuList = restaurant.getMenus();
+
+        if (menuList == null || menuList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return menuList.stream().map(menu -> MenuResDto.builder()
+                .id(menu.getId())
+                .name(menu.getName())      // ✅ 메뉴 이름 추가
+                .price(menu.getPrice())    // ✅ 가격 추가
+                .description(menu.getDescription()) // ✅ 메뉴 설명 추가
+                .menuPhoto(menu.getMenuPhoto()) // ✅ 메뉴 이미지 URL 추가
+                .build()
+        ).collect(Collectors.toList());
     }
 }
