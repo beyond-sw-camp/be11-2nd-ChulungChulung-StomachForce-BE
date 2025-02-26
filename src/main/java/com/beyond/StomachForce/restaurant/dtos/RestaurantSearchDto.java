@@ -1,5 +1,6 @@
 package com.beyond.StomachForce.restaurant.dtos;
 
+import com.beyond.StomachForce.restaurant.domain.select.RestaurantType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
