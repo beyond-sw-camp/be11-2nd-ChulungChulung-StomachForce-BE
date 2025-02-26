@@ -116,39 +116,45 @@ public class AnnouncementService {
     }
 
     public Announcement updateAnnouncement(AnnouncementUpdateReq dto, Long id) throws IOException {
-        Announcement announcement = announcementRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 게시글 입니다."));
-        // 2. 새로운 이미지 리스트 생성 (S3 업로드 후 URL 리스트 생성)
+        Announcement announcement = announcementRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("없는 게시글 입니다."));
 
-        List<AnnouncementImage> newImageList = new ArrayList<>();
-        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
-            for (MultipartFile image : dto.getImages()) {
-                byte[] bytes = image.getBytes();
-                String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename(); // 중복 방지
+        List<AnnouncementImage> imageList = new ArrayList<>();
 
-                // (1) 먼저 로컬에 저장
-                Path path = Paths.get("C:/Users/Playdata/Desktop/announcement", fileName);
-                Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        // 기존 이미지 유지 여부 확인
+        if (Boolean.parseBoolean(dto.getKeepExistingImages())) {
+            // 기존 이미지 유지
+            imageList.addAll(announcement.getImages());
+        } else {
+            // 새 이미지 업로드 처리
+            if (dto.getImages() != null && !dto.getImages().isEmpty()) {
+                for (MultipartFile image : dto.getImages()) {
+                    byte[] bytes = image.getBytes();
+                    String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
 
-                // (2) S3 업로드 요청 객체 생성
-                PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                        .bucket(bucket)
-                        .key(fileName)
-                        .build();
+                    // 로컬 저장
+                    Path path = Paths.get("C:/Users/Playdata/Desktop/announcement", fileName);
+                    Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-                // (3) S3에 업로드 실행
-                s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
+                    // S3 업로드
+                    PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(fileName)
+                            .build();
 
-                // (4) 저장된 S3 URL 가져오기
-                String s3Url = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
+                    s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
 
-                // (5) 새 이미지 객체 생성 후 리스트에 추가
-                AnnouncementImage announcementImage = AnnouncementImage.builder()
-                        .imagePath(s3Url)
-                        .announcement(announcement) // 연관관계 설정
-                        .build();
-                newImageList.add(announcementImage);
+                    String s3Url = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
+
+                    AnnouncementImage announcementImage = AnnouncementImage.builder()
+                            .imagePath(s3Url)
+                            .announcement(announcement)
+                            .build();
+                    imageList.add(announcementImage);
+                }
             }
         }
+
         LocalDateTime parsedEndDate = null;
         if (dto.getEndDate() != null && !dto.getEndDate().isBlank()) {
             try {
@@ -157,14 +163,19 @@ public class AnnouncementService {
                 System.err.println("❌ LocalDateTime 변환 오류: " + e.getMessage());
             }
         }
-        announcement.updateAnnouncement(dto.getTitle(), dto.getContents(), dto.getStatus(), newImageList, parsedEndDate);
 
-        System.out.println("이미지에용 : " + newImageList);
-        announcementImageRepository.saveAll(newImageList);
-        announcementRepository.save(announcement);
+        // 기존 이미지 삭제 (새 이미지를 업로드하는 경우에만)
+        if (!Boolean.parseBoolean(dto.getKeepExistingImages())) {
+            announcementImageRepository.deleteAllByAnnouncement(announcement);
+        }
 
-        return announcement;
+        announcement.updateAnnouncement(dto.getTitle(), dto.getContents(), dto.getStatus(), imageList, parsedEndDate);
 
+        if (!imageList.isEmpty()) {
+            announcementImageRepository.saveAll(imageList);
+        }
+
+        return announcementRepository.save(announcement);
     }
     public void deleteAnnouncement(Long id) {
         // 1. 공지사항 찾기

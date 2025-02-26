@@ -21,4 +21,5 @@ public class UserListRes {
     private VipGrade vipGrade;
     private Influencer influencer;
     private UserStatus userStatus;
+    private String nickName;
 }

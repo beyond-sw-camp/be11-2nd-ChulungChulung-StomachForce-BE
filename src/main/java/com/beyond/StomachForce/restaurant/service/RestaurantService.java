@@ -3,6 +3,8 @@ package com.beyond.StomachForce.restaurant.service;
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.User.repository.UserRepository;
+import com.beyond.StomachForce.menu.domain.Menu;
+import com.beyond.StomachForce.menu.dto.MenuResDto;
 import com.beyond.StomachForce.restaurant.domain.*;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantStatus;
@@ -15,6 +17,7 @@ import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoL
 import com.beyond.StomachForce.restaurant.dtos.forRestaurantInfo.RestaurantInfoUpdateReq;
 import com.beyond.StomachForce.restaurant.repository.BookmarkRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantInfoRepository;
+import com.beyond.StomachForce.restaurant.repository.RestaurantPhotoRepository;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
 import com.beyond.StomachForce.review.repository.ReviewRepository;
 import io.jsonwebtoken.Claims;
@@ -62,7 +65,7 @@ public class RestaurantService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final RestaurantInfoRepository restaurantInfoRepository;
     private final UserRepository userRepository;
-
+    private final RestaurantPhotoRepository restaurantPhotoRepository;
     //사진 넣을 때 필요한 의존성 추가
     private final S3Client s3Client;
     @Value("${cloud.aws.s3.bucket}")
@@ -73,7 +76,8 @@ public class RestaurantService {
     public RestaurantService(RestaurantRepository restaurantRepository, ReviewRepository reviewRepository,
                              BookmarkRepository bookmarkRepository, PasswordEncoder passwordEncoder,
                              JwtTokenProvider jwtTokenProvider, RedisTemplate<String, Object> redisTemplate,
-                             S3Client s3Client, RestaurantInfoRepository restaurantInfoRepository, UserRepository userRepository) {
+
+    S3Client s3Client, RestaurantInfoRepository restaurantInfoRepository, UserRepository userRepository, RestaurantPhotoRepository restaurantPhotoRepository) {
         this.restaurantRepository = restaurantRepository;
         this.reviewRepository = reviewRepository;
         this.bookmarkRepository = bookmarkRepository;
@@ -83,6 +87,7 @@ public class RestaurantService {
         this.restaurantInfoRepository = restaurantInfoRepository;
         this.s3Client = s3Client;
         this.userRepository = userRepository;
+        this.restaurantPhotoRepository = restaurantPhotoRepository;
     }
 
     public Page<RestaurantListRes> findAll(Pageable pageable, RestaurantSearchDto searchDto){
@@ -113,7 +118,11 @@ public class RestaurantService {
 
     public RestaurantDetailRes findById(Long id){
         Restaurant restaurant = restaurantRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("Restaurant with id " + id + " not found"));
-        return restaurant.detailFromEntity();
+        List<String> informationTexts = restaurant.getInfos().stream()
+                .filter(info -> info.getRestaurantInfoStatus() == RestaurantInfoStatus.ACTIVE) // ACTIVE 상태인 것만 필터링
+                .map(RestaurantInfo::getInformationText)  // 각 RestaurantInfo 객체의 informationText를 뽑기
+                .collect(Collectors.toList());  // 리스트로 수집
+        return restaurant.detailFromEntity(informationTexts);
     }
 
     public Long save(RestaurantCreateReq restaurantCreateReq){
@@ -196,7 +205,6 @@ public class RestaurantService {
         loginInfo.put("name",restaurant.getName());
         loginInfo.put("email",restaurant.getEmail());
         loginInfo.put("userType",restaurant.getRole().toString());
-        loginInfo.put("profilePhoto", restaurant.getPhotos().isEmpty() ? null : restaurant.getPhotos().get(0).getPhotoUrl());
         loginInfo.put("restaurantType", restaurant.getRestaurantType());
         loginInfo.put("token",at);
         loginInfo.put("refreshToken",rt);
@@ -223,57 +231,11 @@ public class RestaurantService {
 
 
 
-    public void update(Long id, RestaurantUpdateReq restaurantUpdateReq){
+    public void update(RestaurantUpdateReq restaurantUpdateReq){
         String registrationNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-        Restaurant restaurant = restaurantRepository.findById(id)
+        Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber)
                 .orElseThrow(()-> new EntityNotFoundException("없는 사용자입니다."));
-
-        if(!registrationNumber.equals(restaurant.getRegistrationNumber())){
-            throw new IllegalArgumentException("회원정보가 일치하지 않습니다.");     // 사업자등록증 다름.
-        }
-        if(!passwordEncoder.matches(restaurantUpdateReq.getCurrentPassword(),restaurant.getPassword())){
-            throw new IllegalArgumentException("회원정보가 일치하지 않습니다.");     // 비번틀림
-        }
-        if (restaurantUpdateReq.getCurrentPassword() == null || restaurantUpdateReq.getCurrentPassword().isBlank()) {
-            throw new IllegalArgumentException("회원정보가 일치하지 않습니다.");     // 현재 비밀번호 입력
-        }
-
-        String password = passwordEncoder.encode(restaurantUpdateReq.getPassword());
-        restaurant.updateProfile(restaurantUpdateReq, password);
-
-        //  사진 삭제 처리
-        if (restaurantUpdateReq.getPhotoUrlsToRemove() != null) {
-            restaurant.removePhotos(restaurantUpdateReq.getPhotoUrlsToRemove());
-        }
-
-        //  새로운 사진 추가 (중복 방지)
-        if (restaurantUpdateReq.getRestaurantPhotos() != null && !restaurantUpdateReq.getRestaurantPhotos().isEmpty()) {
-            List<RestaurantPhoto> newPhotos = new ArrayList<>();
-            for (MultipartFile image : restaurantUpdateReq.getRestaurantPhotos()) {
-                try {
-                    byte[] bytes = image.getBytes();
-                    String fileName = restaurant.getId() + "_" + image.getOriginalFilename();
-                    Path path = Paths.get("C:/Users/Playdata/Desktop/testFolder", fileName);
-                    Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-
-                    PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                            .bucket(bucket)
-                            .key(fileName)
-                            .build();
-                    s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
-
-                    String s3Url = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
-                    RestaurantPhoto restaurantPhoto = new RestaurantPhoto(s3Url, restaurant);
-
-                    if (!restaurant.getPhotos().contains(restaurantPhoto)) { // 중복 방지
-                        newPhotos.add(restaurantPhoto);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException("이미지 저장 실패");
-                }
-            }
-            restaurant.addPhotos(newPhotos);
-        }
+        restaurant.updateProfile(restaurantUpdateReq);
         // info 관련 로직
         // RestaurantInfo 생성 또는 수정
         if (restaurantUpdateReq.getInfoText() != null && !restaurantUpdateReq.getInfoText().isBlank()) {
@@ -300,6 +262,66 @@ public class RestaurantService {
             }
         }
 
+    }
+    public String addPhoto(RestaurantPhotoAdd dto) throws IOException {
+        String registrationNumber = SecurityContextHolder.getContext().getAuthentication().getName();
+        Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber).orElseThrow(()-> new EntityNotFoundException("없는 레스토랑"));
+        MultipartFile image = dto.getAdditionalPhoto();
+        byte[] bytes = image.getBytes();
+        String fileName = restaurant.getId() + "_" + image.getOriginalFilename();
+        //      먼저 local에 저장
+        Path path = Paths.get("C:/Users/Playdata/Desktop/testFolder" , fileName);
+        Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        //      저장을 위한 request 객체(s3 업로드 요청)
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileName)
+                .build();
+        //      저장 실행(s3업로드)
+        s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
+
+        //      저장된 s3url 갖고오기
+        String s3Url = s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
+        restaurantPhotoRepository.save(RestaurantPhoto.builder().restaurant(restaurant).photoUrl(s3Url).build());
+        return "ok";
+    }
+
+    public List<MyPhotoRes> findMyPhotos(){
+        String registrationNumber = SecurityContextHolder.getContext().getAuthentication().getName();
+        Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber).orElseThrow(()-> new EntityNotFoundException("없는 레스토랑"));
+        List<MyPhotoRes> myPhotos = restaurantPhotoRepository.findByRestaurant(restaurant)
+                .orElse(Collections.emptyList())  // Optional이 비어 있으면 빈 리스트 반환
+                .stream()
+                .map(photo -> MyPhotoRes.builder()  // RestaurantPhoto 객체를 MyPhotoRes로 변환
+                        .photoId(photo.getId())
+                        .photoUrl(photo.getPhotoUrl())
+                        .build())
+                .collect(Collectors.toList());
+
+        return myPhotos;
+    }
+    public String deletePhoto(PhotoDeleteReq req){
+        RestaurantPhoto photo = restaurantPhotoRepository.findById(req.getPhotoId()).orElseThrow(()->new EntityNotFoundException("없는 사진"));
+        restaurantPhotoRepository.delete(photo);
+        return "ok";
+    }
+
+    //염병하느니 이거 만드는게 훨나음
+    public RestaurantMypage myPage() {
+        String registrationNumber = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Restaurant restaurant = restaurantRepository.findByRegistrationNumber(registrationNumber)
+                .orElseThrow(() -> new EntityNotFoundException("해당 레스토랑을 찾을 수 없습니다."));
+
+        return RestaurantMypage.builder()
+                .id(restaurant.getId())
+                .name(restaurant.getName())
+                .email(restaurant.getEmail())
+                .description(restaurant.getDescription())
+                .phoneNumber(restaurant.getPhoneNumber())
+                .address(restaurant.getAddress().getFullAddress())
+                .restaurantType(restaurant.getRestaurantType().toString()) // Enum 처리
+                .build();
     }
 
     public void delete (){
@@ -454,5 +476,21 @@ public class RestaurantService {
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         Restaurant restaurant = restaurantRepository.findById(isBookMarkReq.getRestaurantId()).orElseThrow(()->new EntityNotFoundException("없는 레스토랑입니다."));
         return bookmarkRepository.findByUserAndRestaurant(user, restaurant).isPresent();
+    public List<MenuResDto> getMenusByRestaurantId(Long restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+        List<Menu> menuList = restaurant.getMenus();
+
+        if (menuList == null || menuList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return menuList.stream().map(menu -> MenuResDto.builder()
+                .id(menu.getId())
+                .name(menu.getName())      // ✅ 메뉴 이름 추가
+                .price(menu.getPrice())    // ✅ 가격 추가
+                .description(menu.getDescription()) // ✅ 메뉴 설명 추가
+                .menuPhoto(menu.getMenuPhoto()) // ✅ 메뉴 이미지 URL 추가
+                .build()
+        ).collect(Collectors.toList());
     }
 }

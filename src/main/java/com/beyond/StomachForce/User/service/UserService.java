@@ -205,12 +205,15 @@ public class UserService {
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         UserInfoRes userInfoRes = UserInfoRes.builder()
                 .userId(user.getId())
+                .role(user.getRole().toString())
                 .identify(user.getIdentify())
+                .userStatus(user.getUserStatus())
                 .userNickName(user.getNickName())
                 .userName(user.getName())
                 .userEmail(user.getEmail())
                 .userPhoneNumber(user.getPhoneNumber())
                 .gender(user.getGender())
+                .role(user.getRole().toString())
                 .profilePhoto(user.getProfilePhoto())
                 .build();
         return userInfoRes;
@@ -433,6 +436,7 @@ public class UserService {
                         .vipGrade(user.getVipGrade())
                         .influencer(user.getInfluencer())
                         .userStatus(user.getUserStatus())
+                        .nickName(user.getNickName())
                         .build())
                 .collect(Collectors.toList());
     }

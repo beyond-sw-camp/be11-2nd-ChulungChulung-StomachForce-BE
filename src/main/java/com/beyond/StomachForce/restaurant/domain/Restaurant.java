@@ -125,11 +125,9 @@ public class Restaurant extends BaseTimeEntity {
                 .build();
     }
 
-    public void updateProfile(RestaurantUpdateReq dto,String password){
+    public void updateProfile(RestaurantUpdateReq dto){
         if(dto.getName() != null) this.name = dto.getName();        // 안고치면 안바뀜
         if(dto.getEmail() != null) this.email = dto.getEmail();
-        if(dto.getPassword() != null) this.password = password;
-        if(dto.getRegistrationNumber() !=null) this.registrationNumber = dto.getRegistrationNumber();
         if(dto.getPhoneNumber() != null) this.phoneNumber = dto.getPhoneNumber();
         if(dto.getDescription() != null) this.description = dto.getDescription();
         if(dto.getOpeningTime() != null) this.openingTime = dto.getOpeningTime();
@@ -139,10 +137,9 @@ public class Restaurant extends BaseTimeEntity {
         if(dto.getLastOrder() != null) this.lastOrder=dto.getLastOrder();
         if(dto.getHoliday() != null) this.holiday = dto.getHoliday();
         if(dto.getCapacity() != 0) this.capacity = dto.getCapacity();
-        if(dto.getAddress() != null) {
-                this.address.setCity(dto.getAddress().getCity());
-                this.address.setStreet(dto.getAddress().getStreet());
-        }
+        if(dto.getAddressCity() != null) this.address.setCity(dto.getAddressCity());
+        if(dto.getAddressStreet() != null) this.address.setStreet(dto.getAddressStreet());
+
         // 예약금 관련 처리
         if (dto.getDepositAvailable() != null) {
             this.depositAvailable = DepositAvailable.valueOf(dto.getDepositAvailable().toUpperCase());
@@ -153,7 +150,7 @@ public class Restaurant extends BaseTimeEntity {
             }
         }
         if(dto.getRestaurantType() != null) this.restaurantType = dto.getRestaurantType();
-        if(dto.getInfoText() != null && dto.getInfoText().isBlank()){
+        if(dto.getInfoText() != null && dto.getInfoText().isEmpty()){
             Optional<RestaurantInfo> restaurantInfo = this.infos.stream()
                     .filter(info -> info.getRestaurantInfoStatus()==RestaurantInfoStatus.ACTIVE)
                     .findFirst();
@@ -168,9 +165,10 @@ public class Restaurant extends BaseTimeEntity {
                 this.infos.add(newInfo);
             }
         }
+        this.updatedTime = LocalDateTime.now();
     }
 
-    public RestaurantDetailRes detailFromEntity() {
+    public RestaurantDetailRes detailFromEntity(List<String> info) {
         double averageRating = reviews.isEmpty() ? 0.0 : reviews.stream().mapToDouble
                 (r -> r.getRating().getValue()).average().orElse(0.0);
 
@@ -186,13 +184,18 @@ public class Restaurant extends BaseTimeEntity {
                 .openingTime(this.openingTime)
                 .closingTime(this.closingTime)
                 .lastOrder(this.lastOrder)
+                .capacity(this.capacity)
                 .phoneNumber(this.phoneNumber)
                 .breakTimeStart(this.breakTimeStart)
                 .breakTimeEnd(this.breakTimeEnd)
+                .holiday(this.holiday)
                 .deposit(this.deposit)
+                .depositAvailable(this.depositAvailable.toString())
                 .alcoholSelling(this.alcoholSelling.toString())
                 .restaurantType(this.restaurantType.toString())
-                .address(this.address.getFullAddress())
+                .infos(info)
+                .addressCity(this.address.getCity())
+                .addressStreet(this.address.getStreet())
                 .averageRating(averageRating)
                 .bookmarkCount((long)this.bookmarks.size())
                 .updatedTime(this.updatedTime)
