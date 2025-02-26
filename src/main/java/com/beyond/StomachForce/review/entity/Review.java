@@ -2,6 +2,7 @@ package com.beyond.StomachForce.review.entity;
 
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
 import com.beyond.StomachForce.User.domain.User;
+import com.beyond.StomachForce.reservation.domain.Reservation;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.review.converter.RatingConverter;
 import com.beyond.StomachForce.review.dtos.ReviewListRes;
@@ -46,6 +47,10 @@ public class Review extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;                   //restaurant id와 fk
+
+    @ManyToOne
+    @JoinColumn(name = "reservation_id")  // 예약
+    private Reservation reservation;
 
     @OneToMany(mappedBy = "review",cascade = CascadeType.ALL) // 사진 넣으면 자동으로 리뷰에 추가됨
     private List<ReviewPhoto> reviewPhotos = new ArrayList<>();

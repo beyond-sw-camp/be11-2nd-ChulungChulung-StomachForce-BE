@@ -5,6 +5,7 @@ import com.beyond.StomachForce.menu.domain.Menu;
 import com.beyond.StomachForce.menu.dto.MenuResDto;
 import com.beyond.StomachForce.restaurant.domain.*;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
+import com.beyond.StomachForce.restaurant.domain.select.RestaurantType;
 import com.beyond.StomachForce.restaurant.dtos.*;
 import com.beyond.StomachForce.restaurant.domain.select.BookmarkType;
 
@@ -91,6 +92,34 @@ public class RestaurantService {
             @Override
             public Predicate toPredicate(Root<Restaurant> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicates = new ArrayList<>();
+                if(searchDto.getName() != null){
+                    predicates.add(criteriaBuilder.like(root.get("name"), "%" + searchDto.getName() + "%"));
+                }
+                if (searchDto.getAddress() != null) {
+                    Join<Restaurant, RestaurantAddress> addressJoin = root.join("address"); // RestaurantAddress와 조인
+                    Predicate cityPredicate = criteriaBuilder.like(addressJoin.get("city"), "%" + searchDto.getAddress() + "%");
+                    Predicate streetPredicate = criteriaBuilder.like(addressJoin.get("street"), "%" + searchDto.getAddress() + "%");
+                    predicates.add(criteriaBuilder.or(cityPredicate, streetPredicate)); // OR 조건 적용
+                }
+                Predicate[] predicateArr = new Predicate[predicates.size()];
+                for(int i=0; i<predicates.size(); i++){
+                    predicateArr[i] = predicates.get(i);
+                }
+                Predicate predicate = criteriaBuilder.and(predicateArr);
+                return predicate;
+            }
+        };
+        Page<Restaurant> restaurantList = restaurantRepository.findAll(specification, pageable);
+        return restaurantList.map(p->p.listDtoFromEntity());
+    }
+
+    public Page<RestaurantListRes> findAllKorean (Pageable pageable, RestaurantSearchDto searchDto){
+        Specification<Restaurant> specification = new Specification<Restaurant>() {
+            @Override
+            public Predicate toPredicate(Root<Restaurant> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicates = new ArrayList<>();
+                predicates.add(criteriaBuilder.equal(root.get("restaurantType"), RestaurantType.KOREAN));
+
                 if(searchDto.getName() != null){
                     predicates.add(criteriaBuilder.like(root.get("name"), "%" + searchDto.getName() + "%"));
                 }
