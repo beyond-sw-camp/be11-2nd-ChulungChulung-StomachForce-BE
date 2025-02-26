@@ -2,6 +2,8 @@ package com.beyond.StomachForce.review.service;
 
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.User.repository.UserRepository;
+import com.beyond.StomachForce.reservation.domain.Reservation;
+import com.beyond.StomachForce.reservation.repository.ReservationRepository;
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
 import com.beyond.StomachForce.review.dtos.ReviewCreateReq;
@@ -36,6 +38,7 @@ public class ReviewService {
     private final ReviewPhotoRepository reviewPhotoRepository;
     private final RestaurantRepository restaurantRepository;
     private final UserRepository userRepository;
+    private final ReservationRepository reservationRepository;
     private final S3Client s3Client;
     @Value("${cloud.aws.s3.bucket}")
     private String bucket ;
@@ -44,12 +47,13 @@ public class ReviewService {
             ReviewRepository reviewRepository,
             ReviewPhotoRepository reviewPhotoRepository,
             RestaurantRepository restaurantRepository,
-            UserRepository userRepository,
+            UserRepository userRepository, ReservationRepository reservationRepository,
             S3Client s3Client) {
         this.reviewRepository = reviewRepository;
         this.reviewPhotoRepository = reviewPhotoRepository;
         this.restaurantRepository = restaurantRepository;
         this.userRepository = userRepository;
+        this.reservationRepository = reservationRepository;
         this.s3Client = s3Client;
 
     }
@@ -63,9 +67,25 @@ public class ReviewService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
+        // 가장 최근 완료된 예약 가져오기 (이전 날짜거나, 오늘 예약 시간이 현재보다 과거인 예약)
+        Reservation reservation = reservationRepository.findLatestCompletedReservation(user, restaurant)
+                .orElseThrow(() -> new IllegalStateException("완료된 예약이 없습니다. 예약 후 리뷰를 작성하세요."));
+
+        // 해당 예약에 대해 이미 리뷰를 작성했는지 확인
+        boolean alreadyReviewed = reviewRepository.existsByUserAndReservation(user, reservation);
+        if (alreadyReviewed) {
+            throw new IllegalStateException("이 예약에 대한 리뷰는 이미 작성되었습니다.");
+        }
+
+        if (reservation == null) {
+            throw new IllegalStateException("리뷰를 작성하려면 유효한 예약이 필요합니다.");
+        }
+
+
         Review review = Review.builder()
                 .user(user)
                 .restaurant(restaurant)
+                .reservation(reservation)
                 .rating(Rating.fromValue(req.getRating()))
                 .contents(req.getContents())
                 .build();

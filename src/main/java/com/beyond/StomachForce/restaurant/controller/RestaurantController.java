@@ -70,7 +70,6 @@ public class RestaurantController {
 
 
     @GetMapping("/list")// 레스토랑 사람들 리스트로 뽑기
-
     public ResponseEntity<?> list(Pageable pageable, @ModelAttribute RestaurantSearchDto dto) {
         System.out.println("Received Name: " + dto.getName());
         System.out.println("Received location: " + dto.getAddress());
@@ -78,6 +77,7 @@ public class RestaurantController {
         Page<RestaurantListRes> restaurantListResList = restaurantService.findAll(pageable, dto);
         return new ResponseEntity<>(restaurantListResList, HttpStatus.OK);
     }
+
 
     @GetMapping("/detail/{id}")//
     public RestaurantDetailRes restaurantDetail (@PathVariable Long id) {
@@ -183,6 +183,31 @@ public class RestaurantController {
     public ResponseEntity<List<CategoryRes>> getCategories() {
         return ResponseEntity.ok(restaurantService.getCategories());
     }
+
+    @PostMapping("/addBookMark")
+    public ResponseEntity<?> addBookMark(@Valid @RequestBody AddBookMarkReq addBookMarkReq) {
+        String response = restaurantService.addBookMark(addBookMarkReq);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PostMapping("/deleteBookMark")
+    public ResponseEntity<?> deleteBookMark(@Valid @RequestBody DeleteBookMarkReq deleteBookMarkReq) {
+        String response = restaurantService.deleteBookMark(deleteBookMarkReq);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @GetMapping("/myBookMark")
+    public ResponseEntity<?> myBookMark(Pageable pageable) {
+        Page<MyBookMarkRes> response = restaurantService.myBookMark(pageable);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PostMapping("/isBookMark")
+    public ResponseEntity<?> isBookMark(@Valid @RequestBody IsBookMarkReq isBookMarkReq) {
+        boolean response = restaurantService.isBookMark(isBookMarkReq);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping("/{restaurantId}/menus")
     public ResponseEntity<List<MenuResDto>> getRestaurantMenus(@PathVariable Long restaurantId) {
         return ResponseEntity.ok(restaurantService.getMenusByRestaurantId(restaurantId));

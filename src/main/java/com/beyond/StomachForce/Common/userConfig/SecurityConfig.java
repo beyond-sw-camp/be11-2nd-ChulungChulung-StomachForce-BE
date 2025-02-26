@@ -38,6 +38,7 @@ public class SecurityConfig {
 
                         "/user/refresh-token","/restaurant/create","/restaurant/login","/restaurant/refresh-token","restaurant/detail/{id}",
                         "/restaurant/list","/menu/list/{restaurantId}","/restaurant/{restaurantId}/review/list","/restaurant/info/list/{id}",
+                        "/list/korean","/list/chinese","/list/western","/list/japanese","/list/fusion",
                         "/service/list", "/service/answer/create", "/service/answer/update/{answerId}",
                         "/service/answer/delete/{answerId}","user/me", "/report/create", "/report/update/{reportId}",
                         "/report/delete/{reportId}", "/report/admin-comment/{reportId}",

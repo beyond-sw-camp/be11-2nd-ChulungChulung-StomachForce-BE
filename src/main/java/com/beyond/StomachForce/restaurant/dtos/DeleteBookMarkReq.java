@@ -8,10 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
-public class RestaurantSearchDto {
-    private String name;
-    private String address;
-    private String restaurantType;
-
+public class DeleteBookMarkReq {
+    private Long restaurantId;
 }

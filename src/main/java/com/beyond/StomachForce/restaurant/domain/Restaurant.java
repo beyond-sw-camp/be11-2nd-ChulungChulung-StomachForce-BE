@@ -98,7 +98,6 @@ public class Restaurant extends BaseTimeEntity {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<RestaurantInfo> infos = new ArrayList<>();               // 레스토랑 공지사항
 
-
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Bookmark> bookmarks = new ArrayList<>();            // 레스토랑 북마크
 

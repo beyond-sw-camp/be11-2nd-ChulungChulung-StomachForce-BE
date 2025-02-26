@@ -5,13 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
 @Builder
-public class RestaurantSearchDto {
-    private String name;
-    private String address;
-    private String restaurantType;
-
+public class AddBookMarkReq {
+    private Long restaurantId;
 }
