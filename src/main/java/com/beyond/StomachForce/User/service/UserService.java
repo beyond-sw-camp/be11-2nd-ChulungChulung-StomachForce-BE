@@ -214,6 +214,7 @@ public class UserService {
                 .userEmail(user.getEmail())
                 .userPhoneNumber(user.getPhoneNumber())
                 .gender(user.getGender())
+                .role(user.getRole().toString())
                 .profilePhoto(user.getProfilePhoto())
                 .build();
         return userInfoRes;
@@ -436,6 +437,7 @@ public class UserService {
                         .vipGrade(user.getVipGrade())
                         .influencer(user.getInfluencer())
                         .userStatus(user.getUserStatus())
+                        .nickName(user.getNickName())
                         .build())
                 .collect(Collectors.toList());
     }
