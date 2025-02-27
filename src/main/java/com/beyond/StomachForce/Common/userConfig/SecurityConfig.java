@@ -43,7 +43,8 @@ public class SecurityConfig {
                         "/service/answer/delete/{answerId}","user/me", "/report/create", "/report/update/{reportId}",
                         "/report/delete/{reportId}", "/report/admin-comment/{reportId}",
                         "/service/post/{postId}", "/service/answer/{answerId}","/restaurant/top-favorites","/user/top-influencers",
-                        "/announcement/event/ongoing","/restaurant/categories","/post/postList"
+                        "/announcement/event/ongoing","/restaurant/categories","/post/postList","announcement/list","announcement/detail/{id}","/post/postList",
+                        "/user/userInfo","/post/getLike/{postId}","/post/getLike/{postId}"
 
                         ).permitAll().anyRequest().authenticated())
                 .build();

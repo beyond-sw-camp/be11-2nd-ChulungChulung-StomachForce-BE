@@ -214,7 +214,18 @@ public class AnnouncementService {
     }
 
     public List<EventBannerRes> getOngoingEvents() {
-        List<Announcement> eventAnnouncements = announcementRepository.findByTypeAndStatus(Type.EVENT, AnnounceStatus.ON);
+        LocalDateTime now = LocalDateTime.now(); // 현재 날짜 및 시간 가져오기
+
+        List<Announcement> eventAnnouncements = announcementRepository.findByTypeAndStatus(Type.EVENT, AnnounceStatus.ON)
+                .stream()
+                .filter(event -> event.getEndTime() == null || event.getEndTime().isAfter(now)) // ✅ 현재 시간 이후인 경우만 필터링
+                .collect(Collectors.toList());
+
+        // 🔍 필터링된 이벤트 목록 출력 (디버깅용)
+        System.out.println("✅ 필터링된 이벤트 개수: " + eventAnnouncements.size());
+        for (Announcement event : eventAnnouncements) {
+            System.out.println("📌 진행 중인 이벤트: " + event.getTitle() + " | 종료 날짜: " + event.getEndTime());
+        }
 
         return eventAnnouncements.stream().map(event -> EventBannerRes.builder()
                 .eventId(event.getId())
