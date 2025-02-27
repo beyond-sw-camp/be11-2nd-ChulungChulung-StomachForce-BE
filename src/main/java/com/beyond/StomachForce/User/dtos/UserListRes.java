@@ -1,6 +1,7 @@
 package com.beyond.StomachForce.User.dtos;
 
 import com.beyond.StomachForce.User.domain.Enum.Influencer;
+import com.beyond.StomachForce.User.domain.Enum.Role;
 import com.beyond.StomachForce.User.domain.Enum.UserStatus;
 import com.beyond.StomachForce.User.domain.Enum.VipGrade;
 import lombok.AllArgsConstructor;
@@ -22,4 +23,5 @@ public class UserListRes {
     private Influencer influencer;
     private UserStatus userStatus;
     private String nickName;
+    private String role;
 }

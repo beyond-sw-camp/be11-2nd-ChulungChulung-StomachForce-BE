@@ -429,6 +429,7 @@ public class UserService {
         return userRepository.findAll().stream()
                 .map(user -> UserListRes.builder()
                         .userId(user.getId())
+                        .role(user.getRole().toString())
                         .profilePhoto(user.getProfilePhoto())
                         .identify(user.getIdentify())
                         .email(user.getEmail())
