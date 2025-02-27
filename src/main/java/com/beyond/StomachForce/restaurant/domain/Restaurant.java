@@ -132,8 +132,8 @@ public class Restaurant extends BaseTimeEntity {
         if(dto.getDescription() != null) this.description = dto.getDescription();
         if(dto.getOpeningTime() != null) this.openingTime = dto.getOpeningTime();
         if(dto.getClosingTime() != null) this.closingTime = dto.getClosingTime();
-        if(dto.getBreakTimeStart() != null) this.breakTimeStart = dto.getBreakTimeStart();
-        if(dto.getBreakTimeEnd() != null) this.breakTimeEnd = dto.getBreakTimeEnd();
+        this.breakTimeStart = dto.getBreakTimeStart();
+        this.breakTimeEnd = dto.getBreakTimeEnd();
         if(dto.getLastOrder() != null) this.lastOrder=dto.getLastOrder();
         if(dto.getHoliday() != null) this.holiday = dto.getHoliday();
         if(dto.getCapacity() != 0) this.capacity = dto.getCapacity();
@@ -212,6 +212,7 @@ public class Restaurant extends BaseTimeEntity {
             }
         }
     }
+
 
     public void removePhotos(List<String> photoUrlsToRemove) {
 

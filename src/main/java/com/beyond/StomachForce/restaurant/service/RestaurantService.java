@@ -6,6 +6,7 @@ import com.beyond.StomachForce.User.repository.UserRepository;
 import com.beyond.StomachForce.menu.domain.Menu;
 import com.beyond.StomachForce.menu.dto.MenuResDto;
 import com.beyond.StomachForce.restaurant.domain.*;
+import com.beyond.StomachForce.restaurant.domain.select.DepositAvailable;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantInfoStatus;
 
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantType;
