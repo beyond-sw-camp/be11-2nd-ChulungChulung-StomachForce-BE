@@ -67,25 +67,25 @@ public class ReviewService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
-        // 가장 최근 완료된 예약 가져오기 (이전 날짜거나, 오늘 예약 시간이 현재보다 과거인 예약)
-        Reservation reservation = reservationRepository.findLatestCompletedReservation(user, restaurant)
-                .orElseThrow(() -> new IllegalStateException("완료된 예약이 없습니다. 예약 후 리뷰를 작성하세요."));
-
-        // 해당 예약에 대해 이미 리뷰를 작성했는지 확인
-        boolean alreadyReviewed = reviewRepository.existsByUserAndReservation(user, reservation);
-        if (alreadyReviewed) {
-            throw new IllegalStateException("이 예약에 대한 리뷰는 이미 작성되었습니다.");
-        }
-
-        if (reservation == null) {
-            throw new IllegalStateException("리뷰를 작성하려면 유효한 예약이 필요합니다.");
-        }
+//        // 가장 최근 완료된 예약 가져오기 (이전 날짜거나, 오늘 예약 시간이 현재보다 과거인 예약)
+//        Reservation reservation = reservationRepository.findLatestCompletedReservation(user, restaurant)
+//                .orElseThrow(() -> new IllegalStateException("완료된 예약이 없습니다. 예약 후 리뷰를 작성하세요."));
+//
+//        // 해당 예약에 대해 이미 리뷰를 작성했는지 확인
+//        boolean alreadyReviewed = reviewRepository.existsByUserAndReservation(user, reservation);
+//        if (alreadyReviewed) {
+//            throw new IllegalStateException("이 예약에 대한 리뷰는 이미 작성되었습니다.");
+//        }
+//
+//        if (reservation == null) {
+//            throw new IllegalStateException("리뷰를 작성하려면 유효한 예약이 필요합니다.");
+//        }
 
 
         Review review = Review.builder()
                 .user(user)
                 .restaurant(restaurant)
-                .reservation(reservation)
+//                .reservation(reservation)
                 .rating(Rating.fromValue(req.getRating()))
                 .contents(req.getContents())
                 .build();
