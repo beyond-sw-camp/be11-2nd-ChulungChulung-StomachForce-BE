@@ -2,6 +2,7 @@ package com.beyond.StomachForce.restaurant.repository;
 
 import com.beyond.StomachForce.restaurant.domain.Restaurant;
 import com.beyond.StomachForce.restaurant.domain.select.RestaurantType;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -41,4 +42,5 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
     Page<Restaurant> findAll(Specification<Restaurant> specification, Pageable pageable);
 
+    Optional<Object> findByName(@NotEmpty String name);
 }

@@ -169,6 +169,9 @@ public class RestaurantService {
         if(restaurantCreateReq.getPassword().length()<8){
             throw new IllegalArgumentException("비번 너무 짧아요");
         }
+        if (restaurantRepository.findByName(restaurantCreateReq.getName()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 레스토랑 이름입니다.");
+        }
 
         //      비번 암호화
         String password = passwordEncoder.encode(restaurantCreateReq.getPassword());

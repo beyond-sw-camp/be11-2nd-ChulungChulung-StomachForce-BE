@@ -48,9 +48,9 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;                   //restaurant id와 fk
 
-//    @ManyToOne
-//    @JoinColumn(name = "reservation_id")  // 예약
-//    private Reservation reservation;
+    @ManyToOne
+    @JoinColumn(name = "reservation_id")  // 예약
+    private Reservation reservation;
 
     @OneToMany(mappedBy = "review",cascade = CascadeType.ALL) // 사진 넣으면 자동으로 리뷰에 추가됨
     private List<ReviewPhoto> reviewPhotos = new ArrayList<>();

@@ -41,7 +41,7 @@ public class ReviewController {
     public ResponseEntity<?> updateReview(
             @PathVariable Long restaurantId,
             @PathVariable Long reviewId,
-            @Valid @RequestBody ReviewUpdateReq req,
+            @Valid ReviewUpdateReq req,
             Authentication authentication) {
 
         reviewService.updateReview(restaurantId, reviewId, req);
