@@ -9,16 +9,12 @@ import com.beyond.StomachForce.User.domain.*;
 import com.beyond.StomachForce.User.domain.Enum.*;
 import com.beyond.StomachForce.User.dtos.*;
 import com.beyond.StomachForce.User.repository.*;
-import com.beyond.StomachForce.restaurant.domain.Restaurant;
-import com.beyond.StomachForce.restaurant.repository.RestaurantRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Block;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -161,6 +157,7 @@ public class UserService {
     }
 
     public String follow(FollowReq followReq){
+        System.out.println(followReq);
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         User followUser = userRepository.findByNickName(followReq.getNickName()).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
@@ -181,9 +178,8 @@ public class UserService {
         return "ok";
     }
 
-    public List<FollowerListRes> follwers(){
-        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+    public List<FollowerListRes> followers(SearchFollowDto searchFollowDto){
+        User user = userRepository.findByNickName(searchFollowDto.getNickName()).orElseThrow(()->new EntityNotFoundException("없는 회원"));
         List<FollowerListRes> follwerList = new ArrayList<>();
         return user.followerList();
     }
@@ -194,9 +190,8 @@ public class UserService {
         return user.isFollowing(userNickName);
     }
 
-    public List<FollowingListRes> follwings(){
-        String identify = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+    public List<FollowingListRes> follwings(SearchFollowDto searchFollowDto){
+        User user = userRepository.findByNickName(searchFollowDto.getNickName()).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
         return user.followingList();
     }
 
@@ -348,12 +343,37 @@ public class UserService {
 
     public BlockUser blocking(UserBlockingDto userBlockingDto){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
-        User blockingUser = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
+        User blockingUser = userRepository.findByIdentify(identify)
+                .orElseThrow(() -> new EntityNotFoundException("없는 회원입니다."));
         String blockedUserNickName = userBlockingDto.getBlockedUserNickName();
-        User blockedUser = userRepository.findByNickName(blockedUserNickName).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
-        BlockUser blockUser = blockingRepository.save(BlockUser.builder().blocker(blockingUser).blocked(blockedUser).build());
+        User blockedUser = userRepository.findByNickName(blockedUserNickName)
+                .orElseThrow(() -> new EntityNotFoundException("없는 회원입니다."));
+
+        BlockUser blockUser = blockingRepository.save(
+                BlockUser.builder().blocker(blockingUser).blocked(blockedUser).build()
+        );
+
+        Follower targetFollower = blockedUser.getFollowers().stream()
+                .filter(f -> f.getFollowerUser().getId().equals(blockingUser.getId()))
+                .findFirst()
+                .orElse(null);
+        if (targetFollower != null) {
+            blockedUser.getFollowers().remove(targetFollower);
+            blockingUser.getFollowing().remove(targetFollower);
+        }
+
+        Follower targetFollowerReverse = blockingUser.getFollowers().stream()
+                .filter(f -> f.getFollowerUser().getId().equals(blockedUser.getId()))
+                .findFirst()
+                .orElse(null);
+        if (targetFollowerReverse != null) {
+            blockingUser.getFollowers().remove(targetFollowerReverse);
+            blockedUser.getFollowing().remove(targetFollowerReverse);
+        }
+
         return blockUser;
     }
+
 
     public boolean[] isBlockedBy(UserBlockingDto userBlockingDto){
         String currentIdentify = SecurityContextHolder.getContext().getAuthentication().getName();
