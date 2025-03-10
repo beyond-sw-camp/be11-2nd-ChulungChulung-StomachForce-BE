@@ -2,7 +2,7 @@ package com.beyond.StomachForce.User.controller;
 
 import com.beyond.StomachForce.Common.dtos.StatusCode;
 import com.beyond.StomachForce.Common.Auth.JwtTokenProvider;
-import com.beyond.StomachForce.User.domain.Enum.BlockUser;
+import com.beyond.StomachForce.User.domain.BlockUser;
 import com.beyond.StomachForce.User.domain.Mileage;
 import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.User.domain.VipBenefit;
@@ -20,7 +20,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -136,15 +135,15 @@ public class UserController {
                 "",response),HttpStatus.CREATED);
     }
 
-    @GetMapping("/followingList")
-    public ResponseEntity<?> FollowingList(){
-        List<FollowingListRes> response = userService.follwings();
+    @PostMapping("/followingList")
+    public ResponseEntity<?> FollowingList(@RequestBody SearchFollowDto searchFollowDto){
+        List<FollowingListRes> response = userService.follwings(searchFollowDto);
         return new ResponseEntity<>(response,HttpStatus.CREATED);
     }
 
-    @GetMapping("/followerList")
-    public ResponseEntity<?> FollowerList(){
-        List<FollowerListRes> response = userService.follwers();
+    @PostMapping("/followerList")
+    public ResponseEntity<?> FollowerList(@RequestBody SearchFollowDto searchFollowDto){
+        List<FollowerListRes> response = userService.followers(searchFollowDto);
         return new ResponseEntity<>(response,HttpStatus.CREATED);
     }
 

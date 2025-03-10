@@ -1,7 +1,5 @@
-package com.beyond.StomachForce.User.domain.Enum;
+package com.beyond.StomachForce.User.domain;
 import com.beyond.StomachForce.Common.domain.BaseTimeEntity;
-import com.beyond.StomachForce.User.domain.User;
-import lombok.*;
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
