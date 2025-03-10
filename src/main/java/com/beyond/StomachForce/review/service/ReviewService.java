@@ -27,6 +27,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,25 +69,33 @@ public class ReviewService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
-//        // 가장 최근 완료된 예약 가져오기 (이전 날짜거나, 오늘 예약 시간이 현재보다 과거인 예약)
-//        Reservation reservation = reservationRepository.findLatestCompletedReservation(user, restaurant)
-//                .orElseThrow(() -> new IllegalStateException("완료된 예약이 없습니다. 예약 후 리뷰를 작성하세요."));
-//
-//        // 해당 예약에 대해 이미 리뷰를 작성했는지 확인
-//        boolean alreadyReviewed = reviewRepository.existsByUserAndReservation(user, reservation);
-//        if (alreadyReviewed) {
-//            throw new IllegalStateException("이 예약에 대한 리뷰는 이미 작성되었습니다.");
-//        }
-//
-//        if (reservation == null) {
-//            throw new IllegalStateException("리뷰를 작성하려면 유효한 예약이 필요합니다.");
-//        }
+        // ✅ 해당 유저가 이 레스토랑을 예약한 적이 있는지 확인
+        List<Reservation> reservations = reservationRepository.findCompletedReservations(user, restaurant);
+        if (reservations.isEmpty()) {
+            throw new IllegalStateException("해당 레스토랑에 대한 예약 기록이 없습니다. 예약 후 리뷰를 작성하세요.");
+        }
 
+        // 예약 시간 이후인지 확인 (예약 시간이 현재보다 과거여야 함)
+        boolean hasPastReservation = reservations.stream()
+                .anyMatch(reservation ->
+                        reservation.getReservationDate().isBefore(LocalDate.now()) || // 예약 날짜가 오늘 이전
+                                (reservation.getReservationDate().isEqual(LocalDate.now()) &&
+                                        reservation.getReservationTime().isBefore(LocalTime.now())) // 예약 날짜가 오늘이고, 시간이 현재보다 과거
+                );
+
+        if (!hasPastReservation) {
+            throw new IllegalStateException("예약 시간이 지나야 리뷰를 작성할 수 있습니다.");
+        }
+
+        // 해당 레스토랑에 대해 이미 리뷰를 작성했는지 확인
+        boolean alreadyReviewed = reviewRepository.existsByUserAndRestaurant(user, restaurant);
+        if (alreadyReviewed) {
+            throw new IllegalStateException("이 레스토랑에 대한 리뷰는 이미 작성되었습니다.");
+        }
 
         Review review = Review.builder()
                 .user(user)
                 .restaurant(restaurant)
-//                .reservation(reservation)
                 .rating(Rating.fromValue(req.getRating()))
                 .contents(req.getContents())
                 .build();
@@ -95,8 +105,6 @@ public class ReviewService {
         if (req.getReviewImage() != null) {
             saveReviewPhotos(review, req.getReviewImage());
         }
-
-
     }
 
     public List<ReviewListRes> reviewList(Long restaurantId) {
@@ -115,14 +123,14 @@ public class ReviewService {
             throw new IllegalArgumentException("Unauthorized action");
         }
 
-        review.updateReview(req.getContents(), req.getRating()); // 기존 코드 유지
+        review.updateReview(req.getContents(), req.getRatingEnum()); // 기존 코드 유지
 
-        if (req.getReviewPhotos() != null) {
+        if (req.getReviewPhotos() != null && !req.getReviewPhotos().isEmpty()) {
             saveReviewPhotos(review, req.getReviewPhotos());
         }
 
         if (req.getReviewPhotoRemove() != null) {
-            deleteReviewPhotos(req.getReviewPhotoRemove());
+            deleteReviewPhotos(reviewId, req.getReviewPhotoRemove());
         }
     }
 
@@ -143,16 +151,14 @@ public class ReviewService {
 
         for (MultipartFile image : reviewImages) {
             try {
-//                byte[] bytes = image.getBytes();
                 String fileName = review.getId() + "_" + image.getOriginalFilename();
-                Path path = Paths.get("C:/Users/Playdata/Desktop/testFolder", fileName);
-                Files.write(path, image.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
                 PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                         .bucket(bucket)
                         .key(fileName)
+                        .contentType(image.getContentType()) // MIME 타입 지정 (선택)
                         .build();
-                s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
+                s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(image.getInputStream(), image.getSize()));
 
                 String s3Url = s3Client.utilities().getUrl(r -> r.bucket(bucket).key(fileName)).toExternalForm();
 
@@ -166,8 +172,13 @@ public class ReviewService {
         reviewPhotoRepository.saveAll(reviewPhotos);
     }
 
-    private void deleteReviewPhotos(List<String> photoUrlsToRemove) {
+    private void deleteReviewPhotos(Long reviewId ,List<String> photoUrlsToRemove) {
         List<ReviewPhoto> reviewPhotos = reviewPhotoRepository.findByReviewImagePathIn(photoUrlsToRemove);
-        reviewPhotoRepository.deleteAll(reviewPhotos);
+
+        // 다른 User의 사진을 삭제할 수 있음. 왜냐면 이미지 구조 자체가 url로 돼있어서 임의의 사진이 삭제될 수 있음.
+        List<ReviewPhoto> photosDelete = reviewPhotos.stream()
+                .filter(photo -> photo.getReview().getId().equals(reviewId))
+                .collect(Collectors.toList());
+        reviewPhotoRepository.deleteAll(photosDelete);
     }
 }

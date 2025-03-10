@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -30,16 +31,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             LocalTime endTime
     );
 
-    // 리뷰 쓸 때 검증용으로 사용할 쿼리입니다~ 놀라지 마세요~
-    boolean existsByUserAndRestaurant(User user, Restaurant restaurant);
+
 
     // 예약시간 이후에만 리뷰 남기게 하겠읍니다
     @Query("SELECT r FROM Reservation r " +
             "WHERE r.user = :user " +
             "AND r.restaurant = :restaurant " +
             "AND (r.reservationDate < CURRENT_DATE " +
-            "OR (r.reservationDate = CURRENT_DATE AND r.reservationTime < CURRENT_TIME)) " +
-            "ORDER BY r.reservationDate DESC, r.reservationTime DESC")
-    Optional<Reservation> findLatestCompletedReservation(User user, Restaurant restaurant);
-
+            "OR (r.reservationDate = CURRENT_DATE AND r.reservationTime < CURRENT_TIME))")
+    List<Reservation> findCompletedReservations(User user, Restaurant restaurant);
 }

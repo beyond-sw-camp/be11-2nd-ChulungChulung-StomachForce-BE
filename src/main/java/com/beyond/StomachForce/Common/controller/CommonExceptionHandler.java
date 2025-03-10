@@ -31,14 +31,30 @@ public class CommonExceptionHandler {
         log.error(e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler(BindException.class)
     public ResponseEntity<?> bindException(BindException e) {
         log.error(e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> accessDeniedException(AccessDeniedException e) {
         log.error(e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    // 예약이 없거나 리뷰를 중복 작성할 때 발생하는 예외를 위한 예외 처리
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<?> handleIllegalStateException(IllegalStateException e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(new ErrorDto(400,e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    // 예상치 못한 예외 전부 잡아서 처리
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGeneralException(Exception e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(new ErrorDto(500, "서버 내부 오류가 발생했습니다."), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
