@@ -9,17 +9,22 @@ import com.beyond.StomachForce.User.domain.*;
 import com.beyond.StomachForce.User.domain.Enum.*;
 import com.beyond.StomachForce.User.dtos.*;
 import com.beyond.StomachForce.User.repository.*;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,6 +40,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,11 +54,12 @@ public class UserService {
     private final BlockingRepository blockingRepository;
     private final S3Client s3Client;
     private final LikeService likeService;
-
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, false);
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public UserService(PostRepository postRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, MileageRepository mileageRepository, VipBenefitRepository vipBenefitRepository, BlockingRepository blockingRepository, S3Client s3Client, LikeService likeService) {
+    public UserService(PostRepository postRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, MileageRepository mileageRepository, VipBenefitRepository vipBenefitRepository, BlockingRepository blockingRepository, S3Client s3Client, LikeService likeService, RedisTemplate<String, Object> redisTemplate, @Qualifier("userInfoDB") RedisTemplate<String, Object> redisTemplate1) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -61,6 +68,7 @@ public class UserService {
         this.blockingRepository = blockingRepository;
         this.s3Client = s3Client;
         this.likeService = likeService;
+        this.redisTemplate = redisTemplate1;
     }
 
 
@@ -115,6 +123,26 @@ public class UserService {
             s3Url = user.getProfilePhoto();
         }
         user.updateUser(userUpdateReq,s3Url);
+        String redisKey = user.getIdentify();
+        try {
+            UserInfoRes userInfoRes = UserInfoRes.builder()
+                    .userId(user.getId())
+                    .role(user.getRole().toString())
+                    .identify(user.getIdentify())
+                    .userStatus(user.getUserStatus())
+                    .userNickName(user.getNickName())
+                    .userName(user.getName())
+                    .userEmail(user.getEmail())
+                    .userPhoneNumber(user.getPhoneNumber())
+                    .gender(user.getGender())
+                    .profilePhoto(user.getProfilePhoto())
+                    .build();
+
+            String userInfoJson = objectMapper.writeValueAsString(userInfoRes);
+            redisTemplate.opsForValue().set(redisKey, userInfoJson); // 기존 데이터 덮어쓰기
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Redis 저장 중 오류 발생", e);
+        }
     }
 
     public void quit(){
@@ -127,20 +155,36 @@ public class UserService {
     public User login(LoginDto dto){
         boolean check = true;
         Optional<User> optionalUser = userRepository.findByIdentify(dto.getIdentify());
-        if(!optionalUser.get().getUserStatus().equals(UserStatus.S)) {
-            if(!optionalUser.isPresent()){
-                check = false;
-            }
-            if(!passwordEncoder.matches(dto.getPassword(), optionalUser.get().getPassword())){
-                check =false;
-            }
-            if(!check){
-                throw new IllegalArgumentException("ID 또는 비밀번호가 일치하지 않습니다.");
-            }
-            return optionalUser.get();
-        }else{
+        if (!optionalUser.isPresent() || optionalUser.get().getUserStatus().equals(UserStatus.S)) {
             throw new IllegalArgumentException("ID 또는 비밀번호가 일치하지 않습니다.");
         }
+
+        User user = optionalUser.get();
+
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("ID 또는 비밀번호가 일치하지 않습니다.");
+        }
+        UserInfoRes userInfoRes = UserInfoRes.builder()
+                .userId(user.getId())
+                .role(user.getRole().toString())
+                .identify(user.getIdentify())
+                .userStatus(user.getUserStatus())
+                .userNickName(user.getNickName())
+                .userName(user.getName())
+                .userEmail(user.getEmail())
+                .userPhoneNumber(user.getPhoneNumber())
+                .gender(user.getGender())
+                .profilePhoto(user.getProfilePhoto())
+                .build();
+
+        String redisKey = user.getIdentify();
+        try {
+            String userInfoJson = objectMapper.writeValueAsString(userInfoRes);
+            redisTemplate.opsForValue().set(redisKey, userInfoJson);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Redis 저장 중 오류 발생", e);
+        }
+        return user;
     }
 
     public Mileage mangeMileage(ManageMileageDto manageMileageDto){
@@ -197,21 +241,18 @@ public class UserService {
 
     public UserInfoRes userInfo(){
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByIdentify(identify).orElseThrow(()->new EntityNotFoundException("없는 회원입니다."));
-        UserInfoRes userInfoRes = UserInfoRes.builder()
-                .userId(user.getId())
-                .role(user.getRole().toString())
-                .identify(user.getIdentify())
-                .userStatus(user.getUserStatus())
-                .userNickName(user.getNickName())
-                .userName(user.getName())
-                .userEmail(user.getEmail())
-                .userPhoneNumber(user.getPhoneNumber())
-                .gender(user.getGender())
-                .role(user.getRole().toString())
-                .profilePhoto(user.getProfilePhoto())
-                .build();
-        return userInfoRes;
+        String redisKey = identify;
+        try {
+            String cachedUserInfoJson = (String) redisTemplate.opsForValue().get(redisKey);
+
+            if (cachedUserInfoJson != null) {
+                return objectMapper.readValue(cachedUserInfoJson, UserInfoRes.class);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Redis 조회 중 오류 발생", e);
+        }
+
+        return null;
     }
 
     public MypageRes myPage(Pageable pageable) {
