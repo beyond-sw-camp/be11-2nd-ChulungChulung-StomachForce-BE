@@ -25,11 +25,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.Response;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -58,6 +63,12 @@ public class UserService {
     private final ObjectMapper objectMapper = new ObjectMapper().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, false);
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
+//    @Value("${oauth.client-id}")
+//    private String googleClientId;
+//    @Value("${oauth.client-secret}")
+//    private String googleClientSecret;
+//    @Value("${oauth.google.redirect-uri}")
+//    private String googleRedirectUri;
 
     public UserService(PostRepository postRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, MileageRepository mileageRepository, VipBenefitRepository vipBenefitRepository, BlockingRepository blockingRepository, S3Client s3Client, LikeService likeService, RedisTemplate<String, Object> redisTemplate, @Qualifier("userInfoDB") RedisTemplate<String, Object> redisTemplate1) {
         this.postRepository = postRepository;
@@ -91,6 +102,51 @@ public class UserService {
         user.updateImagePath(s3Url);
         return finalUser;
     }
+
+//    public AccessTokendto getAccessToken(String code){
+//        RestClient restClient = RestClient.create();
+//        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+//        params.add("code",code);
+//        params.add("client_id",googleClientId);
+//        params.add("client_secret",googleClientSecret);
+//        params.add("redirect_uri",googleRedirectUri);
+//        params.add("grant_type", "authorization_code");
+//        ResponseEntity<AccessTokendto> response = restClient.post()
+//                .uri("https://oauth2.googleapis.com/token")
+//                .header("Content-Type","application/x-www-form-urlencoded")
+//                .body(params)
+//                .retrieve()
+//                .toEntity(AccessTokendto.class);
+//        return response.getBody();
+//    }
+//
+//    public GoogleProfileDto getGoogleProfile(String token){
+//        RestClient restClient = RestClient.create();
+//        ResponseEntity<GoogleProfileDto> response = restClient.post()
+//                .uri("https://openidconnect.googleapis.com/v1/userinfo")
+//                .header("Authorization","Bearer " +token)
+//                .retrieve()
+//                .toEntity(GoogleProfileDto.class);
+//        return response.getBody();
+//    }
+//
+//    public User getUserByEmail(String email){
+//        User user = userRepository.findByEmail(email).orElse(null);
+//        return user;
+//    }
+//    public User createOauth(String socialId, String email, String name){
+//        User user = User.builder()
+//                .identify(email)
+//                .nickName(socialId)
+//                .email(email)
+//                .password("12341234")
+//                .name(name)
+//                .phoneNumber("01012341234")
+//                .birth("990621")
+//                .build();
+//        userRepository.save(user);
+//        return user;
+//    }
 
     public String profile(ProfileReq profileReq) throws IOException {
         String identify = SecurityContextHolder.getContext().getAuthentication().getName();

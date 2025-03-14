@@ -8,6 +8,7 @@ import com.beyond.StomachForce.User.domain.User;
 import com.beyond.StomachForce.User.domain.VipBenefit;
 import com.beyond.StomachForce.User.dtos.*;
 import com.beyond.StomachForce.User.repository.UserRepository;
+import com.beyond.StomachForce.User.service.UserGoogleService;
 import com.beyond.StomachForce.User.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -35,6 +36,7 @@ public class UserController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+    private final UserGoogleService userGoogleService;
 
     @Qualifier("rtdb")
     private final RedisTemplate<String,Object> redisTemplate;
@@ -42,10 +44,11 @@ public class UserController {
     @Value("${jwt.secretKeyRT}")
     private String secretKeyRT;
 
-    public UserController(UserService userService, JwtTokenProvider jwtTokenProvider, UserRepository userRepository, @Qualifier("rtdb") RedisTemplate<String, Object> redisTemplate) {
+    public UserController(UserService userService, JwtTokenProvider jwtTokenProvider, UserRepository userRepository, UserGoogleService userGoogleService, @Qualifier("rtdb") RedisTemplate<String, Object> redisTemplate) {
         this.userService = userService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.userRepository = userRepository;
+        this.userGoogleService = userGoogleService;
         this.redisTemplate = redisTemplate;
     }
 
@@ -99,6 +102,24 @@ public class UserController {
         loginInfo.put("id",user.getId());
         loginInfo.put("token",token);
         loginInfo.put("refreshToken",refreshToken);
+        return new ResponseEntity<>(loginInfo,HttpStatus.OK);
+    }
+
+    @PostMapping("/google/doLogin")
+    public ResponseEntity<?> googleDoLogin(@RequestBody GoogleLoginDto dto){
+        AccessTokendto accessTokendto = userGoogleService.getAccessToken(dto.getCode());
+        GoogleProfileDto googleProfileDto = userGoogleService.getGoogleProfile(accessTokendto.getAccess_token());
+        User originalUser = userGoogleService.getUserByEmail(googleProfileDto.getEmail());
+        if(originalUser == null){
+            GoogleResponseDto response = GoogleResponseDto.builder().identify(googleProfileDto.getEmail()).email(googleProfileDto.getEmail()).name(googleProfileDto.getName()).build();
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }
+        String jwtToken = jwtTokenProvider.createToken(originalUser.getIdentify(), originalUser.getRole().toString());
+        String jwtRefreshToken = jwtTokenProvider.createRefreshToken(originalUser.getIdentify() ,originalUser.getRole().toString());
+        Map<String, Object> loginInfo = new HashMap<>();
+        loginInfo.put("id",originalUser.getId());
+        loginInfo.put("token",jwtToken);
+        loginInfo.put("refreshToken",jwtRefreshToken);
         return new ResponseEntity<>(loginInfo,HttpStatus.OK);
     }
 
