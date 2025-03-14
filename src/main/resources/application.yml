@@ -39,6 +39,12 @@ jwt:
   #  beyondrefreshsecrettokenkeybeyondrefreshsecrettokenkeybeyondrefreshsecrettokenkey
   secretKeyRT: YmV5b25kcmVmcmVzaHNlY3JldHRva2Vua2V5YmV5b25kcmVmcmVzaHNlY3JldHRva2Vua2V5YmV5b25kcmVmcmVzaHNlY3JldHRva2Vua2V5
 
+oauth:
+  google:
+    client-id: 752078374240-4tdtnn7i8de5jpavh9qbupu7nbimt5rn.apps.googleusercontent.com
+    client-secret: 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
+    redirect_uri: http://localhost:3000/oauth/google/redirect
+
 cloud:
   aws:
     credentials:
