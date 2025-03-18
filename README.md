@@ -38,9 +38,10 @@
 ## 📌 목차
 1. [프로젝트 소개](#프로젝트-소개)
 2. [기획](#기획)
-3. [기술 스택](#기술-스택)
-4. [프론트엔드 기능 시연](#프론트엔드-기능-시연)
-5. [프로젝트 마무리](#프로젝트-마무리)
+3. [시스템 아키텍처](#시스템-아키텍처)
+4. [기술 스택](#기술-스택)
+5. [프론트엔드 기능 시연](#프론트엔드-기능-시연)
+6. [프로젝트 마무리](#프로젝트-마무리)
 
 
 ## 프로젝트 소개
@@ -65,6 +66,67 @@
 - 커뮤니티 기능을 통한 사용자 간 소통 극대화  
 - 편리한 고객센터를 통한 문의 및 신고 접수
 - 쉬운 메뉴 설정 및 가게 홍보
+
+
+## 시스템 아키텍처
+<img src="https://github.com/beyond-sw-camp/be11-2nd-ChulungChulung-StomachForce-FE/blob/main/src/assets/image.png?raw=true">
+
+## 기술 스택  
+
+### 📌 Backend  
+<div>
+  <img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white">
+  <img src="https://img.shields.io/badge/SpringBoot-6DB33F?style=flat-square&logo=SpringBoot&logoColor=white">
+  <img src="https://img.shields.io/badge/SpringSecurity-6DB33F?style=flat-square&logo=SpringSecurity&logoColor=white">
+  <img src="https://img.shields.io/badge/SpringDataJPA-26A641?style=flat-square&logo=Hibernate&logoColor=white">
+  <img src="https://img.shields.io/badge/Gradle-02303A?style=flat-square&logo=Gradle&logoColor=white">
+  <img src="https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white">
+  <img src="https://img.shields.io/badge/Hibernate-59666C?style=flat-square&logo=Hibernate&logoColor=white">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white">
+  <img src="https://img.shields.io/badge/WebSocket-000000?style=flat-square&logo=WebSocket&logoColor=white">
+</div>
+
+### 📌 Frontend  
+<div>
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=CSS3&logoColor=white">
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=HTML5&logoColor=white">
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=JavaScript&logoColor=black">
+  <img src="https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=Vue.js&logoColor=white">
+  <img src="https://img.shields.io/badge/Axios-764ABC?style=flat-square&logo=Axios&logoColor=white">
+  <img src="https://img.shields.io/badge/VueRouter-4FC08D?style=flat-square&logo=Vue.js&logoColor=white">
+  <img src="https://img.shields.io/badge/Vuetify-1867C0?style=flat-square&logo=Vuetify&logoColor=white">
+</div>
+
+### 📌 DB  
+<div>
+  <img src="https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=MariaDB&logoColor=white">
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=Redis&logoColor=white">
+  <img src="https://img.shields.io/badge/AmazonS3-569A31?style=flat-square&logo=AmazonS3&logoColor=white">
+  <img src="https://img.shields.io/badge/RabbitMQ-FF6600?style=flat-square&logo=RabbitMQ&logoColor=white">
+</div>
+
+### 📌 DevOps  
+<div>
+  <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=flat-square&logo=Kubernetes&logoColor=white">
+  <img src="https://img.shields.io/badge/AmazonEKS-FF9900?style=flat-square&logo=AmazonEKS&logoColor=white">
+  <img src="https://img.shields.io/badge/AmazonEC2-FF9900?style=flat-square&logo=AmazonEC2&logoColor=white">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white">
+  <img src="https://img.shields.io/badge/AmazonElastiCache-EF3A24?style=flat-square&logo=AmazonElastiCache&logoColor=white">
+  <img src="https://img.shields.io/badge/AmazonRDS-527FFF?style=flat-square&logo=AmazonRDS&logoColor=white">
+  <img src="https://img.shields.io/badge/AmazonS3-569A31?style=flat-square&logo=AmazonS3&logoColor=white">
+  <img src="https://img.shields.io/badge/AmazonRoute53-FF9900?style=flat-square&logo=AmazonRoute53&logoColor=white">
+  <img src="https://img.shields.io/badge/GitHubActions-2088FF?style=flat-square&logo=GitHubActions&logoColor=white">
+</div>
+
+
+
+### 📌 Communication  
+<div>
+  <img src="https://img.shields.io/badge/Discord-5865F2?style=flat-square&logo=Discord&logoColor=white">
+  <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white">
+</div>
+
+
 
 ### 🔍 사용한 핵심 기술 & 코드
 
@@ -99,36 +161,6 @@
 🔗 [화면설계서(FIGMA) 보러가기](https://www.figma.com/design/vi3vWmmWRPv8dq9VBIt2Oc/%EB%B1%83%EC%82%B4%EB%A0%A5?node-id=0-1&t=Xts1hEkIqwq3ehUJ-1)  
 
 
- ##  기술 스택  
-### 📌 Backend  
-<div>
-  <img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white">
-  <img src="https://img.shields.io/badge/SpringBoot-6DB33F?style=flat-square&logo=SpringBoot&logoColor=white">
-</div>
-
-### 📌 Frontend  
-<div>
-  <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=CSS3&logoColor=white">
-  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=JavaScript&logoColor=black">
-  <img src="https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=Vue.js&logoColor=white">
-</div>
-
-### 📌 DB  
-<div>
-  <img src="https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=MariaDB&logoColor=white">
-  <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=Redis&logoColor=white">
-</div>
-
-### 📌 Etc  
-<div>
-  <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white">
-</div>
-
-### 📌 Communication  
-<div>
-  <img src="https://img.shields.io/badge/Discord-5865F2?style=flat-square&logo=Discord&logoColor=white">
-  <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white">
-</div>
 
  ##  요구사항정의에 따른 프론트엔드 기능 시연  
 <details>
